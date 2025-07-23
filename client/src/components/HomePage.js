@@ -14,9 +14,11 @@ import {
   FireIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline';
+import ForgotPasswordPopup from './ForgotPasswordPopup';
 
 const HomePage = ({ onStartDemo, onRegister, onLogin }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
@@ -74,27 +76,57 @@ const HomePage = ({ onStartDemo, onRegister, onLogin }) => {
   ];
 
   const stats = [
-    { number: "100+", label: "Users Onboarded", icon: UserGroupIcon, color: "text-blue-600" },
+    { number: "100+", label: "Users Onboarded in Last 30 days", icon: UserGroupIcon, color: "text-blue-600" },
     { number: "4.7kg", label: "Average Weight Loss", icon: ArrowTrendingUpIcon, color: "text-green-600" },
-    { number: "73.28%", label: "Daily Updates", icon: HeartIcon, color: "text-red-600" }
+    { number: "73.28%", label: "Users Updates Daily Weight", icon: HeartIcon, color: "text-red-600" }
   ];
 
-  // Fitness Logo Component
+  // Fitness Logo Component - Goal Achieved
   const FitnessLogo = () => (
     <div className="flex items-center space-x-2">
       <div className="relative">
-        <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center shadow-lg">
-          <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-            <div className="w-3 h-3 bg-gradient-to-br from-orange-400 to-red-500 rounded-full"></div>
+        {/* Goal Achieved Logo */}
+        <div className="w-10 h-10 relative">
+          {/* Background circle with gradient */}
+          <div className="w-10 h-10 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg border-2 border-green-600 relative overflow-hidden">
+            {/* Success sparkle effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+            
+            {/* Goal target design */}
+            <div className="w-6 h-6 flex items-center justify-center relative">
+              {/* Target rings */}
+              <div className="w-5 h-5 relative">
+                {/* Outer ring */}
+                <div className="absolute inset-0 w-5 h-5 border-2 border-white rounded-full"></div>
+                {/* Middle ring */}
+                <div className="absolute inset-1 w-3 h-3 border-2 border-white rounded-full"></div>
+                {/* Inner ring */}
+                <div className="absolute inset-2 w-1 h-1 bg-white rounded-full"></div>
+              </div>
+              
+              {/* Checkmark for achievement */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-3 h-3 relative">
+                  {/* Checkmark stroke */}
+                  <div className="absolute top-0 left-0 w-1 h-1 bg-green-600 rounded-full transform rotate-45"></div>
+                  <div className="absolute top-0.5 left-0.5 w-1 h-1 bg-green-600 rounded-full transform rotate-45"></div>
+                  <div className="absolute top-1 left-1 w-1 h-1 bg-green-600 rounded-full transform rotate-45"></div>
+                  <div className="absolute top-1.5 left-1.5 w-1 h-1 bg-green-600 rounded-full transform rotate-45"></div>
+                  <div className="absolute top-2 left-2 w-1 h-1 bg-green-600 rounded-full transform rotate-45"></div>
+                </div>
+              </div>
+              
+              {/* Success sparkles */}
+              <div className="absolute -top-1 -right-1 w-1 h-1 bg-yellow-300 rounded-full animate-ping"></div>
+              <div className="absolute -bottom-1 -left-1 w-1 h-1 bg-yellow-300 rounded-full animate-ping" style={{animationDelay: '0.3s'}}></div>
+              <div className="absolute -top-0.5 -left-0.5 w-0.5 h-0.5 bg-yellow-300 rounded-full animate-ping" style={{animationDelay: '0.6s'}}></div>
+            </div>
           </div>
         </div>
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center">
-          <SparklesIcon className="w-2 h-2 text-white" />
-        </div>
       </div>
-      <div className="text-2xl font-bold bg-gradient-to-r from-orange-500 via-red-500 to-purple-600 bg-clip-text text-transparent">
+      <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
         GoooFit
-      </div>
+      </span>
     </div>
   );
 
@@ -143,6 +175,13 @@ const HomePage = ({ onStartDemo, onRegister, onLogin }) => {
                 Login
               </motion.button>
               <motion.button
+                onClick={() => setShowForgotPassword(true)}
+                className="text-gray-600 hover:text-orange-500 transition-colors font-medium text-sm"
+                whileHover={{ scale: 1.05 }}
+              >
+                Forgot Password?
+              </motion.button>
+              <motion.button
                 onClick={onRegister}
                 className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-2 rounded-full hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl"
                 whileHover={{ scale: 1.05 }}
@@ -174,7 +213,7 @@ const HomePage = ({ onStartDemo, onRegister, onLogin }) => {
             >
               <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-orange-100 to-red-100 border border-orange-200 text-orange-700 font-medium text-sm mb-6">
                 <FireIcon className="w-4 h-4 mr-2" />
-                Transform Your Life Today
+                Transform Your Life from Today
               </div>
             </motion.div>
 
@@ -480,6 +519,16 @@ const HomePage = ({ onStartDemo, onRegister, onLogin }) => {
           </div>
         </div>
       </footer>
+
+      {/* Forgot Password Popup */}
+      <ForgotPasswordPopup
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+        onBackToLogin={() => {
+          setShowForgotPassword(false);
+          onLogin();
+        }}
+      />
 
       <style jsx>{`
         @keyframes blob {

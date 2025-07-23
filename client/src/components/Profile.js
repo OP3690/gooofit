@@ -163,17 +163,20 @@ const Profile = () => {
     try {
       const payload = {
         // Always include required user fields
-        name: userProfile.name,
-        gender: userProfile.gender,
-        age: userProfile.age,
-        email: userProfile.email,
-        mobile: userProfile.mobile,
+        name: data.name,
+        gender: data.gender,
+        age: parseFloat(data.age),
+        email: data.email,
+        mobileNumber: data.mobile, // Map mobile back to mobileNumber for API
         height: parseFloat(data.height),
         currentWeight: parseFloat(data.currentWeight),
-        targetWeight: parseFloat(data.targetWeight),
-        targetDate: new Date(data.targetDate).toISOString(),
-        goalStatus: 'active',
-        goalCreatedAt: new Date().toISOString()
+        // Only include goal fields if they are provided
+        ...(data.targetWeight && { targetWeight: parseFloat(data.targetWeight) }),
+        ...(data.targetDate && { targetDate: new Date(data.targetDate).toISOString() }),
+        ...(data.targetWeight && data.targetDate && { 
+          goalStatus: 'active',
+          goalCreatedAt: new Date().toISOString()
+        })
         // Don't set goalId here - let the backend generate it
       };
 
@@ -201,7 +204,9 @@ const Profile = () => {
     if (userProfile) {
       reset({
         ...userProfile,
-        targetDate: userProfile.targetDate.split('T')[0]
+        // Map mobileNumber to mobile for form compatibility
+        mobile: userProfile.mobileNumber,
+        targetDate: userProfile.targetDate ? userProfile.targetDate.split('T')[0] : ''
       });
     }
     setIsEditing(true);
@@ -240,28 +245,27 @@ const Profile = () => {
   const onSubmitGoal = async (data) => {
     try {
       setLoading(true);
-      const payload = {
-        // Always include required user fields
-        name: userProfile.name,
-        gender: userProfile.gender,
-        age: userProfile.age,
-        email: userProfile.email,
-        mobile: userProfile.mobile,
+      
+      // First, set the goal status to active
+      await userAPI.updateUser(currentUser.id, { goalStatus: 'active' });
+      
+      // Then, set the goal fields one by one to avoid validation issues
+      const goalPayload = {
         height: parseFloat(data.height),
         currentWeight: parseFloat(data.currentWeight),
         targetWeight: parseFloat(data.targetWeight),
         targetDate: new Date(data.targetDate).toISOString(),
-        goalStatus: 'active',
         goalCreatedAt: new Date().toISOString()
-        // Don't set goalId here - let the backend generate it
       };
-      const response = await userAPI.updateUser(currentUser.id, payload);
+      
+      const response = await userAPI.updateUser(currentUser.id, goalPayload);
       setUserProfile(response);
       calculateBMIAnalytics(response);
       toast.success('Goal created successfully!');
       setIsCreatingGoal(false);
       await loadUserProfile();
     } catch (error) {
+      console.error('Goal creation error:', error);
       toast.error('Failed to create goal');
     } finally {
       setLoading(false);
@@ -287,28 +291,27 @@ const Profile = () => {
   const onSubmitEditGoal = async (data) => {
     try {
       setLoading(true);
-      const payload = {
-        // Always include required user fields
-        name: userProfile.name,
-        gender: userProfile.gender,
-        age: userProfile.age,
-        email: userProfile.email,
-        mobile: userProfile.mobile,
+      
+      // First, ensure the goal status is active
+      await userAPI.updateUser(currentUser.id, { goalStatus: 'active' });
+      
+      // Then, update the goal fields
+      const goalPayload = {
         height: parseFloat(data.height),
         currentWeight: parseFloat(data.currentWeight),
         targetWeight: parseFloat(data.targetWeight),
         targetDate: new Date(data.targetDate).toISOString(),
-        goalStatus: 'active',
         goalCreatedAt: new Date().toISOString()
-        // Don't set goalId here - let the backend generate it
       };
-      const response = await userAPI.updateUser(currentUser.id, payload);
+      
+      const response = await userAPI.updateUser(currentUser.id, goalPayload);
       setUserProfile(response);
       calculateBMIAnalytics(response);
       toast.success('Goal updated successfully!');
       setIsEditingGoal(false);
       await loadUserProfile();
     } catch (error) {
+      console.error('Goal update error:', error);
       toast.error('Failed to update goal');
     } finally {
       setLoading(false);
@@ -389,9 +392,9 @@ const Profile = () => {
                     <label className="block text-xs font-medium text-gray-500">Gender *</label>
                     <select {...register('gender', { required: 'Gender is required' })} className="input-field">
                       <option value="">Select gender</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Other">Other</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
                     </select>
                     {errors.gender && <p className="text-sm text-red-600">{errors.gender.message}</p>}
                   </div>
@@ -443,10 +446,11 @@ const Profile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
                 <div><span className="text-xs text-gray-500">Name</span><div className="font-semibold text-gray-900">{userProfile.name || '-'}</div></div>
                 <div><span className="text-xs text-gray-500">Email</span><div className="font-semibold text-gray-900">{userProfile.email || '-'}</div></div>
-                <div><span className="text-xs text-gray-500">Mobile</span><div className="font-semibold text-gray-900">{userProfile.mobile || '-'}</div></div>
+                <div><span className="text-xs text-gray-500">Mobile</span><div className="font-semibold text-gray-900">{userProfile.mobileNumber || '-'}</div></div>
                 <div><span className="text-xs text-gray-500">Gender</span><div className="font-semibold text-gray-900">{userProfile.gender || '-'}</div></div>
                 <div><span className="text-xs text-gray-500">Age</span><div className="font-semibold text-gray-900">{userProfile.age || '-'}</div></div>
                 <div><span className="text-xs text-gray-500">Height (cm)</span><div className="font-semibold text-gray-900">{userProfile.height || '-'}</div></div>
+                <div><span className="text-xs text-gray-500">Current Weight (kg)</span><div className="font-semibold text-gray-900">{userProfile.currentWeight || '-'}</div></div>
               </div>
             )}
           </div>
@@ -496,7 +500,7 @@ const Profile = () => {
                         </div>
                         <div className="grid grid-cols-3 w-full text-xs text-gray-500 mt-1 mb-2">
                           <div className="text-left">
-                            Progress: {current - target} kg to go
+                            Progress: {(current - target).toFixed(2)} kg to go
                           </div>
                           <div className="text-center">
                             {/* Days to Go aligned under Target */}

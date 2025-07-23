@@ -9,30 +9,38 @@ const WeightEntry = require('../models/WeightEntry');
 const { sendWelcomeEmail, sendPasswordResetEmail, generateOTP } = require('../services/emailService');
 const PasswordReset = require('../models/PasswordReset');
 
-// Validation middleware
+// Validation middleware for full user updates
 const validateUserData = [
   body('name')
+    .optional()
     .trim()
     .isLength({ min: 2 })
     .withMessage('Name must be at least 2 characters long'),
   body('gender')
-    .isIn(['Male', 'Female', 'Other'])
-    .withMessage('Gender must be Male, Female, or Other'),
+    .optional()
+    .isIn(['male', 'female', 'other'])
+    .withMessage('Gender must be male, female, or other'),
   body('age')
+    .optional()
     .isInt({ min: 1, max: 120 })
     .withMessage('Age must be between 1 and 120'),
   body('height')
+    .optional()
     .isFloat({ min: 50, max: 300 })
     .withMessage('Height must be between 50 and 300 cm'),
   body('currentWeight')
+    .optional()
     .isFloat({ min: 20, max: 500 })
     .withMessage('Current weight must be between 20 and 500 kg'),
   body('targetWeight')
+    .optional()
     .isFloat({ min: 20, max: 500 })
     .withMessage('Target weight must be between 20 and 500 kg'),
   body('targetDate')
+    .optional()
     .isISO8601()
     .custom((value) => {
+      if (!value) return true;
       const targetDate = new Date(value);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -47,17 +55,22 @@ const validateUserData = [
 // Add a new validation middleware for goal creation only
 const validateGoalData = [
   body('height')
+    .optional()
     .isFloat({ min: 50, max: 300 })
     .withMessage('Height must be between 50 and 300 cm'),
   body('currentWeight')
+    .optional()
     .isFloat({ min: 20, max: 500 })
     .withMessage('Current weight must be between 20 and 500 kg'),
   body('targetWeight')
+    .optional()
     .isFloat({ min: 20, max: 500 })
     .withMessage('Target weight must be between 20 and 500 kg'),
   body('targetDate')
+    .optional()
     .isISO8601()
     .custom((value) => {
+      if (!value) return true;
       const targetDate = new Date(value);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -67,6 +80,38 @@ const validateGoalData = [
       return true;
     })
     .withMessage('Target date must be a future date')
+];
+
+// Validation middleware for goal updates (more lenient)
+const validateGoalUpdate = [
+  body('height')
+    .optional()
+    .isFloat({ min: 50, max: 300 })
+    .withMessage('Height must be between 50 and 300 cm'),
+  body('currentWeight')
+    .optional()
+    .isFloat({ min: 20, max: 500 })
+    .withMessage('Current weight must be between 20 and 500 kg'),
+  body('targetWeight')
+    .optional()
+    .isFloat({ min: 20, max: 500 })
+    .withMessage('Target weight must be between 20 and 500 kg'),
+  body('targetDate')
+    .optional()
+    .isISO8601()
+    .custom((value) => {
+      if (!value) return true;
+      const targetDate = new Date(value);
+      const today = new Date();
+      // Add 1 day to today to be more lenient with timezone issues
+      today.setDate(today.getDate() + 1);
+      today.setHours(0, 0, 0, 0);
+      if (targetDate <= today) {
+        throw new Error('Target date must be at least 1 day in the future');
+      }
+      return true;
+    })
+    .withMessage('Target date must be at least 1 day in the future')
 ];
 
 // Registration (Onboarding + Weight Goal)
@@ -81,20 +126,41 @@ router.post('/register', [
   body('height').isFloat({ min: 100, max: 250 }).withMessage('Height must be between 100 and 250 cm'),
   body('currentWeight').isFloat({ min: 20, max: 300 }).withMessage('Weight must be between 20 and 300 kg'),
   body('goalWeight').isFloat({ min: 20, max: 300 }).withMessage('Goal weight must be between 20 and 300 kg'),
-  body('activityLevel').isIn(['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active']).withMessage('Activity level is required')
+  body('targetDate').isISO8601().custom((value) => {
+    const targetDate = new Date(value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (targetDate <= today) {
+      throw new Error('Target date must be a future date');
+    }
+    return true;
+  }).withMessage('Target date must be a future date'),
+  body('daysToTarget').isInt({ min: 1, max: 3650 }).withMessage('Days to target must be between 1 and 3650')
 ], async (req, res) => {
   try {
+    console.log('🔍 Registration attempt with data:', req.body);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Validation errors:', errors.array());
       return res.status(400).json({ message: 'Validation failed', errors: errors.array() });
     }
-    const { name, email, mobileNumber, country, password, gender, age, height, currentWeight, goalWeight, activityLevel } = req.body;
+    
+    const { name, email, mobileNumber, country, password, gender, age, height, currentWeight, goalWeight, targetDate, daysToTarget } = req.body;
+    
+    console.log('✅ Validation passed, checking for existing user...');
     
     // Check for existing user
     const existingUser = await User.findOne({ $or: [{ email }, { mobileNumber }] });
     if (existingUser) {
+      console.log('❌ User already exists:', existingUser.email);
       return res.status(400).json({ message: 'Email or mobile number already registered' });
     }
+    
+    console.log('✅ No existing user found, creating new user...');
+    
+    // Create a new goal ID
+    const goalId = new mongoose.Types.ObjectId();
     
     const user = new User({
       name,
@@ -107,14 +173,57 @@ router.post('/register', [
       height: Number(height),
       currentWeight: Number(currentWeight),
       goalWeight: Number(goalWeight),
-      activityLevel,
+      targetWeight: Number(goalWeight), // Set targetWeight to match goalWeight
+      targetDate: new Date(targetDate),
+      daysToTarget: Number(daysToTarget),
+      goalId: goalId,
       goalInitialWeight: Number(currentWeight),
-      goalId: new mongoose.Types.ObjectId(),
+      goalCreatedAt: new Date(), // Set the goal creation date
+      goalStatus: 'active', // Ensure goal status is set to active
     });
     
-    // Migrate any existing UUID goalIds to ObjectIds
-    await migrateGoalIds(user);
+    console.log('✅ User object created, saving to database...');
+    
+    // Save the user first
     await user.save();
+    
+    console.log('✅ User saved successfully, migrating goal IDs...');
+    
+    // Migrate any existing UUID goalIds to ObjectIds (if needed)
+    await migrateGoalIds(user);
+    
+    console.log('✅ Goal IDs migrated, creating initial weight entry...');
+    
+    // Create initial weight entry for the goal
+    try {
+      const WeightEntry = require('../models/WeightEntry');
+      const entryDate = new Date(user.goalCreatedAt);
+      entryDate.setUTCHours(0, 0, 0, 0);
+      
+      const existingEntry = await WeightEntry.findOne({
+        userId: user._id,
+        goalId: user.goalId,
+        date: { $gte: entryDate, $lt: new Date(entryDate.getTime() + 24 * 60 * 60 * 1000) }
+      });
+      
+      if (!existingEntry) {
+        const createdEntry = await WeightEntry.create({
+          userId: user._id,
+          weight: user.currentWeight,
+          date: entryDate,
+          goalId: user.goalId,
+          notes: 'Auto-created for goal start'
+        });
+        console.log('✅ Initial weight entry created:', createdEntry._id);
+      } else {
+        console.log('✅ Initial weight entry already exists');
+      }
+    } catch (weightEntryError) {
+      console.error('Failed to create initial weight entry:', weightEntryError);
+      // Don't fail registration if weight entry creation fails
+    }
+    
+    console.log('✅ Initial weight entry created, sending welcome email...');
     
     // Send welcome email
     try {
@@ -125,6 +234,8 @@ router.post('/register', [
       // Don't fail registration if email fails
     }
     
+    console.log('✅ Registration completed successfully!');
+    
     res.status(201).json({ 
       message: 'Registration successful', 
       user: { 
@@ -134,11 +245,18 @@ router.post('/register', [
         mobileNumber: user.mobileNumber,
         country: user.country,
         goalId: user.goalId?.toString(), 
-        goalInitialWeight: user.goalInitialWeight 
+        goalInitialWeight: user.goalInitialWeight,
+        targetDate: user.targetDate,
+        daysToTarget: user.daysToTarget
       } 
     });
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('❌ Registration error:', error);
+    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Error message:', error.message);
+    if (error.errors) {
+      console.error('❌ Validation errors:', error.errors);
+    }
     res.status(500).json({ message: 'Registration failed' });
   }
 });
@@ -177,7 +295,10 @@ router.post('/login', [
         currentWeight: user.currentWeight,
         targetWeight: user.targetWeight,
         targetDate: user.targetDate,
-        goalInitialWeight: user.goalInitialWeight
+        goalInitialWeight: user.goalInitialWeight,
+        goalStatus: user.goalStatus,
+        goalCreatedAt: user.goalCreatedAt,
+        goalId: user.goalId?.toString()
       }
     });
   } catch (error) {
@@ -269,7 +390,7 @@ router.get('/:id', async (req, res) => {
         id: 'demo',
         name: 'Demo User',
         email: 'demo@example.com',
-        mobile: '+1234567890',
+        mobileNumber: '+1234567890',
         gender: 'male',
         age: 30,
         height: 170,
@@ -295,7 +416,7 @@ router.get('/:id', async (req, res) => {
       id: user._id,
       name: user.name,
       email: user.email,
-      mobile: user.mobile,
+      mobileNumber: user.mobileNumber,
       gender: user.gender,
       age: user.age,
       height: user.height,
@@ -317,7 +438,6 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update user profile
-// Use validateGoalData if only goal fields are present, otherwise use validateUserData
 router.put('/:id', async (req, res, next) => {
   // Handle demo user
   if (req.params.id === 'demo') {
@@ -328,7 +448,7 @@ router.put('/:id', async (req, res, next) => {
         id: 'demo',
         name: 'Demo User',
         email: 'demo@example.com',
-        mobile: '+1234567890',
+        mobileNumber: '+1234567890',
         gender: 'male',
         age: 30,
         height: 170,
@@ -346,67 +466,25 @@ router.put('/:id', async (req, res, next) => {
     });
   }
   
-  // If only goal fields are present, use validateGoalData
-  const goalFields = ['height', 'currentWeight', 'targetWeight', 'targetDate', 'goalStatus', 'goalCreatedAt', 'goalId'];
+  // Determine if this is a goal-only update or full user update
+  const goalFields = ['height', 'currentWeight', 'targetWeight', 'targetDate', 'goalStatus', 'goalCreatedAt', 'goalId', 'goalInitialWeight'];
+  const userFields = ['name', 'email', 'mobileNumber', 'country', 'password', 'gender', 'age', 'goalWeight', 'daysToTarget', 'activityLevel'];
   const keys = Object.keys(req.body);
-  const isGoalOnly = keys.every(k => goalFields.includes(k));
-  if (isGoalOnly) {
-    console.log('[GOAL HANDLER] Goal creation/update handler called', req.body);
-    await Promise.all(validateGoalData.map(mw => mw.run(req)));
-    // Always generate a new goalId if not provided
-    let goalId = req.body.goalId;
-    if (!goalId) {
-      goalId = new mongoose.Types.ObjectId();
-    } else if (!mongoose.Types.ObjectId.isValid(goalId)) {
-      goalId = new mongoose.Types.ObjectId();
-    } else {
-      goalId = new mongoose.Types.ObjectId(goalId);
-    }
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    user.goalId = goalId;
-    user.goalStatus = 'active';
-    user.goalCreatedAt = new Date();
-    user.goalInitialWeight = req.body.currentWeight !== undefined ? Number(req.body.currentWeight) : user.currentWeight;
-    user.targetWeight = req.body.targetWeight;
-    user.targetDate = req.body.targetDate;
-    user.height = req.body.height;
-    user.currentWeight = req.body.currentWeight;
-    // Migrate any existing UUID goalIds to ObjectIds
-    await migrateGoalIds(user);
-    await user.save();
-
-    // Automatically create a weight entry for the goal start date if it doesn't exist
-    if (user.goalId && user.goalCreatedAt && user.currentWeight) {
-      const WeightEntry = require('../models/WeightEntry');
-      const entryDate = new Date(user.goalCreatedAt);
-      entryDate.setUTCHours(0, 0, 0, 0);
-      const startOfDay = new Date(entryDate);
-      const endOfDay = new Date(entryDate);
-      endOfDay.setUTCDate(startOfDay.getUTCDate() + 1);
-      const existingEntry = await WeightEntry.findOne({
-        userId: user._id,
-        goalId: user.goalId,
-        date: { $gte: startOfDay, $lt: endOfDay }
-      });
-      if (!existingEntry) {
-        const createdEntry = await WeightEntry.create({
-          userId: user._id,
-          weight: user.currentWeight,
-          date: entryDate,
-          goalId: user.goalId,
-          notes: 'Auto-created for goal start'
-        });
-        console.log('[AUTO-WEIGHT-ENTRY]', createdEntry);
-      }
-    }
-
-    return res.json({ message: 'Goal created/updated successfully', user: { ...user.toObject(), goalId: user.goalId?.toString(), goalInitialWeight: user.goalInitialWeight } });
-  } else {
+  
+  const hasGoalFields = keys.some(k => goalFields.includes(k));
+  const hasUserFields = keys.some(k => userFields.includes(k));
+  
+  // Apply appropriate validation
+  if (hasGoalFields && !hasUserFields) {
+    // Goal-only update - use lenient validation
+    console.log('[GOAL UPDATE] Goal update handler called', req.body);
+    await Promise.all(validateGoalUpdate.map(mw => mw.run(req)));
+  } else if (hasUserFields) {
+    // Full user update - use strict validation
+    console.log('[USER UPDATE] Full user update handler called', req.body);
     await Promise.all(validateUserData.map(mw => mw.run(req)));
   }
+  
   next();
 }, async (req, res) => {
   try {
@@ -414,38 +492,117 @@ router.put('/:id', async (req, res, next) => {
     if (!errors.isEmpty()) {
       return res.status(400).json({ message: 'Validation failed', errors: errors.array() });
     }
+    
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    // Set goalCreatedAt if creating a new goal (targetWeight and targetDate are being set, and either goalStatus is not 'active' or goalCreatedAt is missing)
-    if (req.body.targetWeight && req.body.targetDate && (user.goalStatus !== 'active' || !user.goalCreatedAt)) {
-      user.goalCreatedAt = new Date();
-      user.goalInitialWeight = req.body.currentWeight !== undefined ? Number(req.body.currentWeight) : user.currentWeight;
+
+    // Handle goal-specific updates
+    if (req.body.targetWeight !== undefined || req.body.targetDate !== undefined) {
+      // This is a goal update
+      if (req.body.targetWeight && req.body.targetDate) {
+        // Creating or updating a goal with both fields
+        if (!user.goalId || user.goalStatus !== 'active') {
+          // New goal or reactivating goal
+          user.goalId = new mongoose.Types.ObjectId();
+          user.goalStatus = 'active';
+          user.goalCreatedAt = new Date();
+          user.goalInitialWeight = req.body.currentWeight !== undefined ? Number(req.body.currentWeight) : user.currentWeight;
+        }
+        
+        // Update goal fields
+        user.targetWeight = req.body.targetWeight;
+        user.targetDate = req.body.targetDate;
+        
+        // Automatically create a weight entry for the goal start date if it doesn't exist
+        if (user.goalId && user.goalCreatedAt && user.currentWeight) {
+          const WeightEntry = require('../models/WeightEntry');
+          const entryDate = new Date(user.goalCreatedAt);
+          entryDate.setUTCHours(0, 0, 0, 0);
+          const startOfDay = new Date(entryDate);
+          const endOfDay = new Date(entryDate);
+          endOfDay.setUTCDate(startOfDay.getUTCDate() + 1);
+          
+          // Check for any existing entry on this date (regardless of goalId)
+          const existingEntry = await WeightEntry.findOne({
+            userId: user._id,
+            date: { $gte: startOfDay, $lt: endOfDay }
+          });
+          
+          if (!existingEntry) {
+            try {
+              const createdEntry = await WeightEntry.create({
+                userId: user._id,
+                weight: user.currentWeight,
+                date: entryDate,
+                goalId: user.goalId,
+                notes: 'Auto-created for goal start'
+              });
+              console.log('[AUTO-WEIGHT-ENTRY] Created:', createdEntry._id);
+            } catch (entryError) {
+              console.error('[AUTO-WEIGHT-ENTRY] Failed to create entry:', entryError.message);
+              // Don't fail the entire goal creation if weight entry creation fails
+            }
+          } else {
+            console.log('[AUTO-WEIGHT-ENTRY] Entry already exists for date:', entryDate);
+          }
+        }
+      } else if (req.body.targetWeight || req.body.targetDate) {
+        // Partial goal update - only update the provided fields
+        if (req.body.targetWeight) {
+          user.targetWeight = req.body.targetWeight;
+        }
+        if (req.body.targetDate) {
+          user.targetDate = req.body.targetDate;
+        }
+        // Don't change goal status for partial updates
+      } else {
+        // Clearing goal (setting to undefined)
+        user.targetWeight = undefined;
+        user.targetDate = undefined;
+        user.goalStatus = 'none';
+        user.goalCreatedAt = undefined;
+        user.goalId = undefined;
+      }
     }
-    // If a new goal is being set and goalId is not present, generate one
-    if (req.body.targetWeight && req.body.targetDate && !user.goalId) {
-      user.goalId = new mongoose.Types.ObjectId();
-    }
-    // Only update allowed goal fields to avoid wiping out required user fields
-    const allowedFields = ['height', 'currentWeight', 'targetWeight', 'targetDate', 'goalStatus', 'goalCreatedAt', 'goalInitialWeight'];
+
+    // Update other allowed fields
+    const allowedFields = ['height', 'currentWeight', 'goalStatus', 'goalCreatedAt', 'goalInitialWeight'];
     for (const key of allowedFields) {
       if (req.body[key] !== undefined) {
         user[key] = req.body[key];
       }
     }
+
+    // Update user fields if provided
+    const userFields = ['name', 'email', 'mobileNumber', 'country', 'gender', 'age', 'goalWeight', 'daysToTarget', 'activityLevel'];
+    for (const key of userFields) {
+      if (req.body[key] !== undefined) {
+        user[key] = req.body[key];
+      }
+    }
+
     // Migrate any existing UUID goalIds to ObjectIds
     await migrateGoalIds(user);
     await user.save();
+    
     // Check for goal expiry
     await checkAndExpireGoal(user);
+    
     res.json({
       message: 'User profile updated successfully',
       user: { ...user.toObject(), goalId: user.goalId?.toString(), goalInitialWeight: user.goalInitialWeight }
     });
   } catch (error) {
-    console.error('Error updating user:', error);
-    res.status(500).json({ message: 'Error updating user profile' });
+    console.error('❌ Error updating user:', error);
+    console.error('❌ Error message:', error.message);
+    console.error('❌ Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Error updating user profile',
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
@@ -533,6 +690,32 @@ async function migrateGoalIds(user) {
 // Discard current goal
 router.post('/:id/discard-goal', async (req, res) => {
   try {
+    // Handle demo user
+    if (req.params.id === 'demo') {
+      return res.json({
+        message: 'Goal discarded successfully',
+        user: {
+          id: 'demo',
+          name: 'Demo User',
+          email: 'demo@example.com',
+          mobile: '+1234567890',
+          gender: 'male',
+          age: 30,
+          height: 170,
+          currentWeight: 74.2,
+          targetWeight: undefined,
+          targetDate: undefined,
+          goalStatus: 'discarded',
+          goalCreatedAt: undefined,
+          goalId: undefined,
+          pastGoals: [],
+          goals: [],
+          createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          updatedAt: new Date()
+        }
+      });
+    }
+    
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
     if (!user.targetWeight || !user.targetDate) return res.status(400).json({ message: 'No active goal to discard' });
@@ -546,18 +729,23 @@ router.post('/:id/discard-goal', async (req, res) => {
       currentWeight: user.currentWeight,
       targetWeight: user.targetWeight,
       targetDate: user.targetDate,
-      startedAt: user.createdAt,
+      startedAt: user.goalCreatedAt || user.createdAt,
       endedAt: new Date(),
       status: 'discarded'
     });
+    
+    // Clear current goal
     user.targetWeight = undefined;
     user.targetDate = undefined;
-    user.goalStatus = 'none';
+    user.goalStatus = 'discarded';
     user.goalCreatedAt = undefined;
     user.goalId = undefined;
     
     await user.save();
-    res.json({ message: 'Goal discarded', user });
+    res.json({ 
+      message: 'Goal discarded successfully', 
+      user: { ...user.toObject(), goalId: user.goalId?.toString(), goalInitialWeight: user.goalInitialWeight }
+    });
   } catch (error) {
     console.error('Error discarding goal:', error);
     res.status(500).json({ message: 'Error discarding goal' });
@@ -567,6 +755,32 @@ router.post('/:id/discard-goal', async (req, res) => {
 // Achieve current goal
 router.post('/:id/achieve-goal', async (req, res) => {
   try {
+    // Handle demo user
+    if (req.params.id === 'demo') {
+      return res.json({
+        message: 'Goal marked as achieved successfully',
+        user: {
+          id: 'demo',
+          name: 'Demo User',
+          email: 'demo@example.com',
+          mobile: '+1234567890',
+          gender: 'male',
+          age: 30,
+          height: 170,
+          currentWeight: 74.2,
+          targetWeight: undefined,
+          targetDate: undefined,
+          goalStatus: 'achieved',
+          goalCreatedAt: undefined,
+          goalId: undefined,
+          pastGoals: [],
+          goals: [],
+          createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          updatedAt: new Date()
+        }
+      });
+    }
+    
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
     if (!user.targetWeight || !user.targetDate) return res.status(400).json({ message: 'No active goal to achieve' });
@@ -580,18 +794,23 @@ router.post('/:id/achieve-goal', async (req, res) => {
       currentWeight: user.currentWeight,
       targetWeight: user.targetWeight,
       targetDate: user.targetDate,
-      startedAt: user.createdAt,
+      startedAt: user.goalCreatedAt || user.createdAt,
       endedAt: new Date(),
       status: 'achieved'
     });
+    
+    // Clear current goal
     user.targetWeight = undefined;
     user.targetDate = undefined;
-    user.goalStatus = 'none';
+    user.goalStatus = 'achieved';
     user.goalCreatedAt = undefined;
     user.goalId = undefined;
     
     await user.save();
-    res.json({ message: 'Goal marked as achieved', user });
+    res.json({ 
+      message: 'Goal marked as achieved successfully', 
+      user: { ...user.toObject(), goalId: user.goalId?.toString(), goalInitialWeight: user.goalInitialWeight }
+    });
   } catch (error) {
     console.error('Error achieving goal:', error);
     res.status(500).json({ message: 'Error achieving goal' });
@@ -609,7 +828,7 @@ async function checkAndExpireGoal(user) {
       currentWeight: user.currentWeight,
       targetWeight: user.targetWeight,
       targetDate: user.targetDate,
-      startedAt: user.createdAt,
+      startedAt: user.goalCreatedAt || user.createdAt,
       endedAt: new Date(),
       status: 'expired'
     });
@@ -627,58 +846,108 @@ async function checkAndExpireGoal(user) {
 
 // Request password reset (send OTP)
 router.post('/forgot-password', [
-  body('email').isEmail().withMessage('Valid email is required')
+  body('method').isIn(['email', 'mobile']).withMessage('Method must be either email or mobile'),
+  body('email').optional().isEmail().withMessage('Valid email is required when method is email'),
+  body('mobileNumber').optional().isMobilePhone().withMessage('Valid mobile number is required when method is mobile'),
+  body('countryCode').optional().isString().withMessage('Country code is required when method is mobile')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Validation errors:', errors.array());
       return res.status(400).json({ message: 'Validation failed', errors: errors.array() });
     }
 
-    const { email } = req.body;
+    const { method, email, mobileNumber, countryCode } = req.body;
     
-    // Check if user exists
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res.status(404).json({ message: 'No account found with this email address' });
+    let user, identifier, fullMobileNumber;
+    
+    if (method === 'email') {
+      console.log('🔐 Forgot password request received for email:', email);
+      
+      // Check if user exists by email
+      user = await User.findOne({ email: email.toLowerCase() });
+      if (!user) {
+        console.log('❌ User not found:', email);
+        return res.status(404).json({ message: 'No account found with this email address' });
+      }
+      identifier = email.toLowerCase();
+      
+    } else if (method === 'mobile') {
+      console.log('🔐 Forgot password request received for mobile:', mobileNumber);
+      
+      // Construct full mobile number with country code
+      fullMobileNumber = `${countryCode}${mobileNumber}`;
+      
+      // Check if user exists by mobile number
+      user = await User.findOne({ mobileNumber: fullMobileNumber });
+      if (!user) {
+        console.log('❌ User not found:', fullMobileNumber);
+        return res.status(404).json({ message: 'No account found with this mobile number' });
+      }
+      identifier = fullMobileNumber;
     }
+
+    console.log('✅ User found:', user.name, method === 'email' ? user.email : user.mobileNumber);
 
     // Generate OTP
     const otp = generateOTP();
+    console.log('🔢 Generated OTP:', otp);
     
-    // Invalidate any existing OTPs for this email
-    await PasswordReset.invalidateAllOTPs(email);
+    // Invalidate any existing OTPs
+    await PasswordReset.invalidateAllOTPs(identifier, method);
+    console.log('🗑️ Invalidated existing OTPs');
     
     // Create new password reset record
     const passwordReset = new PasswordReset({
-      email: email.toLowerCase(),
-      otp: otp
+      email: method === 'email' ? identifier : null,
+      mobileNumber: method === 'mobile' ? identifier : null,
+      otp: otp,
+      method: method
     });
     await passwordReset.save();
+    console.log('💾 Password reset record saved');
     
-    // Send password reset email
-    const emailResult = await sendPasswordResetEmail(email, user.name, otp);
+    let result;
     
-    if (emailResult.success) {
+    if (method === 'email') {
+      // Send password reset email
+      console.log('📧 Attempting to send password reset email...');
+      result = await sendPasswordResetEmail(email, user.name, otp);
+      console.log('📧 Email result:', result);
+    } else {
+      // Send SMS OTP
+      console.log('📱 Attempting to send SMS OTP...');
+      const { sendSMSOTP } = require('../services/twilioService');
+      result = await sendSMSOTP(fullMobileNumber, otp);
+      console.log('📱 SMS result:', result);
+    }
+    
+    if (result && result.success) {
+      console.log(`✅ Password reset ${method === 'email' ? 'email' : 'SMS'} sent successfully`);
       res.json({ 
-        message: 'Password reset OTP sent successfully',
-        email: email // Return email for frontend reference
+        success: true,
+        message: `Password reset OTP sent successfully via ${method}`,
+        method: method,
+        identifier: method === 'email' ? email : fullMobileNumber
       });
     } else {
-      // Delete the password reset record if email failed
+      console.log(`❌ ${method === 'email' ? 'Email' : 'SMS'} sending failed, deleting password reset record`);
+      // Delete the password reset record if sending failed
       await passwordReset.deleteOne();
-      res.status(500).json({ message: 'Failed to send password reset email. Please try again.' });
+      res.status(500).json({ message: `Failed to send password reset ${method === 'email' ? 'email' : 'SMS'}. Please try again.` });
     }
     
   } catch (error) {
-    console.error('Password reset request error:', error);
+    console.error('❌ Password reset request error:', error);
     res.status(500).json({ message: 'Failed to process password reset request' });
   }
 });
 
 // Verify OTP and reset password
 router.post('/reset-password', [
-  body('email').isEmail().withMessage('Valid email is required'),
+  body('method').isIn(['email', 'mobile']).withMessage('Method must be either email or mobile'),
+  body('identifier').isString().withMessage('Identifier (email or mobile) is required'),
   body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits'),
   body('newPassword').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   body('confirmPassword').custom((value, { req }) => value === req.body.newPassword).withMessage('Passwords do not match')
@@ -689,16 +958,22 @@ router.post('/reset-password', [
       return res.status(400).json({ message: 'Validation failed', errors: errors.array() });
     }
 
-    const { email, otp, newPassword } = req.body;
+    const { method, identifier, otp, newPassword } = req.body;
     
     // Find valid OTP
-    const passwordReset = await PasswordReset.findValidOTP(email, otp);
+    const passwordReset = await PasswordReset.findValidOTP(identifier, otp, method);
     if (!passwordReset) {
       return res.status(400).json({ message: 'Invalid or expired OTP' });
     }
     
-    // Find user
-    const user = await User.findOne({ email: email.toLowerCase() });
+    // Find user based on method
+    let user;
+    if (method === 'email') {
+      user = await User.findOne({ email: identifier.toLowerCase() });
+    } else {
+      user = await User.findOne({ mobileNumber: identifier });
+    }
+    
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -710,7 +985,7 @@ router.post('/reset-password', [
     // Mark OTP as used
     await passwordReset.markAsUsed();
     
-    res.json({ message: 'Password reset successfully' });
+    res.json({ success: true, message: 'Password reset successfully' });
     
   } catch (error) {
     console.error('Password reset error:', error);
@@ -720,7 +995,8 @@ router.post('/reset-password', [
 
 // Verify OTP (for frontend validation)
 router.post('/verify-otp', [
-  body('email').isEmail().withMessage('Valid email is required'),
+  body('method').isIn(['email', 'mobile']).withMessage('Method must be either email or mobile'),
+  body('identifier').isString().withMessage('Identifier (email or mobile) is required'),
   body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits')
 ], async (req, res) => {
   try {
@@ -729,15 +1005,15 @@ router.post('/verify-otp', [
       return res.status(400).json({ message: 'Validation failed', errors: errors.array() });
     }
 
-    const { email, otp } = req.body;
+    const { method, identifier, otp } = req.body;
     
     // Find valid OTP
-    const passwordReset = await PasswordReset.findValidOTP(email, otp);
+    const passwordReset = await PasswordReset.findValidOTP(identifier, otp, method);
     if (!passwordReset) {
       return res.status(400).json({ message: 'Invalid or expired OTP' });
     }
     
-    res.json({ message: 'OTP verified successfully' });
+    res.json({ success: true, message: 'OTP verified successfully' });
     
   } catch (error) {
     console.error('OTP verification error:', error);

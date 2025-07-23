@@ -14,7 +14,13 @@ function calculateBMI(weight, height) {
 // Validation middleware
 const validateWeightEntry = [
   body('userId')
-    .isMongoId()
+    .custom((value) => {
+      if (value === 'demo') return true;
+      if (!value || !mongoose.Types.ObjectId.isValid(value)) {
+        throw new Error('User ID must be a valid MongoDB ObjectId or "demo"');
+      }
+      return true;
+    })
     .withMessage('Valid user ID is required'),
   body('weight')
     .isFloat({ min: 20, max: 500 })
@@ -28,7 +34,13 @@ const validateWeightEntry = [
     .isLength({ max: 500 })
     .withMessage('Notes cannot exceed 500 characters'),
   body('goalId')
-    .isMongoId()
+    .optional()
+    .custom((value) => {
+      if (value && value !== 'demo' && !mongoose.Types.ObjectId.isValid(value)) {
+        throw new Error('Goal ID must be a valid MongoDB ObjectId or "demo"');
+      }
+      return true;
+    })
     .withMessage('Valid goal ID is required')
 ];
 
@@ -56,6 +68,13 @@ router.post('/', validateWeightEntry, async (req, res) => {
 
     // Use a timezone-safe approach for the date
     const entryDate = new Date(`${date}T00:00:00.000Z`);
+
+    // Check if entry date is before goal creation date
+    if (user.goalCreatedAt && entryDate < new Date(user.goalCreatedAt).setHours(0, 0, 0, 0)) {
+      return res.status(400).json({ 
+        message: `Cannot add weight entries for dates before your goal creation date (${new Date(user.goalCreatedAt).toLocaleDateString('en-GB')})` 
+      });
+    }
 
     // Find existing entry for the same day (UTC)
     const startOfDay = new Date(entryDate);
@@ -149,14 +168,19 @@ router.get('/user/:userId', async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    // Get date range for last 30 days
-    const today = new Date();
-    const startDate = new Date(today);
-    startDate.setDate(today.getDate() - 29);
-    const match = {
-      userId: new mongoose.Types.ObjectId(userId),
-      date: { $gte: startDate, $lte: today }
+    // Get date range - support both 30 days and all entries
+    const { all = false } = req.query;
+    let match = {
+      userId: new mongoose.Types.ObjectId(userId)
     };
+    
+    if (!all) {
+      // Default to last 30 days
+      const today = new Date();
+      const startDate = new Date(today);
+      startDate.setDate(today.getDate() - 29);
+      match.date = { $gte: startDate, $lte: today };
+    }
     if (goalId) {
       match.goalId = goalId;
     }
@@ -208,13 +232,24 @@ router.put('/:id', validateWeightEntry, async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.error('Validation errors:', errors.array());
       return res.status(400).json({ 
         message: 'Validation failed', 
         errors: errors.array() 
       });
     }
 
-    const { weight, notes, date, goalId } = req.body;
+    const { weight, notes, date, goalId, userId } = req.body;
+    console.log('Update request data:', { weight, notes, date, goalId, userId, entryId: req.params.id });
+    
+    // Validate that the entryId is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      console.error('Invalid entryId:', req.params.id);
+      return res.status(400).json({ 
+        message: 'Invalid entryId: must be a valid MongoDB ObjectId' 
+      });
+    }
+    
     const updateData = { weight, notes };
     if (date) {
       updateData.date = new Date(date);
@@ -230,6 +265,7 @@ router.put('/:id', validateWeightEntry, async (req, res) => {
     ).populate('userId', 'name height').select('-__v');
 
     if (!entry) {
+      console.error('Entry not found for ID:', req.params.id);
       return res.status(404).json({ message: 'Weight entry not found' });
     }
 
@@ -244,7 +280,7 @@ router.put('/:id', validateWeightEntry, async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating weight entry:', error);
-    res.status(500).json({ message: 'Error updating weight entry' });
+    res.status(500).json({ message: 'Error updating weight entry', error: error.message });
   }
 });
 
@@ -269,7 +305,7 @@ router.delete('/:id', async (req, res) => {
 router.get('/user/:userId/analytics', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { period = '30', startDate, goalId } = req.query; // days, optional startDate, and goalId
+    const { period = '90', startDate, goalId } = req.query; // days, optional startDate, and goalId
 
     // Handle demo user
     if (userId === 'demo') {
@@ -344,12 +380,13 @@ router.get('/user/:userId/analytics', async (req, res) => {
       pastGoals: user.pastGoals?.map(g => ({ goalId: g.goalId?.toString(), targetWeight: g.targetWeight }))
     });
 
-    // Build filter for WeightEntry - filter by goalId and date >= goalCreatedAt
+    // Build filter for WeightEntry - be more flexible with goalId filtering
     const filter = {
       userId
     };
     
-    if (goalId) {
+    // If goalId is provided, try to filter by it, but don't make it mandatory
+    if (goalId && goalId !== 'undefined' && goalId !== 'null') {
       filter.goalId = goalId;
     }
     
@@ -369,10 +406,19 @@ router.get('/user/:userId/analytics', async (req, res) => {
       filterStartDate.setDate(filterStartDate.getDate() - parseInt(period));
       filter.date = { $gte: filterStartDate };
     }
+    
     // Debug log for filter
     console.log('[ANALYTICS FILTER]', filter);
 
-    const entries = await WeightEntry.find(filter).sort({ date: 1 });
+    // First, try with the filter as is
+    let entries = await WeightEntry.find(filter).sort({ date: 1 });
+    
+    // If no entries found and we were filtering by goalId, try without goalId filter
+    if (entries.length === 0 && filter.goalId) {
+      console.log('[ANALYTICS] No entries found with goalId filter, trying without goalId');
+      delete filter.goalId;
+      entries = await WeightEntry.find(filter).sort({ date: 1 });
+    }
 
     if (entries.length === 0) {
       return res.json({
@@ -383,52 +429,33 @@ router.get('/user/:userId/analytics', async (req, res) => {
           weightChange: 0,
           trend: 'stable',
           bmiTrend: [],
-          currentWeight: user.currentWeight,
+          currentWeight: user.currentWeight || 0,
           targetWeight,
           progressToTarget: 0,
-          initialWeight: user.currentWeight
+          initialWeight: user.currentWeight || 0
         }
       });
     }
 
     // Calculate analytics
     const weights = entries.map(entry => entry.weight);
-    // Find initialWeight: most recent entry on or before goalCreatedAt
-    let initialWeight = null;
-    if (goalCreatedAt) {
-      const initialEntry = await WeightEntry.findOne({
-        userId,
-        goalId,
-        date: { $lte: new Date(goalCreatedAt) }
-      }).sort({ date: -1 });
-      if (initialEntry) initialWeight = initialEntry.weight;
-    }
-    if (!initialWeight && entries.length > 0) {
-      initialWeight = entries[0].weight;
-    }
-
-    // Find currentWeight: latest entry after goalCreatedAt
-    let currentWeight = null;
-    if (goalCreatedAt) {
-      const currentEntry = await WeightEntry.findOne({
-        userId,
-        goalId,
-        date: { $gte: new Date(goalCreatedAt) }
-      }).sort({ date: -1 });
-      if (currentEntry) currentWeight = currentEntry.weight;
-    }
-    if (!currentWeight && entries.length > 0) {
-      currentWeight = entries[entries.length - 1].weight;
-    }
+    
+    // Find initialWeight: first entry in the filtered results (goal start weight)
+    const initialWeight = entries[0].weight;
+    
+    // Find currentWeight: latest entry in the filtered results
+    const currentWeight = entries[entries.length - 1].weight;
 
     const averageWeight = weights.reduce((sum, weight) => sum + weight, 0) / weights.length;
     const weightChange = currentWeight && initialWeight ? currentWeight - initialWeight : 0;
+    
     // Determine trend
     let trend = 'stable';
     if (weightChange > 0.5) trend = 'increasing';
     else if (weightChange < -0.5) trend = 'decreasing';
+    
     // Calculate progress to target using initialWeight for this goal and correct targetWeight
-    const progressToTarget = (initialWeight && currentWeight && initialWeight !== targetWeight)
+    const progressToTarget = (initialWeight && currentWeight && targetWeight && initialWeight !== targetWeight)
       ? ((initialWeight - currentWeight) / (initialWeight - targetWeight)) * 100
       : 0;
 

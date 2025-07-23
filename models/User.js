@@ -18,8 +18,9 @@ const userSchema = new mongoose.Schema({
   },
   mobileNumber: {
     type: String,
-    required: [true, 'Mobile number is required'],
+    required: false,
     unique: true,
+    sparse: true,
     trim: true,
     match: [/^\+[0-9]{1,4}[0-9]{10,15}$/, 'Please use a valid international mobile number']
   },
@@ -48,25 +49,40 @@ const userSchema = new mongoose.Schema({
   },
   height: {
     type: Number,
-    required: [true, 'Height is required'],
+    required: false,
     min: [100, 'Height must be at least 100 cm'],
     max: [250, 'Height cannot exceed 250 cm']
   },
   currentWeight: {
     type: Number,
-    required: [true, 'Current weight is required'],
+    required: false,
     min: [20, 'Weight must be at least 20 kg'],
     max: [300, 'Weight cannot exceed 300 kg']
   },
   goalWeight: {
     type: Number,
-    required: [true, 'Goal weight is required'],
+    required: false,
     min: [20, 'Goal weight must be at least 20 kg'],
     max: [300, 'Goal weight cannot exceed 300 kg']
   },
+  targetWeight: {
+    type: Number,
+    required: false,
+    min: [20, 'Target weight must be at least 20 kg'],
+    max: [300, 'Target weight cannot exceed 300 kg']
+  },
+  targetDate: {
+    type: Date,
+    required: false
+  },
+  daysToTarget: {
+    type: Number,
+    required: false,
+    min: [1, 'Days to target must be at least 1']
+  },
   activityLevel: {
     type: String,
-    required: [true, 'Activity level is required'],
+    required: false,
     enum: ['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active'],
     default: 'sedentary'
   },

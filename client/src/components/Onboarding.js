@@ -4,7 +4,19 @@ import { motion } from 'framer-motion';
 import { userAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { X } from 'lucide-react';
-import PasswordReset from './PasswordReset';
+import ForgotPasswordPopup from './ForgotPasswordPopup';
+
+// CSS to remove spinner arrows from number inputs
+const numberInputStyles = `
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+`;
 
 const Onboarding = ({ onSuccess, onClose, initialMode }) => {
   const [mode, setMode] = useState(initialMode || 'register'); // 'register' or 'login'
@@ -244,13 +256,11 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
     { name: 'Uganda, Republic of', code: 'UG', dialing: '+256' },
     { name: 'Ukraine', code: 'UA', dialing: '+380' },
     { name: 'United Arab Emirates', code: 'AE', dialing: '+971' },
-    { name: 'United Kingdom', code: 'GB', dialing: '+44' },
     { name: 'United States', code: 'US', dialing: '+1' },
     { name: 'United States Minor Outlying Islands', code: 'UM', dialing: '+246' },
     { name: 'Uruguay, Oriental Republic of', code: 'UY', dialing: '+598' },
     { name: 'Uzbekistan', code: 'UZ', dialing: '+998' },
     { name: 'Vanuatu', code: 'VU', dialing: '+678' },
-    { name: 'Vatican City State', code: 'VA', dialing: '+418' },
     { name: 'Venezuela', code: 'VE', dialing: '+58' },
     { name: 'Vietnam', code: 'VN', dialing: '+84' },
     { name: 'Virgin Islands, British', code: 'VI', dialing: '+1-284' },
@@ -267,6 +277,20 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
       setMode(initialMode);
     }
   }, [initialMode]);
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscKey);
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [onClose]);
 
   // Handle country selection
   const handleCountryChange = (countryCode) => {
@@ -287,6 +311,11 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
           return;
         }
         
+        // Calculate target date and create goal automatically
+        const targetDate = new Date(data.targetDate);
+        const today = new Date();
+        const daysToTarget = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
+        
         const response = await userAPI.register({
           name: data.name,
           email: data.email,
@@ -298,7 +327,8 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
           height: parseFloat(data.height),
           age: parseInt(data.age),
           gender: data.gender,
-          activityLevel: data.activityLevel
+          targetDate: data.targetDate,
+          daysToTarget: daysToTarget
         });
         
         toast.success('Registration successful! Welcome to GoooFit!');
@@ -321,41 +351,83 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
 
   if (showPasswordReset) {
     return (
-      <PasswordReset
+      <ForgotPasswordPopup
+        isOpen={showPasswordReset}
+        onClose={() => setShowPasswordReset(false)}
         onBackToLogin={() => setShowPasswordReset(false)}
       />
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-    >
+    <>
+      <style>{numberInputStyles}</style>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+        onClick={onClose} // Close modal when clicking outside
+      >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[95vh] overflow-hidden flex flex-col"
+        className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[95vh] overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
       >
         {/* Header */}
-        <div className="p-4 border-b border-gray-200 flex-shrink-0">
+        <div className="p-4 border-b border-gray-100 flex-shrink-0 bg-gradient-to-r from-gray-50 to-white">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-sm">G</span>
+              <div className="relative">
+                {/* Goal Achieved Logo */}
+                <div className="w-10 h-10 relative">
+                  {/* Background circle with gradient */}
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg border-2 border-green-600 relative overflow-hidden">
+                    {/* Success sparkle effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+                    
+                    {/* Goal target design */}
+                    <div className="w-6 h-6 flex items-center justify-center relative">
+                      {/* Target rings */}
+                      <div className="w-5 h-5 relative">
+                        {/* Outer ring */}
+                        <div className="absolute inset-0 w-5 h-5 border-2 border-white rounded-full"></div>
+                        {/* Middle ring */}
+                        <div className="absolute inset-0.5 w-3.5 h-3.5 border-2 border-white rounded-full"></div>
+                        {/* Inner ring */}
+                        <div className="absolute inset-1.5 w-1.5 h-1.5 bg-white rounded-full"></div>
+                      </div>
+                      
+                      {/* Checkmark for achievement */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-3 h-3 relative">
+                          {/* Checkmark stroke */}
+                          <div className="absolute top-0 left-0 w-0.5 h-0.5 bg-green-600 rounded-full transform rotate-45"></div>
+                          <div className="absolute top-0.5 left-0.5 w-0.5 h-0.5 bg-green-600 rounded-full transform rotate-45"></div>
+                          <div className="absolute top-1 left-1 w-0.5 h-0.5 bg-green-600 rounded-full transform rotate-45"></div>
+                          <div className="absolute top-1.5 left-1.5 w-0.5 h-0.5 bg-green-600 rounded-full transform rotate-45"></div>
+                          <div className="absolute top-2 left-2 w-0.5 h-0.5 bg-green-600 rounded-full transform rotate-45"></div>
+                        </div>
+                      </div>
+                      
+                      {/* Success sparkles */}
+                      <div className="absolute -top-0.5 -right-0.5 w-0.5 h-0.5 bg-yellow-300 rounded-full animate-ping"></div>
+                      <div className="absolute -bottom-0.5 -left-0.5 w-0.5 h-0.5 bg-yellow-300 rounded-full animate-ping" style={{animationDelay: '0.3s'}}></div>
+                      <div className="absolute -top-0.25 -left-0.25 w-0.25 h-0.25 bg-yellow-300 rounded-full animate-ping" style={{animationDelay: '0.6s'}}></div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">GoooFit</h2>
-                <p className="text-xs text-gray-500">Transform Your Weight Loss Journey</p>
-              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                GoooFit
+              </span>
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200"
             >
-              <X className="w-4 h-4 text-gray-500" />
+              <X className="w-5 h-5 text-gray-500" />
             </button>
           </div>
         </div>
@@ -363,23 +435,23 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
         {/* Content */}
         <div className="p-4 flex-1 overflow-y-auto">
           {/* Mode Toggle */}
-          <div className="flex bg-gray-100 rounded-lg p-1 mb-4">
+          <div className="flex bg-gray-100 rounded-xl p-1.5 mb-4">
             <button
               onClick={() => setMode('login')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 py-2.5 px-6 rounded-lg text-sm font-semibold transition-all duration-200 ${
                 mode === 'login'
-                  ? 'bg-white text-orange-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-orange-600 shadow-md'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
               Login
             </button>
             <button
               onClick={() => setMode('register')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 py-2.5 px-6 rounded-lg text-sm font-semibold transition-all duration-200 ${
                 mode === 'register'
-                  ? 'bg-white text-orange-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-orange-600 shadow-md'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
               Register
@@ -389,17 +461,17 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
           {/* Progress Steps for Registration */}
           {mode === 'register' && (
             <div className="flex items-center justify-center mb-4">
-              <div className="flex items-center space-x-2">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                  step >= 1 ? 'bg-orange-600 text-white' : 'bg-gray-200 text-gray-500'
+              <div className="flex items-center space-x-3">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200 ${
+                  step >= 1 ? 'bg-orange-600 text-white shadow-lg' : 'bg-gray-200 text-gray-500'
                 }`}>
                   1
                 </div>
-                <div className={`w-8 h-1 ${
+                <div className={`w-12 h-1 rounded-full transition-all duration-200 ${
                   step >= 2 ? 'bg-orange-600' : 'bg-gray-200'
                 }`}></div>
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                  step >= 2 ? 'bg-orange-600 text-white' : 'bg-gray-200 text-gray-500'
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200 ${
+                  step >= 2 ? 'bg-orange-600 text-white shadow-lg' : 'bg-gray-200 text-gray-500'
                 }`}>
                   2
                 </div>
@@ -411,50 +483,57 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
             {mode === 'register' && step === 1 && (
     <>
       <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Full Name
                   </label>
         <input
           type="text"
                     {...register('name', { required: 'Name is required' })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-base transition-all duration-200 hover:border-gray-400"
                     placeholder="Enter your full name"
         />
                   {errors.name && (
-                    <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
+                    <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
                   )}
       </div>
 
       <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Email
                   </label>
         <input
           type="email"
                     {...register('email', { 
                       required: 'Email is required',
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: 'Invalid email address'
+                      validate: {
+                        hasAtSymbol: (value) => value.includes('@') || 'Email must contain @ symbol',
+                        hasDotAfterAt: (value) => {
+                          const atIndex = value.indexOf('@');
+                          return atIndex !== -1 && value.indexOf('.', atIndex) !== -1 || 'Email must contain a domain (e.g., .com, .org)';
+                        },
+                        validFormat: (value) => {
+                          const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+                          return emailRegex.test(value) || 'Please enter a valid email address';
+                        }
                       }
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-base transition-all duration-200 hover:border-gray-400"
                     placeholder="Enter your email"
                   />
                   {errors.email && (
-                    <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                    <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
                   )}
                 </div>
 
                 {/* Country Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Country
                   </label>
                   <select
                     value={selectedCountry}
                     onChange={(e) => handleCountryChange(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-base transition-all duration-200 hover:border-gray-400"
                   >
                     {countries.map((country) => (
                       <option key={country.code} value={country.code}>
@@ -466,11 +545,11 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
 
                 {/* Mobile Number */}
       <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Mobile Number
                   </label>
                   <div className="flex">
-                    <div className="flex-shrink-0 px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-sm font-medium text-gray-700 min-w-[70px] flex items-center justify-center">
+                    <div className="flex-shrink-0 px-3 py-2.5 bg-gray-100 border border-r-0 border-gray-300 rounded-l-xl text-base font-semibold text-gray-700 min-w-[80px] flex items-center justify-center">
                       {countryCode}
                     </div>
         <input
@@ -482,18 +561,18 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
                           message: 'Mobile number must be exactly 10 digits'
                         }
                       })}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                      className="flex-1 px-3 py-2.5 border border-gray-300 rounded-r-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-base transition-all duration-200 hover:border-gray-400"
                       placeholder="Enter 10-digit mobile number"
                       maxLength="10"
                     />
       </div>
                   {errors.mobileNumber && (
-                    <p className="text-red-500 text-xs mt-1">{errors.mobileNumber.message}</p>
+                    <p className="text-red-500 text-sm mt-1">{errors.mobileNumber.message}</p>
                   )}
       </div>
 
         <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Password
                   </label>
           <input
@@ -505,11 +584,11 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
                         message: 'Password must be at least 6 characters'
                       }
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-base transition-all duration-200 hover:border-gray-400"
                     placeholder="Create a password (min 6 characters)"
                   />
                   {errors.password && (
-                    <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+                    <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
                   )}
         </div>
               </>
@@ -517,9 +596,9 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
 
             {mode === 'register' && step === 2 && (
               <>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
         <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                       Current Weight (kg)
                     </label>
           <input
@@ -530,16 +609,16 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
                         min: { value: 20, message: 'Weight must be at least 20kg' },
                         max: { value: 300, message: 'Weight must be less than 300kg' }
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-base transition-all duration-200 hover:border-gray-400"
                       placeholder="70.5"
                     />
                     {errors.currentWeight && (
-                      <p className="text-red-500 text-xs mt-1">{errors.currentWeight.message}</p>
+                      <p className="text-red-500 text-sm mt-1">{errors.currentWeight.message}</p>
                     )}
       </div>
 
         <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                       Goal Weight (kg)
                     </label>
           <input
@@ -550,18 +629,18 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
                         min: { value: 20, message: 'Weight must be at least 20kg' },
                         max: { value: 300, message: 'Weight must be less than 300kg' }
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-base transition-all duration-200 hover:border-gray-400"
                       placeholder="65.0"
                     />
                     {errors.goalWeight && (
-                      <p className="text-red-500 text-xs mt-1">{errors.goalWeight.message}</p>
+                      <p className="text-red-500 text-sm mt-1">{errors.goalWeight.message}</p>
                     )}
         </div>
       </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
         <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                       Height (cm)
                     </label>
           <input
@@ -571,16 +650,16 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
                         min: { value: 100, message: 'Height must be at least 100cm' },
                         max: { value: 250, message: 'Height must be less than 250cm' }
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-base transition-all duration-200 hover:border-gray-400"
                       placeholder="170"
                     />
                     {errors.height && (
-                      <p className="text-red-500 text-xs mt-1">{errors.height.message}</p>
+                      <p className="text-red-500 text-sm mt-1">{errors.height.message}</p>
                     )}
         </div>
 
         <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                       Age
                     </label>
           <input
@@ -590,22 +669,22 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
                         min: { value: 13, message: 'Age must be at least 13' },
                         max: { value: 120, message: 'Age must be less than 120' }
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-base transition-all duration-200 hover:border-gray-400"
                       placeholder="25"
                     />
                     {errors.age && (
-                      <p className="text-red-500 text-xs mt-1">{errors.age.message}</p>
+                      <p className="text-red-500 text-sm mt-1">{errors.age.message}</p>
                     )}
         </div>
       </div>
 
       <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Gender
                   </label>
                   <select
                     {...register('gender', { required: 'Gender is required' })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-base transition-all duration-200 hover:border-gray-400"
                   >
                     <option value="">Select gender</option>
                     <option value="male">Male</option>
@@ -613,27 +692,35 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
                     <option value="other">Other</option>
                   </select>
                   {errors.gender && (
-                    <p className="text-red-500 text-xs mt-1">{errors.gender.message}</p>
+                    <p className="text-red-500 text-sm mt-1">{errors.gender.message}</p>
                   )}
       </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Activity Level
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Target Date
                   </label>
-                  <select
-                    {...register('activityLevel', { required: 'Activity level is required' })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
-                  >
-                    <option value="">Select activity level</option>
-                    <option value="sedentary">Sedentary (little or no exercise)</option>
-                    <option value="lightly_active">Lightly active (light exercise 1-3 days/week)</option>
-                    <option value="moderately_active">Moderately active (moderate exercise 3-5 days/week)</option>
-                    <option value="very_active">Very active (hard exercise 6-7 days/week)</option>
-                    <option value="extremely_active">Extremely active (very hard exercise, physical job)</option>
-                  </select>
-                  {errors.activityLevel && (
-                    <p className="text-red-500 text-xs mt-1">{errors.activityLevel.message}</p>
+                  <p className="text-xs text-gray-500 mb-2">
+                    Choose the date by when you want to achieve your weight loss goal
+                  </p>
+                  <input
+                    type="date"
+                    {...register('targetDate', { 
+                      required: 'Target date is required',
+                      validate: {
+                        futureDate: (value) => {
+                          const selectedDate = new Date(value);
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          return selectedDate > today || 'Target date must be in the future';
+                        }
+                      }
+                    })}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-base transition-all duration-200 hover:border-gray-400"
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                  {errors.targetDate && (
+                    <p className="text-red-500 text-sm mt-1">{errors.targetDate.message}</p>
                   )}
       </div>
     </>
@@ -642,38 +729,45 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
           {mode === 'login' && (
             <>
               <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Email
                   </label>
                 <input
                   type="email"
                     {...register('email', { 
                       required: 'Email is required',
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: 'Invalid email address'
+                      validate: {
+                        hasAtSymbol: (value) => value.includes('@') || 'Email must contain @ symbol',
+                        hasDotAfterAt: (value) => {
+                          const atIndex = value.indexOf('@');
+                          return atIndex !== -1 && value.indexOf('.', atIndex) !== -1 || 'Email must contain a domain (e.g., .com, .org)';
+                        },
+                        validFormat: (value) => {
+                          const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+                          return emailRegex.test(value) || 'Please enter a valid email address';
+                        }
                       }
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-base transition-all duration-200 hover:border-gray-400"
                     placeholder="Enter your email"
                   />
                   {errors.email && (
-                    <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                    <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
                   )}
               </div>
 
               <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Password
                   </label>
                 <input
                   type="password"
                   {...register('password', { required: 'Password is required' })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-base transition-all duration-200 hover:border-gray-400"
                     placeholder="Enter your password"
                   />
                   {errors.password && (
-                    <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+                    <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
                   )}
                 </div>
 
@@ -681,7 +775,7 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
                   <button
                     type="button"
                     onClick={() => setShowPasswordReset(true)}
-                    className="text-sm text-orange-600 hover:text-orange-700 hover:underline"
+                    className="text-sm text-orange-600 hover:text-orange-700 hover:underline font-medium transition-colors duration-200"
                   >
                     Forgot Password?
                   </button>
@@ -692,11 +786,11 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
               <button
                 type="submit"
                 disabled={loading}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-2.5 px-4 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-6 rounded-xl font-semibold hover:from-orange-600 hover:to-red-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-base shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
             >
               {loading ? (
                 <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
                   {mode === 'register' ? 'Creating Account...' : 'Logging in...'}
                 </div>
               ) : (
@@ -709,7 +803,7 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
           {mode === 'register' && step === 2 && (
               <button
               onClick={() => setStep(1)}
-              className="w-full mt-3 text-gray-600 hover:text-gray-800 text-sm font-medium"
+              className="w-full mt-3 text-gray-600 hover:text-gray-800 text-sm font-medium py-2 hover:bg-gray-50 rounded-lg transition-all duration-200"
             >
               ← Back to basic info
               </button>
@@ -717,6 +811,7 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
         </div>
       </motion.div>
     </motion.div>
+    </>
   );
 };
 

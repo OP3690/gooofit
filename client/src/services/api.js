@@ -188,8 +188,18 @@ export const weightEntryAPI = {
     if (!isValidObjectId(userId) && userId !== 'demo') {
       throw new Error('Invalid userId: must be a valid MongoDB ObjectId or "demo"');
     }
+    
+    // Build query parameters
+    const queryParams = {};
+    if (params.period) queryParams.period = params.period;
+    if (params.startDate) queryParams.startDate = params.startDate;
+    if (params.goalId) queryParams.goalId = params.goalId;
+    if (params.all) queryParams.all = params.all;
+    
+    console.log('[API] getAnalytics params:', { userId, queryParams });
+    
     const response = await api.get(`/weight-entries/user/${userId}/analytics`, {
-      params
+      params: queryParams
     });
     return response.data;
   }
