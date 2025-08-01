@@ -21,7 +21,7 @@ const Navigation = ({ currentUser, onLogout }) => {
   { name: 'Dashboard', href: '/', icon: HomeIcon },
   { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
   { name: '🍽️ Meal Tracker', href: '/meal-tracker', icon: UserIcon },
-  { name: '📊 Nutrition Info', href: '/nutrition-info', icon: UserIcon },
+
   { name: 'Blog', href: '/blog', icon: DocumentTextIcon },
   { name: 'Profile', href: '/profile', icon: UserIcon },
 ];

@@ -8,7 +8,8 @@ import {
   FaCalendarAlt,
   FaUtensils,
   FaTrash,
-  FaEdit
+  FaEdit,
+  FaInfoCircle
 } from 'react-icons/fa';
 
 const MealTracker = () => {
@@ -31,6 +32,84 @@ const MealTracker = () => {
   const [unit, setUnit] = useState('pieces');
   const [mealType, setMealType] = useState('snack');
   const [notes, setNotes] = useState('');
+
+  // Nutrition Information Data
+  const energyExpenditure = [
+    { activity: "Sleeping", energy: 57 },
+    { activity: "Lying quietly", energy: 69 },
+    { activity: "Sitting quietly", energy: 81 },
+    { activity: "Standing quietly", energy: 93 },
+    { activity: "Writing", energy: 102 },
+    { activity: "Typing", energy: 105 },
+    { activity: "Reading", energy: 95 },
+    { activity: "Watching TV", energy: 85 },
+    { activity: "Walking slowly", energy: 150 },
+    { activity: "Walking normally", energy: 200 },
+    { activity: "Walking fast", energy: 300 },
+    { activity: "Running", energy: 600 },
+    { activity: "Cycling", energy: 400 },
+    { activity: "Swimming", energy: 500 },
+    { activity: "Dancing", energy: 350 },
+    { activity: "Cooking", energy: 120 },
+    { activity: "Cleaning", energy: 180 },
+    { activity: "Gardening", energy: 250 },
+    { activity: "Weight lifting", energy: 450 },
+    { activity: "Yoga", energy: 150 },
+  ];
+
+  const dietaryAllowances = [
+    { group: "Adult Man", weight: 60, energy: 2320, protein: 60, fat: 25, calcium: 600, iron: 17 },
+    { group: "Adult Woman", weight: 55, energy: 1900, protein: 55, fat: 20, calcium: 600, iron: 21 },
+    { group: "Pregnant Woman", weight: 55, energy: 2200, protein: 78, fat: 30, calcium: 1200, iron: 35 },
+    { group: "Lactating Mother", weight: 55, energy: 2400, protein: 74, fat: 30, calcium: 1200, iron: 21 },
+    { group: "Children (1-3 years)", weight: 13, energy: 1240, protein: 16.7, fat: 27, calcium: 600, iron: 9 },
+    { group: "Children (4-6 years)", weight: 20, energy: 1690, protein: 20.1, fat: 25, calcium: 600, iron: 13 },
+    { group: "Children (7-9 years)", weight: 25, energy: 1950, protein: 29.5, fat: 35, calcium: 600, iron: 16 },
+    { group: "Adolescent Boys", weight: 45, energy: 2450, protein: 54.3, fat: 35, calcium: 800, iron: 21 },
+    { group: "Adolescent Girls", weight: 40, energy: 2060, protein: 51.9, fat: 35, calcium: 800, iron: 27 },
+  ];
+
+  const standardPortions = [
+    { foodGroup: "Cereals & Millets", portion: 30, energy: 108, protein: 3.5, carbs: 23, fat: 0.5 },
+    { foodGroup: "Pulses", portion: 15, energy: 52, protein: 3.0, carbs: 8, fat: 0.5 },
+    { foodGroup: "Green Leafy Vegetables", portion: 25, energy: 6, protein: 1.0, carbs: 1, fat: 0.0 },
+    { foodGroup: "Other Vegetables", portion: 50, energy: 10, protein: 1.0, carbs: 2, fat: 0.0 },
+    { foodGroup: "Fruits", portion: 100, energy: 60, protein: 1.0, carbs: 15, fat: 0.0 },
+    { foodGroup: "Milk", portion: 100, energy: 67, protein: 3.2, carbs: 4.4, fat: 4.1 },
+    { foodGroup: "Eggs", portion: 50, energy: 80, protein: 6.0, carbs: 0.0, fat: 6.0 },
+    { foodGroup: "Fish", portion: 50, energy: 45, protein: 8.0, carbs: 0.0, fat: 1.0 },
+    { foodGroup: "Meat", portion: 50, energy: 60, protein: 8.0, carbs: 0.0, fat: 3.0 },
+    { foodGroup: "Fats & Oils", portion: 5, energy: 45, protein: 0.0, carbs: 0.0, fat: 5.0 },
+  ];
+
+  const glycemicIndex = [
+    { food: "Glucose", gi: 103 },
+    { food: "White bread", gi: 75 },
+    { food: "Wheat bread", gi: 74 },
+    { food: "Rice (white)", gi: 73 },
+    { food: "Rice (brown)", gi: 68 },
+    { food: "Potato (boiled)", gi: 78 },
+    { food: "Sweet potato", gi: 44 },
+    { food: "Carrots", gi: 39 },
+    { food: "Apple", gi: 36 },
+    { food: "Banana", gi: 51 },
+    { food: "Orange", gi: 43 },
+    { food: "Mango", gi: 51 },
+    { food: "Milk", gi: 27 },
+    { food: "Yogurt", gi: 14 },
+    { food: "Lentils", gi: 29 },
+    { food: "Chickpeas", gi: 28 },
+    { food: "Kidney beans", gi: 24 },
+    { food: "Peanuts", gi: 14 },
+    { food: "Almonds", gi: 0 },
+    { food: "Walnuts", gi: 0 },
+  ];
+
+  const getGILevel = (gi) => {
+    if (gi >= 70) return { level: "High", color: "text-red-600", bgColor: "bg-red-100" };
+    if (gi >= 56) return { level: "Medium", color: "text-yellow-600", bgColor: "bg-yellow-100" };
+    return { level: "Low", color: "text-green-600", bgColor: "bg-green-100" };
+  };
 
   useEffect(() => {
     fetchFoodDatabase();
@@ -210,6 +289,7 @@ const MealTracker = () => {
                 { id: 'dashboard', name: 'Dashboard', icon: FaChartPie },
                 { id: 'add-meal', name: 'Add Meal', icon: FaPlus },
                 { id: 'food-database', name: 'Food Database', icon: FaSearch },
+                { id: 'nutrition-info', name: 'Nutrition Info', icon: FaInfoCircle },
                 { id: 'weekly', name: 'Weekly View', icon: FaCalendarAlt },
                 { id: 'monthly', name: 'Monthly View', icon: FaCalendarAlt }
               ].map((tab) => {
@@ -720,6 +800,192 @@ const MealTracker = () => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Nutrition Info Tab */}
+        {activeTab === 'nutrition-info' && (
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Nutrition Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Energy Expenditure */}
+              <div className="bg-gray-50 p-6 rounded-lg shadow-sm border">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Energy Expenditure</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Activity
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Energy (kcal/hour)
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {energyExpenditure.map((activity, index) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {activity.activity}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {activity.energy}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Dietary Allowances */}
+              <div className="bg-gray-50 p-6 rounded-lg shadow-sm border">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Dietary Allowances</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Group
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Weight (kg)
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Energy (kcal)
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Protein (g)
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Fat (g)
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Calcium (mg)
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Iron (mg)
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {dietaryAllowances.map((group, index) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {group.group}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {group.weight}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {group.energy}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {group.protein}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {group.fat}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {group.calcium}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {group.iron}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Standard Portions */}
+              <div className="bg-gray-50 p-6 rounded-lg shadow-sm border">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Standard Portions</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Food Group
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Portion (g)
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Energy (kcal)
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Protein (g)
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Carbs (g)
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Fat (g)
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {standardPortions.map((portion, index) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {portion.foodGroup}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {portion.portion}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {portion.energy}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {portion.protein}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {portion.carbs}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {portion.fat}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Glycemic Index */}
+              <div className="bg-gray-50 p-6 rounded-lg shadow-sm border">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Glycemic Index</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Food
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Glycemic Index (GI)
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {glycemicIndex.map((food, index) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {food.food}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {food.gi}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
