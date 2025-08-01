@@ -154,7 +154,10 @@ const MealTracker = () => {
   };
 
   const filteredFoods = foodDatabase.filter(food => {
-    const matchesSearch = food.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase();
+    const nameMatch = food.name.toLowerCase().includes(searchLower);
+    const hinglishMatch = food.hinglish && food.hinglish.toLowerCase().includes(searchLower);
+    const matchesSearch = nameMatch || hinglishMatch;
     const matchesCategory = selectedCategory === 'all' || food.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -201,30 +204,32 @@ const MealTracker = () => {
 
         {/* Navigation Tabs */}
         <div className="mb-6">
-          <nav className="flex space-x-8">
-            {[
-              { id: 'dashboard', name: 'Dashboard', icon: FaChartPie },
-              { id: 'add-meal', name: 'Add Meal', icon: FaPlus },
-              { id: 'food-database', name: 'Food Database', icon: FaSearch },
-              { id: 'weekly', name: 'Weekly View', icon: FaCalendarAlt },
-              { id: 'monthly', name: 'Monthly View', icon: FaCalendarAlt }
-            ].map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    activeTab === tab.id
-                      ? 'bg-orange-100 text-orange-700 border-b-2 border-orange-500'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{tab.name}</span>
-                </button>
-              );
-            })}
+          <nav className="flex justify-center">
+            <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+              {[
+                { id: 'dashboard', name: 'Dashboard', icon: FaChartPie },
+                { id: 'add-meal', name: 'Add Meal', icon: FaPlus },
+                { id: 'food-database', name: 'Food Database', icon: FaSearch },
+                { id: 'weekly', name: 'Weekly View', icon: FaCalendarAlt },
+                { id: 'monthly', name: 'Monthly View', icon: FaCalendarAlt }
+              ].map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                      activeTab === tab.id
+                        ? 'bg-white text-orange-600 shadow-sm border border-orange-200'
+                        : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{tab.name}</span>
+                  </button>
+                );
+              })}
+            </div>
           </nav>
         </div>
 
@@ -422,6 +427,9 @@ const MealTracker = () => {
                       <div className="flex justify-between items-center">
                         <div>
                           <p className="font-medium text-gray-900">{food.name}</p>
+                          {food.hinglish && (
+                            <p className="text-sm text-gray-400 italic">{food.hinglish}</p>
+                          )}
                           <p className="text-sm text-gray-500">{food.category}</p>
                         </div>
                         <div className="text-right">
@@ -594,6 +602,9 @@ const MealTracker = () => {
                       <tr key={index} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">{food.name}</div>
+                          {food.hinglish && (
+                            <div className="text-xs text-gray-400 italic">{food.hinglish}</div>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">

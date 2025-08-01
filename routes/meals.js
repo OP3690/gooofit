@@ -11,10 +11,12 @@ router.get('/food-database', auth, async (req, res) => {
     
     let filteredFoods = [...foodDatabase];
     
-    // Search by name
+    // Search by name or Hinglish name
     if (search) {
+      const searchLower = search.toLowerCase();
       filteredFoods = filteredFoods.filter(food => 
-        food.name.toLowerCase().includes(search.toLowerCase())
+        food.name.toLowerCase().includes(searchLower) ||
+        (food.hinglish && food.hinglish.toLowerCase().includes(searchLower))
       );
     }
     
