@@ -129,15 +129,21 @@ const MealTracker = () => {
 
   const fetchFoodDatabase = async () => {
     try {
+      console.log('🔍 Fetching food database...');
       setLoading(true);
       const response = await fetch('/api/meals/food-database');
+      console.log('🔍 Response status:', response.status);
       const data = await response.json();
+      console.log('🔍 Response data:', data);
       if (data.success) {
+        console.log('🔍 Setting food database with', data.data.foods.length, 'items');
         setFoodDatabase(data.data.foods);
         setCategories(data.data.categories);
+      } else {
+        console.error('🔍 API returned success: false');
       }
     } catch (error) {
-      console.error('Error fetching food database:', error);
+      console.error('🔍 Error fetching food database:', error);
     } finally {
       setLoading(false);
     }
@@ -241,6 +247,12 @@ const MealTracker = () => {
     const matchesCategory = selectedCategory === 'all' || food.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  // Debug logging
+  console.log('🔍 Current foodDatabase length:', foodDatabase.length);
+  console.log('🔍 Current filteredFoods length:', filteredFoods.length);
+  console.log('🔍 Current searchTerm:', searchTerm);
+  console.log('🔍 Current selectedCategory:', selectedCategory);
 
   const getCalorieGoal = () => {
     // This could be calculated based on user's BMR, activity level, and goals
