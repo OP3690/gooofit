@@ -316,6 +316,102 @@ const MealTracker = () => {
               </div>
             )}
 
+            {/* Nutrition Charts */}
+            {dailySummary && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Calorie Progress Chart */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Daily Calorie Progress</h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-600">Consumed</span>
+                      <span className="text-lg font-bold text-orange-600">{dailySummary.totals.calories} kcal</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-600">Goal</span>
+                      <span className="text-lg font-bold text-gray-900">{getCalorieGoal()} kcal</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-4">
+                      <div
+                        className="bg-orange-500 h-4 rounded-full transition-all duration-500 flex items-center justify-center"
+                        style={{ width: `${getCalorieProgress()}%` }}
+                      >
+                        <span className="text-white text-xs font-medium">
+                          {Math.round(getCalorieProgress())}%
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>0</span>
+                      <span>{getCalorieGoal()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Nutrition Breakdown Chart */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Nutrition Breakdown</h3>
+                  <div className="space-y-4">
+                    {/* Fat Progress */}
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-medium text-gray-600">Fat</span>
+                        <span className="text-sm font-bold text-red-600">{dailySummary.totals.fat}g / 65g</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-red-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min((dailySummary.totals.fat / 65) * 100, 100)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Cholesterol Progress */}
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-medium text-gray-600">Cholesterol</span>
+                        <span className="text-sm font-bold text-yellow-600">{dailySummary.totals.cholesterol}mg / 300mg</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-yellow-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min((dailySummary.totals.cholesterol / 300) * 100, 100)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Protein Estimate (assuming 15% of calories) */}
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-medium text-gray-600">Protein (est.)</span>
+                        <span className="text-sm font-bold text-blue-600">{Math.round(dailySummary.totals.calories * 0.15 / 4)}g / 75g</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min((dailySummary.totals.calories * 0.15 / 4 / 75) * 100, 100)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Carbs Estimate (assuming 55% of calories) */}
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-medium text-gray-600">Carbs (est.)</span>
+                        <span className="text-sm font-bold text-green-600">{Math.round(dailySummary.totals.calories * 0.55 / 4)}g / 275g</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min((dailySummary.totals.calories * 0.55 / 4 / 275) * 100, 100)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Meal Type Breakdown */}
             {dailySummary && dailySummary.mealTypeTotals && (
               <div className="bg-white p-6 rounded-lg shadow-sm border">

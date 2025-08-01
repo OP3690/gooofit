@@ -28,6 +28,7 @@ import Blog from './components/Blog';
 import BlogPost from './components/BlogPost';
 import Careers from './components/Careers';
 import MealTracker from './components/MealTracker';
+import NutritionInfo from './components/NutritionInfo';
 
 // Context
 import { UserProvider } from './context/UserContext';
@@ -137,6 +138,7 @@ function App() {
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/meal-tracker" element={<MealTracker />} />
+                <Route path="/nutrition-info" element={<NutritionInfo />} />
                 <Route path="/bmi-calculator" element={<BMICalculator />} />
                 <Route path="/health-calculator" element={<HealthCalculator />} />
                 <Route path="*" element={<Navigate to="/" />} />
