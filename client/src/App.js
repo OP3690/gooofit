@@ -27,6 +27,7 @@ import HomePage from './components/HomePage';
 import Blog from './components/Blog';
 import BlogPost from './components/BlogPost';
 import Careers from './components/Careers';
+import MealTracker from './components/MealTracker';
 
 // Context
 import { UserProvider } from './context/UserContext';
@@ -135,6 +136,7 @@ function App() {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/analytics" element={<Analytics />} />
+                <Route path="/meal-tracker" element={<MealTracker />} />
                 <Route path="/bmi-calculator" element={<BMICalculator />} />
                 <Route path="/health-calculator" element={<HealthCalculator />} />
                 <Route path="*" element={<Navigate to="/" />} />

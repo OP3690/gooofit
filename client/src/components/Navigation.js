@@ -20,6 +20,7 @@ const Navigation = ({ currentUser, onLogout }) => {
   const navigation = [
     { name: 'Dashboard', href: '/', icon: HomeIcon },
     { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
+    { name: '🍽️ Meal Tracker', href: '/meal-tracker', icon: UserIcon },
     { name: 'Blog', href: '/blog', icon: DocumentTextIcon },
     { name: 'Profile', href: '/profile', icon: UserIcon },
   ];
