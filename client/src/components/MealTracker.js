@@ -131,7 +131,7 @@ const MealTracker = () => {
     try {
       console.log('🔍 Fetching food database...');
       setLoading(true);
-      const response = await fetch('/api/meals/food-database');
+      const response = await fetch('http://localhost:3001/api/meals/food-database');
       console.log('🔍 Response status:', response.status);
       const data = await response.json();
       console.log('🔍 Response data:', data);
