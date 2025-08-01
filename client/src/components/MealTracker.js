@@ -130,10 +130,11 @@ const MealTracker = () => {
   const fetchFoodDatabase = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/meals/food-database');
-      if (response.data.success) {
-        setFoodDatabase(response.data.data.foods);
-        setCategories(response.data.data.categories);
+      const response = await fetch('/api/meals/food-database');
+      const data = await response.json();
+      if (data.success) {
+        setFoodDatabase(data.data.foods);
+        setCategories(data.data.categories);
       }
     } catch (error) {
       console.error('Error fetching food database:', error);

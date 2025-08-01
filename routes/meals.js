@@ -5,7 +5,7 @@ const foodDatabase = require('../data/foodDatabase');
 const auth = require('../middleware/auth');
 
 // Get food database with search and filter
-router.get('/food-database', auth, async (req, res) => {
+router.get('/food-database', async (req, res) => {
   try {
     const { search, category, limit = 50 } = req.query;
     
