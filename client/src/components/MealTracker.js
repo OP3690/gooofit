@@ -966,8 +966,10 @@ const MealTracker = () => {
         // Send quantity in grams so backend nutrition math is correct
         quantity: parseFloat(gramsEquivalent),
         unit: unit,
-                                    calories: Math.round((selectedFood.calories || 0) * gramsEquivalent / 100),
+        calories: Math.round((selectedFood.calories || 0) * gramsEquivalent / 100),
         fat: Math.round(selectedFood.fat * gramsEquivalent / 100 * 10) / 10,
+        protein: Math.round((selectedFood.protein || 0) * gramsEquivalent / 100 * 10) / 10,
+        carbs: Math.round((selectedFood.carbs || 0) * gramsEquivalent / 100 * 10) / 10,
         cholesterol: Math.round(selectedFood.cholesterol * gramsEquivalent / 100),
         mealType: mealType,
         mealTime: mealTime || new Date().toTimeString().slice(0, 5), // Use current time if not provided
@@ -1519,13 +1521,16 @@ const MealTracker = () => {
           }
         });
       } else {
-        // New structure with flat fields
+        // New structure with flat fields - these are already calculated totals
         console.log('🔍 Using flat fields structure');
         mealCalories = meal.calories || 0;
         mealFat = meal.fat || 0;
         mealProtein = meal.protein || 0;
         mealCarbs = meal.carbs || 0;
         mealCholesterol = meal.cholesterol || 0;
+        
+        // Ensure we're using the calculated totals, not per-100g values
+        console.log('🔍 Using calculated totals:', { mealCalories, mealFat, mealProtein, mealCarbs, mealCholesterol });
       }
       
       console.log('🔍 Calculated meal nutrition:', { mealCalories, mealFat, mealProtein, mealCarbs, mealCholesterol });
@@ -1656,19 +1661,33 @@ const MealTracker = () => {
                   <p className="text-orange-100 text-lg">Track your nutrition journey today</p>
                   {/* removed period helper text per request */}
                 </div>
-                <div className="text-right ml-4">
-                  {(() => {
-                    const goals = getMacronutrientGoals();
-                    return (
-                      <>
-                        <div className="text-4xl font-bold">{goals.tdee}</div>
-                        <div className="text-orange-100">Daily Goal (kcal)</div>
-                        <div className="text-orange-100 text-sm mt-1">
-                          Fat: {goals.fat.percentage}% | Protein: {goals.protein.percentage}% | Carbs: {goals.carbs.percentage}%
-                        </div>
-                      </>
-                    );
-                  })()}
+                <div className="flex items-center space-x-6">
+                  {/* Add Meal CTA for better mobile UX */}
+                  <div className="text-center">
+                    <button
+                      onClick={() => setShowAddMealPopup(true)}
+                      className="bg-white text-orange-600 hover:bg-orange-50 px-4 py-3 rounded-lg font-semibold transition-colors duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl"
+                    >
+                      <span className="text-xl">+</span>
+                      <span className="hidden sm:inline">Add Meal</span>
+                    </button>
+                    <p className="text-xs text-orange-100 mt-1">Quick Add</p>
+                  </div>
+                  
+                  <div className="text-right ml-4">
+                    {(() => {
+                      const goals = getMacronutrientGoals();
+                      return (
+                        <>
+                          <div className="text-4xl font-bold">{goals.tdee}</div>
+                          <div className="text-orange-100">Daily Goal (kcal)</div>
+                          <div className="text-orange-100 text-sm mt-1">
+                            Fat: {goals.fat.percentage}% | Protein: {goals.protein.percentage}% | Carbs: {goals.carbs.percentage}%
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
                 </div>
               </div>
             </div>
