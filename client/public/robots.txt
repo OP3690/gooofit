@@ -51,6 +51,7 @@ Sitemap: https://gooofit.com/sitemap.xml
 # Additional sitemaps for different content types
 Sitemap: https://gooofit.com/blog-sitemap.xml
 Sitemap: https://gooofit.com/calculators-sitemap.xml
+Sitemap: https://gooofit.com/logo-sitemap.xml
 
 # Host directive
 Host: https://gooofit.com

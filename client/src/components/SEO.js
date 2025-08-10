@@ -31,7 +31,20 @@ const SEO = ({
     "@type": "Organization",
     "name": "GoooFit",
     "url": "https://gooofit.com",
-    "logo": "https://gooofit.com/logo.png",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://gooofit.com/android-chrome-512x512.png",
+      "width": 512,
+      "height": 512,
+      "caption": "GoooFit Logo"
+    },
+    "image": {
+      "@type": "ImageObject",
+      "url": "https://gooofit.com/android-chrome-512x512.png",
+      "width": 512,
+      "height": 512,
+      "caption": "GoooFit Logo"
+    },
     "description": "Smart weight loss and management dashboard for your health goals",
     "sameAs": [
       "https://twitter.com/gooofit",
@@ -42,6 +55,30 @@ const SEO = ({
       "@type": "ContactPoint",
       "contactType": "customer service",
       "email": "support@gooofit.com"
+    }
+  };
+
+  // Logo Schema for Google Knowledge Graph
+  const logoSchema = {
+    "@context": "https://schema.org",
+    "@type": "ImageObject",
+    "name": "GoooFit Logo",
+    "description": "Official GoooFit logo and brand identity",
+    "url": "https://gooofit.com/android-chrome-512x512.png",
+    "width": 512,
+    "height": 512,
+    "thumbnailUrl": "https://gooofit.com/favicon-32x32.png",
+    "thumbnail": {
+      "@type": "ImageObject",
+      "url": "https://gooofit.com/favicon-32x32.png",
+      "width": 32,
+      "height": 32
+    },
+    "representativeOfPage": true,
+    "license": "https://gooofit.com/terms",
+    "creator": {
+      "@type": "Organization",
+      "name": "GoooFit"
     }
   };
 
@@ -95,6 +132,7 @@ const SEO = ({
     defaultOrganizationSchema,
     defaultWebsiteSchema,
     defaultBreadcrumbSchema,
+    logoSchema,
     ...(schemaData ? [schemaData] : []),
     ...(articleData ? [articleData] : []),
     ...(breadcrumbData ? [breadcrumbData] : [])

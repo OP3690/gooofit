@@ -25,6 +25,7 @@ const Navigation = ({ currentUser, onLogout }) => {
   ];
   const navRight = [
     { name: 'Profile', href: '/profile', icon: UserIcon },
+    { name: 'Contact', href: '/contact', icon: UserIcon },
   ];
 
   const healthCalculators = [

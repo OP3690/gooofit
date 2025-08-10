@@ -1,11 +1,14 @@
 {
-  "name": "Weight Management Dashboard",
-  "short_name": "Weight Tracker",
-  "description": "Track your weight, calculate BMI, and achieve your health goals",
+  "name": "GoooFit - Weight Management Dashboard",
+  "short_name": "GoooFit",
+  "description": "Smart weight loss and management dashboard for your health goals. Track weight, calculate BMI, monitor nutrition, and achieve sustainable results.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0ea5e9",
+  "categories": ["health", "fitness", "lifestyle", "medical"],
+  "lang": "en",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/favicon-16x16.png",

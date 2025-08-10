@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.c898063d.css",
-    "main.js": "/static/js/main.f34e67e1.js",
+    "main.css": "/static/css/main.9f97257b.css",
+    "main.js": "/static/js/main.dfcfc9a8.js",
     "static/media/blog13.jpg": "/static/media/blog13.99309eb9cce90423a641.jpg",
     "static/media/austin-distel-wD1LRb9OeEo-unsplash.jpg": "/static/media/austin-distel-wD1LRb9OeEo-unsplash.b4c256506e843c32c679.jpg",
     "static/media/blog17.jpg": "/static/media/blog17.422074ea49d6aa0099e5.jpg",
@@ -30,11 +30,11 @@
     "static/media/blog16.jpg": "/static/media/blog16.6c4c11a3aa9610880a8c.jpg",
     "static/media/blog18.jpg": "/static/media/blog18.f599f7d34584bb530e40.jpg",
     "index.html": "/index.html",
-    "main.c898063d.css.map": "/static/css/main.c898063d.css.map",
-    "main.f34e67e1.js.map": "/static/js/main.f34e67e1.js.map"
+    "main.9f97257b.css.map": "/static/css/main.9f97257b.css.map",
+    "main.dfcfc9a8.js.map": "/static/js/main.dfcfc9a8.js.map"
   },
   "entrypoints": [
-    "static/css/main.c898063d.css",
-    "static/js/main.f34e67e1.js"
+    "static/css/main.9f97257b.css",
+    "static/js/main.dfcfc9a8.js"
   ]
 }

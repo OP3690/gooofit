@@ -667,6 +667,117 @@ async function sendRegistrationNotificationEmail(adminEmail, userName, userEmail
 }
 
 /**
+ * Send contact form notification email to admin
+ * @param {string} adminEmail - Admin email address
+ * @param {string} userName - Name of the person submitting the form
+ * @param {string} userEmail - Email of the person submitting the form
+ * @param {string} subject - Subject of the message
+ * @param {string} message - Message content
+ * @returns {Promise<Object>} Email result
+ */
+async function sendContactNotificationEmail(adminEmail, userName, userEmail, subject, message) {
+  try {
+    console.log('📧 Sending contact form notification email via Gmail SMTP...');
+    
+    const transporter = createGmailTransporter();
+    
+    const html = `
+    <!DOCTYPE html>
+      <html>
+    <head>
+        <meta charset="utf-8">
+        <title>New Contact Form Submission - GoooFit</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        </style>
+    </head>
+      <body style="font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #fff7ed;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07);">
+          <!-- Header with orange gradient -->
+          <div style="background: linear-gradient(135deg, #ffb347 0%, #ffcc80 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #fff; margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.5px;">📬 New Contact Form Submission</h1>
+            <p style="color: rgba(255,255,255,0.95); margin: 10px 0 0 0; font-size: 16px;">GoooFit - Admin Notification</p>
+            </div>
+            
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <h2 style="color: #b45309; margin: 0 0 20px 0; font-size: 24px; font-weight: 600;">Hello Admin! 👋</h2>
+            
+            <p style="color: #b45309; margin: 0 0 20px 0; font-size: 16px;">
+              Someone has submitted a new message through the contact form. 
+              Here are the details:
+            </p>
+            
+            <!-- Contact Details -->
+            <div style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 12px; padding: 30px; margin: 30px 0;">
+              <h3 style="color: #ea580c; margin: 0 0 20px 0; font-size: 20px; font-weight: 600;">📝 Contact Form Details:</h3>
+              <div style="color: #b45309; font-size: 16px;">
+                <p style="margin: 10px 0;"><strong>👤 Name:</strong> ${userName}</p>
+                <p style="margin: 10px 0;"><strong>📧 Email:</strong> ${userEmail}</p>
+                <p style="margin: 10px 0;"><strong>📋 Subject:</strong> ${subject}</p>
+                <p style="margin: 10px 0;"><strong>📅 Submission Date:</strong> ${new Date().toLocaleDateString()}</p>
+                <p style="margin: 10px 0;"><strong>⏰ Submission Time:</strong> ${new Date().toLocaleTimeString()}</p>
+              </div>
+            </div>
+            
+            <!-- Message Content -->
+            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; padding: 30px; margin: 30px 0;">
+              <h3 style="color: #d97706; margin: 0 0 20px 0; font-size: 20px; font-weight: 600;">💬 Message:</h3>
+              <div style="color: #92400e; font-size: 16px; line-height: 1.8;">
+                <p style="margin: 0; white-space: pre-wrap;">${message}</p>
+              </div>
+            </div>
+                
+            <!-- Action Button -->
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="mailto:${userEmail}" style="background: linear-gradient(135deg, #ffb347 0%, #ffcc80 100%); color: #fff; padding: 16px 32px; text-decoration: none; border-radius: 12px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(255,179,71,0.15); transition: all 0.3s ease;">Reply to ${userName}</a>
+                </div>
+                
+            <p style="color: #b45309; margin: 30px 0 0 0; font-size: 14px;">
+              Please respond to this inquiry as soon as possible to provide excellent customer support!
+            </p>
+                </div>
+                
+          <!-- Footer -->
+          <div style="background: #fff3e0; padding: 30px; text-align: center; border-top: 1px solid #ffe0b2;">
+            <p style="color: #b45309; margin: 0 0 10px 0; font-size: 14px; font-weight: 600;">Best regards,</p>
+            <p style="color: #b45309; margin: 0; font-size: 14px;">GoooFit Admin 🤖</p>
+            <div style="margin-top: 20px;">
+              <a href="https://gooofit.com" style="color: #fb923c; text-decoration: none; font-size: 14px; font-weight: 500;">gooofit.com</a>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+    
+    const mailOptions = {
+      from: `"GoooFit Admin" <${process.env.EMAIL_USER || 'onboarding.gooofit@gmail.com'}>`,
+      to: adminEmail,
+      subject: `New Contact Form Submission: ${subject}`,
+      html: html
+    };
+    
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Contact form notification email sent successfully via Gmail SMTP');
+    console.log('   Message ID:', info.messageId);
+    
+    return {
+      success: true,
+      messageId: info.messageId,
+      method: 'Gmail SMTP (Temporary)'
+    };
+    
+  } catch (error) {
+    console.error('❌ Failed to send contact form notification email:', error.message);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+/**
  * Send generic email using Gmail SMTP for instant delivery
  * @param {Object} emailData - Email data object
  * @returns {Promise<Object>} API response
@@ -737,6 +848,7 @@ module.exports = {
   sendWelcomeEmail,
   sendPasswordResetEmail,
   sendRegistrationNotificationEmail,
+  sendContactNotificationEmail,
   sendEmail,
   testEmailService,
   generateOTP

@@ -75,6 +75,7 @@ app.use('/api/weight-entries', weightEntryRoutes);
 app.use('/api/careers', careersRoutes);
 app.use('/api/user-success', userSuccessRoutes);
 app.use('/api/meals', require('./routes/meals'));
+app.use('/api/contact', require('./routes/contact'));
 
 // Import ping service
 const PingService = require('./services/pingService');

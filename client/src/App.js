@@ -7,6 +7,9 @@ import './NoSpinner.css';
 // Google Analytics
 import GoogleAnalytics from './components/GoogleAnalytics';
 
+// Performance Monitoring
+import { PerformanceMonitor } from './components/PerformanceOptimizer';
+
 // Components
 import Dashboard from './components/Dashboard';
 import Profile from './components/Profile';
@@ -28,6 +31,7 @@ import Blog from './components/Blog';
 import BlogPost from './components/BlogPost';
 import Careers from './components/Careers';
 import MealTracker from './components/MealTracker';
+import Contact from './components/Contact';
 
 
 // Context
@@ -105,6 +109,7 @@ function App() {
   return (
     <UserProvider value={{ currentUser, setCurrentUser: handleUserLogin, logout: handleUserLogout }}>
       <GoogleAnalytics />
+      <PerformanceMonitor />
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-purple-50 flex flex-col">
         <Routes>
           {/* Blog Routes - Accessible to everyone */}
@@ -113,6 +118,9 @@ function App() {
           
           {/* Careers Route - Accessible to everyone */}
           <Route path="/careers" element={<Careers />} />
+          
+          {/* Contact Route - Accessible to everyone */}
+          <Route path="/contact" element={<Contact />} />
           
           {/* Home Page - Only show when not logged in */}
         {!currentUser && (
