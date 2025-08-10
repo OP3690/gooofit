@@ -4,12 +4,12 @@
   
            <!-- Main Logo Files -->
          <url>
-           <loc>https://gooofit.com/</loc>
+           <loc>https://www.gooofit.com/</loc>
            <lastmod>2025-01-15</lastmod>
            <changefreq>weekly</changefreq>
            <priority>1.0</priority>
            <image:image>
-             <image:loc>https://gooofit.com/android-chrome-512x512.png</image:loc>
+             <image:loc>https://www.gooofit.com/android-chrome-512x512.png</image:loc>
              <image:title>GoooFit Logo - 512x512</image:title>
              <image:caption>Official GoooFit logo in high resolution for Google Knowledge Graph</image:caption>
            </image:image>
@@ -45,12 +45,12 @@
            </image:image>
          </url>
   
-  <!-- Brand Assets Page (if you have one) -->
-  <url>
-    <loc>https://gooofit.com/brand-assets</loc>
-    <lastmod>2025-01-15</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+           <!-- Brand Assets Page (if you have one) -->
+         <url>
+           <loc>https://www.gooofit.com/brand-assets</loc>
+           <lastmod>2025-01-15</lastmod>
+           <changefreq>monthly</changefreq>
+           <priority>0.8</priority>
     <image:image>
       <image:loc>https://gooofit.com/android-chrome-512x512.png</image:loc>
       <image:title>GoooFit Logo - Download</image:title>
