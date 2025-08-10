@@ -18,6 +18,7 @@ import Navigation from './components/Navigation';
 import Onboarding from './components/Onboarding';
 import BMICalculator from './components/BMICalculator';
 import BMICalculatorPage from './components/BMICalculatorPage';
+import BrandAssets from './components/BrandAssets';
 import CalorieCalculatorPage from './components/CalorieCalculatorPage';
 import BodyFatCalculatorPage from './components/BodyFatCalculatorPage';
 import BMRCalculatorPage from './components/BMRCalculatorPage';
@@ -166,6 +167,9 @@ function App() {
         <Route path="/protein-calculator-page" element={<ProteinCalculatorPage />} />
         <Route path="/fat-intake-calculator-page" element={<FatIntakeCalculatorPage />} />
         <Route path="/vitamin-calculator-page" element={<VitaminCalculatorPage />} />
+        
+        {/* Brand Assets Route - Accessible to everyone */}
+        <Route path="/brand-assets" element={<BrandAssets />} />
           
           {/* Default redirect */}
           <Route path="*" element={<Navigate to="/" />} />
