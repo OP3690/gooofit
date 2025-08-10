@@ -120,8 +120,10 @@ function App() {
           {/* Careers Route - Accessible to everyone */}
           <Route path="/careers" element={<Careers />} />
           
-          {/* Contact Route - Accessible to everyone */}
-          <Route path="/contact" element={<Contact />} />
+          {/* Contact Route - Only accessible to non-logged-in users */}
+          {!currentUser && (
+            <Route path="/contact" element={<Contact />} />
+          )}
           
           {/* Home Page - Only show when not logged in */}
         {!currentUser && (
@@ -150,6 +152,7 @@ function App() {
 
                 <Route path="/bmi-calculator" element={<BMICalculator />} />
                 <Route path="/health-calculator" element={<HealthCalculator />} />
+                <Route path="/contact" element={<Navigate to="/" />} />
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </main>
