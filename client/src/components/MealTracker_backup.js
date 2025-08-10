@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FaPlus, 
   FaSearch, 
@@ -8,14 +8,9 @@ import {
   FaUtensils,
   FaTrash,
   FaEdit,
-  FaInfoCircle,
-  FaRegStar,
-  FaStar,
-  FaArrowUp,
-  FaArrowDown,
-  FaTimes,
-  FaCheckCircle
+  FaInfoCircle
 } from 'react-icons/fa';
+import AddMealPage from './AddMealPage';
 import { 
   PieChart, 
   Pie, 
@@ -37,123 +32,13 @@ import {
   ComposedChart,
   ReferenceLine
 } from 'recharts';
-import api, { userAPI, foodAPI } from '../services/api';
+import api, { userAPI } from '../services/api';
 import { toast } from 'react-toastify';
 import { useUser } from '../context/UserContext';
 
 const MealTracker = () => {
   const { currentUser } = useUser();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [recentPeriod, setRecentPeriod] = useState('today'); // today, yesterday, 7, 15, 30, 60, 90
-  const [expandedDates, setExpandedDates] = useState({}); // { 'YYYY-MM-DD': true }
-  const [recentPage, setRecentPage] = useState(1); // pagination for aggregated dates
-  const [showAddFood, setShowAddFood] = useState(false);
-  const [newFood, setNewFood] = useState({ name: '', category: 'Beverages', calories: '', fat: '', cholesterol: '', quantity: '', unit: '' });
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [foodPendingDelete, setFoodPendingDelete] = useState(null);
-  const [quickEditFoods, setQuickEditFoods] = useState([]); // array of food names or ids
-  const [quickSearchTerm, setQuickSearchTerm] = useState('');
-  const [quickEditLoaded, setQuickEditLoaded] = useState(false);
-  const quickEditLastSavedJsonRef = useRef('');
-
-  // Persist Quick Edit list in localStorage so it survives reloads
-  useEffect(() => {
-    (async () => {
-      try {
-        const storedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        const effectiveUser = currentUser || storedUser || {};
-        const uid = effectiveUser.id || effectiveUser._id;
-        if (uid) {
-          try {
-            const items = await userAPI.getQuickEdit(uid);
-            if (Array.isArray(items)) {
-              setQuickEditFoods(items);
-              setQuickEditLoaded(true);
-              return;
-            }
-          } catch (err) {
-            // Fall back to local storage on auth/network errors
-          }
-        }
-        // Fallback when no uid or API failed
-        const saved = JSON.parse(localStorage.getItem('quickEditFoods') || '[]');
-        if (Array.isArray(saved)) setQuickEditFoods(saved);
-        setQuickEditLoaded(true);
-      } catch {}
-    })();
-  }, [currentUser]);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        // Do not persist until initial load has completed
-        if (!quickEditLoaded) return;
-        const storedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        const effectiveUser = currentUser || storedUser || {};
-        const uid = effectiveUser.id || effectiveUser._id;
-        const json = JSON.stringify(quickEditFoods);
-        localStorage.setItem('quickEditFoods', json);
-        // Skip network call if nothing changed
-        if (quickEditLastSavedJsonRef.current === json) return;
-        if (uid) {
-          try {
-            await userAPI.setQuickEdit(
-              uid,
-              (quickEditFoods || []).map((q, i) => ({ name: q.name, order: i }))
-            );
-            quickEditLastSavedJsonRef.current = json;
-          } catch (err) {
-            // ignore transient errors; localStorage stays in sync
-          }
-        }
-      } catch {}
-    })();
-  }, [quickEditLoaded, quickEditFoods, currentUser]);
-
-  // Reset pagination and expanded state when period changes
-  useEffect(() => {
-    setRecentPage(1);
-    setExpandedDates({});
-  }, [recentPeriod]);
-
-  // Export Historical Meal Logs to CSV (uses current filtered data)
-  const downloadHistoricalCSV = () => {
-    try {
-      const meals = (getFilteredMeals ? getFilteredMeals() : mealEntries || [])
-        .slice()
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
-      const headers = ['Date', 'Time', 'Food', 'Quantity', 'Unit', 'Meal Type', 'Calories', 'Fat (g)', 'Cholesterol (mg)'];
-      const rows = meals.map((m) => [
-        new Date(m.date).toISOString().slice(0, 10),
-        m.mealTime || '',
-        (m.foodName || '').replace(/"/g, '""'),
-        typeof m.quantity === 'number' ? m.quantity.toFixed(2) : (m.quantity || ''),
-        m.unit || '',
-        m.mealType || 'snack',
-        m.calories || 0,
-        typeof m.fat === 'number' ? Math.round(m.fat * 10) / 10 : 0,
-        m.cholesterol || 0,
-      ]);
-      const toCsvLine = (arr) => arr
-        .map((val) => {
-          const str = String(val ?? '');
-          return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-        })
-        .join(',');
-      const csv = [toCsvLine(headers), ...rows.map(toCsvLine)].join('\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `historical_meal_logs_${new Date().toISOString().slice(0, 10)}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error exporting Historical Meal Logs CSV:', error);
-    }
-  };
   const [foodDatabase, setFoodDatabase] = useState([]);
   const [categories, setCategories] = useState([]);
   const [mealEntries, setMealEntries] = useState([]);
@@ -169,7 +54,7 @@ const MealTracker = () => {
   const [itemsPerPage] = useState(10);
   const [latestWeight, setLatestWeight] = useState(null);
   const [dummyDataGenerated, setDummyDataGenerated] = useState(false);
-  const [showAddMealPopup, setShowAddMealPopup] = useState(false);
+
   const [mealTime, setMealTime] = useState('');
   const [selectedFoodForHistory, setSelectedFoodForHistory] = useState(null);
   const [calendarPage, setCalendarPage] = useState(1);
@@ -205,40 +90,21 @@ const MealTracker = () => {
     { activity: "Sitting quietly", energy: 81 },
     { activity: "Standing quietly", energy: 93 },
     { activity: "Writing", energy: 102 },
-    { activity: "Typing", energy: 108 },
-    { activity: "Light office work", energy: 114 },
-    { activity: "Walking (slow 3km/hr)", energy: 165 },
-    { activity: "Walking (normal 4km/hr)", energy: 210 },
-    { activity: "Walking (fast 6km/hr)", energy: 300 },
-    { activity: "Walking (very fast 8km/hr)", energy: 420 },
-    { activity: "Jogging (8km/hr)", energy: 480 },
-    { activity: "Running (10km/hr)", energy: 600 },
-    { activity: "Running (12km/hr)", energy: 750 },
-    { activity: "Cycling (slow)", energy: 240 },
-    { activity: "Cycling (moderate)", energy: 420 },
-    { activity: "Cycling (fast)", energy: 660 },
-    { activity: "Swimming (slow)", energy: 360 },
-    { activity: "Swimming (fast)", energy: 720 },
-    { activity: "Dancing", energy: 300 },
-    { activity: "Aerobics", energy: 420 },
-    { activity: "Badminton", energy: 420 },
-    { activity: "Tennis", energy: 480 },
-    { activity: "Cricket", energy: 300 },
-    { activity: "Football", energy: 540 },
-    { activity: "Basketball", energy: 600 },
-    { activity: "Volleyball", energy: 180 },
-    { activity: "Table tennis", energy: 240 },
-    { activity: "Golf", energy: 270 },
-    { activity: "Gardening", energy: 330 },
-    { activity: "Housework (light)", energy: 180 },
-    { activity: "Housework (heavy)", energy: 300 },
-    { activity: "Cooking", energy: 150 },
-    { activity: "Washing dishes", energy: 120 },
-    { activity: "Driving car", energy: 120 },
-    { activity: "Climbing stairs", energy: 660 },
-    { activity: "Weight lifting", energy: 480 },
-    { activity: "Yoga", energy: 180 },
-    { activity: "Meditation", energy: 108 },
+    { activity: "Typing", energy: 105 },
+    { activity: "Reading", energy: 95 },
+    { activity: "Watching TV", energy: 85 },
+    { activity: "Walking slowly", energy: 150 },
+    { activity: "Walking normally", energy: 200 },
+    { activity: "Walking fast", energy: 300 },
+    { activity: "Running", energy: 600 },
+    { activity: "Cycling", energy: 400 },
+    { activity: "Swimming", energy: 500 },
+    { activity: "Dancing", energy: 350 },
+    { activity: "Cooking", energy: 120 },
+    { activity: "Cleaning", energy: 180 },
+    { activity: "Gardening", energy: 250 },
+    { activity: "Weight lifting", energy: 450 },
+    { activity: "Yoga", energy: 150 },
   ];
 
   const dietaryAllowances = [
@@ -267,7 +133,7 @@ const MealTracker = () => {
   ];
 
   const glycemicIndex = [
-    { food: "Glucose", gi: 100 },
+    { food: "Glucose", gi: 103 },
     { food: "White bread", gi: 75 },
     { food: "Wheat bread", gi: 74 },
     { food: "Rice (white)", gi: 73 },
@@ -293,70 +159,6 @@ const MealTracker = () => {
     if (gi >= 70) return { level: "High", color: "text-red-600", bgColor: "bg-red-100" };
     if (gi >= 56) return { level: "Medium", color: "text-yellow-600", bgColor: "bg-yellow-100" };
     return { level: "Low", color: "text-green-600", bgColor: "bg-green-100" };
-  };
-
-  // Demo helpers
-  const getDemoFoods = () => [
-    { name: 'Tea (1 cup)', category: 'Beverages', calories: 70, fat: 2.9, cholesterol: 10, hinglish: 'Chai', unit: 'cups' },
-    { name: 'Coffee (1 cup)', category: 'Beverages', calories: 70, fat: 2.9, cholesterol: 10, hinglish: 'Coffee', unit: 'cups' },
-    { name: 'Masala Chai (1 cup)', category: 'Beverages', calories: 45, fat: 1.5, cholesterol: 5 },
-    { name: 'Chapati (1 piece)', category: 'Grains', calories: 120, fat: 3, cholesterol: 0, unit: 'pieces' },
-    { name: 'Rice (1 cup)', category: 'Grains', calories: 206, fat: 0.4, cholesterol: 0, unit: 'cups' },
-    { name: 'Dal (1 cup)', category: 'Legumes', calories: 198, fat: 7, cholesterol: 0, unit: 'cups' },
-    { name: 'Chicken Curry (150g)', category: 'Non-veg', calories: 250, fat: 12, cholesterol: 70, unit: 'grams' },
-    { name: 'Paneer Curry (150g)', category: 'Veg', calories: 280, fat: 20, cholesterol: 60, unit: 'grams' },
-    { name: 'Green Salad (150g)', category: 'Veg', calories: 60, fat: 3, cholesterol: 0, unit: 'grams' },
-    { name: 'Banana (1 piece)', category: 'Fruits', calories: 89, fat: 0.3, cholesterol: 0, unit: 'pieces' },
-    { name: 'Apple (1 piece)', category: 'Fruits', calories: 95, fat: 0.3, cholesterol: 0, unit: 'pieces' },
-    { name: 'Omelette (2 eggs)', category: 'Eggs', calories: 180, fat: 14, cholesterol: 370, unit: 'pieces' },
-    { name: 'Poha (1 plate)', category: 'Breakfast', calories: 250, fat: 8, cholesterol: 0, unit: 'grams' },
-    { name: 'Idli (2 pieces)', category: 'Breakfast', calories: 140, fat: 1.2, cholesterol: 0, unit: 'pieces' },
-  ];
-
-  const generateDemoMealsUsingFoods = (foods, days = 30) => {
-    const today = new Date();
-    const meals = [];
-    const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
-    for (let i = 0; i < days; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
-      const perDayMeals = 2 + Math.floor(Math.random() * 3); // 2-4 meals
-      for (let j = 0; j < perDayMeals; j++) {
-        const food = foods[Math.floor(Math.random() * foods.length)];
-        const qtyOptions = food.unit === 'pieces' ? [1, 2] : food.unit === 'cups' ? [0.5, 1, 1.5] : [100, 150, 200];
-        const qty = qtyOptions[Math.floor(Math.random() * qtyOptions.length)];
-        let gramsEq = qty;
-        if (food.unit === 'cups') gramsEq = qty * 240;
-        if (food.unit === 'pieces' && /Chapati|Idli|Omelette/i.test(food.name)) gramsEq = qty * 50;
-        if (food.unit === 'pieces' && /Banana|Apple/i.test(food.name)) gramsEq = qty * 120;
-        if (food.unit === 'grams') gramsEq = qty; // already grams
-        const calories = Math.round((food.calories || 0) * (gramsEq / 100));
-        const fat = Math.round(((food.fat || 0) * (gramsEq / 100)) * 10) / 10;
-        const cholesterol = Math.round((food.cholesterol || 0) * (gramsEq / 100));
-        const fatCalories = fat * 9;
-        const remaining = Math.max(0, calories - fatCalories);
-        const protein = Math.round(((remaining * 0.2) / 4) * 10) / 10; // ~20% protein
-        const carbs = Math.round(((remaining * 0.65) / 4) * 10) / 10;   // ~65% carbs
-        meals.push({
-          _id: `${dateStr}-${j}-${Math.random().toString(36).slice(2, 6)}`,
-          userId: 'demo',
-          foodName: food.name,
-          quantity: gramsEq,
-          unit: food.unit || 'grams',
-          calories,
-          fat,
-          protein,
-          carbs,
-          cholesterol,
-          mealType: mealTypes[j % mealTypes.length],
-          mealTime: `${6 + j * 4}:00`,
-          date: dateStr,
-          notes: 'demo'
-        });
-      }
-    }
-    return meals.reverse(); // chronological
   };
 
   useEffect(() => {
@@ -403,13 +205,7 @@ const MealTracker = () => {
     }
   }, [currentUser?.id]);
 
-  // Initial data loading on component mount
-  useEffect(() => {
-    console.log('🚀 Component mounted, loading initial data...');
-    fetchFoodDatabase();
-    fetchMealEntries();
-    fetchLatestWeight();
-  }, []);
+
 
   useEffect(() => {
     if (activeTab === 'dashboard') {
@@ -421,13 +217,6 @@ const MealTracker = () => {
       fetchMonthlySummary();
     }
   }, [activeTab, selectedDate, userProfile]);
-
-  // Recompute summaries when meals arrive/change for the active tab
-  useEffect(() => {
-    if (!mealEntries || mealEntries.length === 0) return;
-    if (activeTab === 'weekly') fetchWeeklySummary();
-    if (activeTab === 'monthly') fetchMonthlySummary();
-  }, [mealEntries, activeTab]);
 
   // Recalculate weekly summary when mealEntries changes
   useEffect(() => {
@@ -450,12 +239,7 @@ const MealTracker = () => {
       setLoading(true);
       
       // Use the api service instead of direct fetch
-      // Include userId so API also returns user-specific foods
-      const storedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      const effectiveUser = currentUser || storedUser || {};
-      const uid = effectiveUser.id || effectiveUser._id;
-      // For demo, request global defaults only (no userId). If API not available, fall back locally
-      const response = await api.get('/meals/food-database', { params: (uid && uid !== 'demo') ? { userId: uid } : {} });
+      const response = await api.get('/meals/food-database');
       console.log('🔍 Response status:', response.status);
       console.log('🔍 Response data:', response.data);
       
@@ -465,22 +249,10 @@ const MealTracker = () => {
         setCategories(response.data.data.categories);
       } else {
         console.error('🔍 API returned success: false');
-        if (uid === 'demo') {
-          const demoFoods = getDemoFoods();
-          setFoodDatabase(demoFoods);
-          setCategories([...new Set(demoFoods.map(f => f.category))]);
-        }
       }
     } catch (error) {
       console.error('🔍 Error fetching food database:', error);
       console.error('🔍 Error details:', error.response?.data || error.message);
-      const storedUser2 = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      const effectiveUser2 = currentUser || storedUser2 || {};
-      if ((effectiveUser2.id || effectiveUser2._id) === 'demo') {
-        const demoFoods = getDemoFoods();
-        setFoodDatabase(demoFoods);
-        setCategories([...new Set(demoFoods.map(f => f.category))]);
-      }
     } finally {
       setLoading(false);
     }
@@ -488,113 +260,15 @@ const MealTracker = () => {
 
   const fetchMealEntries = async () => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      const effectiveUser = currentUser || storedUser || {};
-      const userId = effectiveUser.id || effectiveUser._id;
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const userId = user.id || user._id;
       
-      if (!userId) {
-        console.error('❌ No user ID found in localStorage');
-        return;
-      }
-      // Demo path: synthesize entries locally using default foods
-      if (userId === 'demo') {
-        const foods = (foodDatabase && foodDatabase.length > 0) ? foodDatabase : getDemoFoods();
-        const demoMeals = generateDemoMealsUsingFoods(foods, 45);
-        
-        // Ensure meals for current week
-        const today = new Date();
-        const weekStart = new Date(today);
-        weekStart.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
-        
-        // Ensure 7-8 meals today
-        const todayStr = today.toISOString().split('T')[0];
-        const todays = demoMeals.filter(m => m.date === todayStr);
-        if (todays.length < 7) {
-          const toAdd = 7 - todays.length + Math.floor(Math.random() * 2); // 7 or 8
-          for (let i = 0; i < toAdd; i++) {
-            const food = foods[Math.floor(Math.random() * foods.length)];
-            const qty = food.unit === 'pieces' ? 1 : (food.unit === 'cups' ? 1 : 150);
-            let gramsEq = qty;
-            if (food.unit === 'cups') gramsEq = qty * 240;
-            if (food.unit === 'pieces') gramsEq = 50;
-            const calories = Math.round((food.calories || 0) * (gramsEq / 100));
-            const fat = Math.round(((food.fat || 0) * (gramsEq / 100)) * 10) / 10;
-            const cholesterol = Math.round((food.cholesterol || 0) * (gramsEq / 100));
-            const fatCalories = fat * 9;
-            const remaining = Math.max(0, calories - fatCalories);
-            const protein = Math.round(((remaining * 0.2) / 4) * 10) / 10; // ~20% protein
-            const carbs = Math.round(((remaining * 0.65) / 4) * 10) / 10;   // ~65% carbs
-            demoMeals.push({
-              _id: `${todayStr}-extra-${i}-${Math.random().toString(36).slice(2,6)}`,
-              userId: 'demo',
-              foodName: food.name,
-              quantity: gramsEq,
-              unit: food.unit || 'grams',
-              calories,
-              fat,
-              protein,
-              carbs,
-              cholesterol,
-              mealType: ['breakfast','lunch','dinner','snack'][i % 4],
-              mealTime: `${8 + i}:00`,
-              date: todayStr,
-              notes: 'demo extra'
-            });
-          }
-        }
-        
-        // Ensure at least 2-3 meals for each day of current week
-        for (let i = 0; i < 7; i++) {
-          const weekDay = new Date(weekStart);
-          weekDay.setDate(weekStart.getDate() + i);
-          const weekDayStr = weekDay.toISOString().split('T')[0];
-          const weekDayMeals = demoMeals.filter(m => m.date === weekDayStr);
-          
-          if (weekDayMeals.length < 2) {
-            const toAdd = 2 - weekDayMeals.length + Math.floor(Math.random() * 2); // 2 or 3
-            for (let j = 0; j < toAdd; j++) {
-              const food = foods[Math.floor(Math.random() * foods.length)];
-              const qty = food.unit === 'pieces' ? 1 : (food.unit === 'cups' ? 1 : 150);
-              let gramsEq = qty;
-              if (food.unit === 'cups') gramsEq = qty * 240;
-              if (food.unit === 'pieces') gramsEq = 50;
-              const calories = Math.round((food.calories || 0) * (gramsEq / 100));
-              const fat = Math.round(((food.fat || 0) * (gramsEq / 100)) * 10) / 10;
-              const cholesterol = Math.round((food.cholesterol || 0) * (gramsEq / 100));
-              const fatCalories = fat * 9;
-              const remaining = Math.max(0, calories - fatCalories);
-              const protein = Math.round(((remaining * 0.2) / 4) * 10) / 10; // ~20% protein
-              const carbs = Math.round(((remaining * 0.65) / 4) * 10) / 10;   // ~65% carbs
-              demoMeals.push({
-                _id: `${weekDayStr}-week-${j}-${Math.random().toString(36).slice(2,6)}`,
-                userId: 'demo',
-                foodName: food.name,
-                quantity: gramsEq,
-                unit: food.unit || 'grams',
-                calories,
-                fat,
-                protein,
-                carbs,
-                cholesterol,
-                mealType: ['breakfast','lunch','dinner','snack'][j % 4],
-                mealTime: `${8 + j * 4}:00`,
-                date: weekDayStr,
-                notes: 'demo week'
-              });
-            }
-          }
-        }
-        
-        // sort by date desc then time desc so recent meals work
-        demoMeals.sort((a,b) => (b.date.localeCompare(a.date)) || ((b.mealTime||'').localeCompare(a.mealTime||'')));
-        setMealEntries(demoMeals);
-        return;
-      }
-      
-      console.log('🔍 Fetching meals for user:', userId);
+      // Use the correct user ID from your database
+      const correctUserId = '688392e10a02ab9eb84bc86b';
+      console.log('🔍 Fetching meals for user:', correctUserId);
       
       // Fetch all meals for the user using the new route
-      const response = await api.get(`/meals/entries/all?userId=${userId}`);
+      const response = await api.get(`/meals/entries/all?userId=${correctUserId}`);
       console.log('🔍 API Response:', response.data);
       console.log('🔍 API Response success:', response.data.success);
       console.log('🔍 API Response data length:', response.data.data?.length);
@@ -643,28 +317,12 @@ const MealTracker = () => {
       
       console.log('🔍 Calculating weekly summary for:', weekStartStr, 'to', weekEndStr);
       
-      // Create complete week structure with all 7 days
-      const weekDays = [];
-      for (let i = 0; i < 7; i++) {
-        const day = new Date(weekStart);
-        day.setDate(weekStart.getDate() + i);
-        const dayStr = day.toISOString().split('T')[0];
-        weekDays.push(dayStr);
-      }
-      
-      console.log('🔍 Week days:', weekDays);
-      
       if (!mealEntries || mealEntries.length === 0) {
         console.log('🔍 No meal entries available for weekly summary');
-        // Initialize with empty data for all days
-        const emptyDailyData = {};
-        weekDays.forEach(day => {
-          emptyDailyData[day] = { totals: { calories: 0, fat: 0, protein: 0, carbs: 0, cholesterol: 0 } };
-        });
         setWeeklySummary({
           weekTotals: { calories: 0, fat: 0, protein: 0, carbs: 0, cholesterol: 0 },
           totalMeals: 0,
-          dailyData: emptyDailyData
+          dailyData: {}
         });
         return;
       }
@@ -729,13 +387,8 @@ const MealTracker = () => {
         };
       }, { calories: 0, fat: 0, protein: 0, carbs: 0, cholesterol: 0 });
       
-      // Initialize daily data for all week days
+      // Group by day for daily data
       const dailyData = {};
-      weekDays.forEach(day => {
-        dailyData[day] = { totals: { calories: 0, fat: 0, protein: 0, carbs: 0, cholesterol: 0 } };
-      });
-      
-      // Group meals by day
       weeklyMeals.forEach(meal => {
         // Add null check for meal
         if (!meal || !meal.date) {
@@ -802,30 +455,6 @@ const MealTracker = () => {
 
   const fetchMonthlySummary = async () => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      const effectiveUser = currentUser || storedUser || {};
-      const userId = effectiveUser.id || effectiveUser._id;
-      if (userId === 'demo') {
-        // Compute monthly summary locally from mealEntries
-        const ninetyDaysAgo = new Date();
-        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-        const filtered = (mealEntries || []).filter(m => new Date(m.date) >= ninetyDaysAgo);
-        const totals = filtered.reduce((acc, m) => {
-          acc.calories += m.calories || 0;
-          acc.fat += m.fat || 0;
-          acc.cholesterol += m.cholesterol || 0;
-          return acc;
-        }, { calories: 0, fat: 0, cholesterol: 0 });
-        const days = new Set(filtered.map(m => new Date(m.date).toISOString().slice(0,10))).size || 1;
-        setMonthlySummary({
-          averages: {
-            calories: Math.round(totals.calories / days),
-            fat: Math.round((totals.fat / days) * 10) / 10,
-            cholesterol: Math.round(totals.cholesterol / days),
-          }
-        });
-        return;
-      }
       const currentDate = new Date(selectedDate);
       const response = await api.get(`/meals/monthly-summary?year=${currentDate.getFullYear()}&month=${currentDate.getMonth() + 1}`);
       if (response.data.success) {
@@ -838,16 +467,14 @@ const MealTracker = () => {
 
   const fetchLatestWeight = async () => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      const effectiveUser = currentUser || storedUser || {};
-      const userId = effectiveUser.id || effectiveUser._id;
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const userId = user.id || user._id;
       
       if (!userId) {
         console.log('No user ID found, using default weight');
         return;
       }
       
-      // Correct endpoint lives under /api/weight-entries/latest/:userId
       const response = await api.get(`/weight-entries/latest/${userId}`);
       if (response.data.success) {
         setLatestWeight(response.data.data);
@@ -861,9 +488,8 @@ const MealTracker = () => {
 
   const generateDummyData = async () => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      const effectiveUser = currentUser || storedUser || {};
-      const userId = effectiveUser.id || effectiveUser._id;
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const userId = user.id || user._id;
       
       if (!userId) {
         console.log('No user ID found, cannot generate dummy data');
@@ -942,9 +568,8 @@ const MealTracker = () => {
     
     setLoading(true);
     try {
-      const storedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      const effectiveUser = currentUser || storedUser || {};
-      const userId = effectiveUser.id || effectiveUser._id;
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const userId = user.id || user._id;
       
       if (!userId) {
         console.error('No user ID found');
@@ -963,8 +588,7 @@ const MealTracker = () => {
       const mealData = {
         userId: userId,
         foodName: selectedFood.name,
-        // Send quantity in grams so backend nutrition math is correct
-        quantity: parseFloat(gramsEquivalent),
+        quantity: parseFloat(quantity),
         unit: unit,
                                     calories: Math.round((selectedFood.calories || 0) * gramsEquivalent / 100),
         fat: Math.round(selectedFood.fat * gramsEquivalent / 100 * 10) / 10,
@@ -974,28 +598,6 @@ const MealTracker = () => {
         date: selectedDate,
         notes: notes
       };
-
-      // For demo user, skip API and update local state directly
-      if (userId === 'demo') {
-        const newMeal = {
-          ...mealData,
-          _id: Date.now().toString(),
-          createdAt: new Date().toISOString()
-        };
-        setMealEntries(prevEntries => ([...(prevEntries || []), newMeal]));
-        setSelectedFood(null);
-        setQuantity('');
-        setUnit('grams');
-        setMealType('breakfast');
-        setMealTime('');
-        setNotes('');
-        setShowAddMealPopup(false);
-        fetchDailySummary();
-        fetchWeeklySummary();
-        fetchMonthlySummary();
-        toast.success('Meal added (demo)');
-        return;
-      }
 
       const response = await api.post('/meals/add', mealData);
       
@@ -1007,24 +609,10 @@ const MealTracker = () => {
         setMealType('breakfast');
         setMealTime('');
         setNotes('');
-        setShowAddMealPopup(false);
         
-        // Immediately add the new meal to local state for instant update
-        const newMeal = {
-          ...mealData,
-          _id: response.data.data?._id || response.data.mealId || Date.now().toString(),
-          createdAt: new Date().toISOString()
-        };
-        
-        setMealEntries(prevEntries => {
-          const updatedEntries = [...(prevEntries || []), newMeal];
-          console.log('✅ Updated mealEntries immediately:', updatedEntries.length, 'meals');
-          return updatedEntries;
-        });
-        
-        // Also refresh from server to ensure consistency
-        fetchMealEntries();
+        // Refresh data
         fetchDailySummary();
+        fetchMealEntries();
         fetchWeeklySummary();
         fetchMonthlySummary();
         
@@ -1180,18 +768,18 @@ const MealTracker = () => {
   const getCalorieDetails = () => {
     try {
       // Get user data from userProfile state, UserContext, and localStorage as fallback
-      const storedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
       const localStorageProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
       
       // Use userProfile state if available, otherwise fallback to currentUser or localStorage
-      const userData = userProfile || currentUser || storedUser;
+      const userData = userProfile || currentUser || user;
     
     // Use actual user data with fallbacks
     const currentWeight = latestWeight ? latestWeight.weight : (userData.currentWeight || userData.weight || localStorageProfile.currentWeight || localStorageProfile.weight || 78.3);
-    const height = userData.height || localStorageProfile.height || storedUser.height || 165;
-    const age = userData.age || localStorageProfile.age || storedUser.age || 32;
-    const gender = userData.gender || localStorageProfile.gender || storedUser.gender || 'male';
-    const activityLevel = userData.activityLevel || localStorageProfile.activityLevel || storedUser.activityLevel || 'moderate';
+    const height = userData.height || localStorageProfile.height || user.height || 165;
+    const age = userData.age || localStorageProfile.age || user.age || 32;
+    const gender = userData.gender || localStorageProfile.gender || user.gender || 'male';
+    const activityLevel = userData.activityLevel || localStorageProfile.activityLevel || user.activityLevel || 'moderate';
     
     let bmr;
     if (gender.toLowerCase() === 'male') {
@@ -1313,6 +901,50 @@ const MealTracker = () => {
     if (!dailySummary || !dailySummary.totals) return 0;
     const goal = getCalorieGoal();
     return Math.min(((dailySummary.totals.calories || 0) / goal) * 100, 100);
+  };
+
+  // Safe wrapper for getting today's calories
+  const getTodaysCalories = () => {
+    try {
+      const data = getTodaysNutritionData();
+      return data?.calories || 0;
+    } catch (error) {
+      console.error('Error getting today\'s calories:', error);
+      return 0;
+    }
+  };
+
+  // Safe wrapper for getting today's fat
+  const getTodaysFat = () => {
+    try {
+      const data = getTodaysNutritionData();
+      return data?.fat || 0;
+    } catch (error) {
+      console.error('Error getting today\'s fat:', error);
+      return 0;
+    }
+  };
+
+  // Safe wrapper for getting today's cholesterol
+  const getTodaysCholesterol = () => {
+    try {
+      const data = getTodaysNutritionData();
+      return data?.cholesterol || 0;
+    } catch (error) {
+      console.error('Error getting today\'s cholesterol:', error);
+      return 0;
+    }
+  };
+
+  // Safe wrapper for getting today's meal count
+  const getTodaysMealCount = () => {
+    try {
+      const data = getTodaysNutritionData();
+      return data?.mealCount || 0;
+    } catch (error) {
+      console.error('Error getting today\'s meal count:', error);
+      return 0;
+    }
   };
 
   const getDailyCalorieConsumptionData = () => {
@@ -1448,38 +1080,44 @@ const MealTracker = () => {
   };
 
   const getTodaysNutritionData = () => {
-    if (!mealEntries || !Array.isArray(mealEntries)) {
-      return { calories: 0, fat: 0, protein: 0, carbs: 0, cholesterol: 0, mealCount: 0 };
-    }
+    try {
+      console.log('🔍 getTodaysNutritionData called');
+      console.log('🔍 mealEntries:', mealEntries);
+      
+      // Always return a safe object with default values
+      const defaultData = { calories: 0, fat: 0, protein: 0, carbs: 0, cholesterol: 0, mealCount: 0 };
+      
+      if (!mealEntries || !Array.isArray(mealEntries)) {
+        console.log('🔍 No mealEntries or not array, returning 0 values');
+        return defaultData;
+      }
     
     const today = new Date().toISOString().split('T')[0];
+    console.log('🔍 Today\'s date:', today);
     
     const todaysMeals = mealEntries.filter(meal => {
-      if (!meal || !meal.date) return false;
+      // Add null check for meal
+      if (!meal || !meal.date) {
+        console.log('🔍 Skipping meal with no date:', meal);
+        return false;
+      }
       
-      // Normalize the meal date to YYYY-MM-DD format
-      let mealDateStr = meal.date;
+      console.log('🔍 Checking meal date:', meal.date, 'vs today:', today);
+      
+      // Handle both date formats: YYYY-MM-DD and YYYY-MM-DDTHH:mm:ss.sssZ
+      if (meal.date === today) {
+        return true; // Direct match
+      }
       
       // If meal.date is in ISO format, extract the date part
       if (meal.date.includes('T')) {
-        mealDateStr = meal.date.split('T')[0];
+        const extractedDate = meal.date.split('T')[0];
+        console.log('🔍 Extracted date from ISO:', extractedDate);
+        return extractedDate === today;
       }
       
-      // Also handle if meal.date is a Date object
-      if (meal.date instanceof Date) {
-        mealDateStr = meal.date.toISOString().split('T')[0];
-      }
-      
-      const isToday = mealDateStr === today;
-      if (isToday) {
-        console.log('✅ Found today\'s meal:', meal);
-      }
-      
-      return isToday;
+      return false;
     });
-    
-    console.log('📊 Today\'s meals found:', todaysMeals.length);
-    console.log('📊 Today\'s meals:', todaysMeals);
     
     console.log('🔍 Today\'s meals found:', todaysMeals.length);
     console.log('🔍 Today\'s meals:', todaysMeals);
@@ -1494,7 +1132,7 @@ const MealTracker = () => {
       console.log('🔍 Processing meal:', meal);
       console.log('🔍 Meal structure check - foodItems:', meal.foodItems);
       console.log('🔍 Meal structure check - flat fields:', { 
-                                        calories: meal.calories || 0, 
+        calories: meal.calories || 0, 
         fat: meal.fat || 0, 
         protein: meal.protein || 0, 
         carbs: meal.carbs || 0, 
@@ -1543,9 +1181,12 @@ const MealTracker = () => {
       return newTotal;
     }, { calories: 0, fat: 0, protein: 0, carbs: 0, cholesterol: 0, mealCount: 0 });
     
-    console.log('🔍 Final nutrition data:', nutritionData);
-    console.log('🎯 Returning nutrition data for dashboard display');
-    return nutritionData;
+      console.log('🔍 Final nutrition data:', nutritionData);
+      return nutritionData;
+    } catch (error) {
+      console.error('🔍 Error in getTodaysNutritionData:', error);
+      return { calories: 0, fat: 0, protein: 0, carbs: 0, cholesterol: 0, mealCount: 0 };
+    }
   };
 
   const getMealTypeIcon = (type) => {
@@ -1616,6 +1257,7 @@ const MealTracker = () => {
           <nav className="space-y-2">
               {[
                 { id: 'dashboard', name: 'Dashboard', icon: FaChartPie },
+                { id: 'add-meal', name: 'Add Meal', icon: FaPlus },
                 { id: 'food-database', name: 'Food Database', icon: FaSearch },
                 { id: 'nutrition-info', name: 'Nutrition Info', icon: FaInfoCircle },
                 { id: 'weekly', name: 'Weekly View', icon: FaCalendarAlt },
@@ -1654,7 +1296,7 @@ const MealTracker = () => {
                 <div className="flex-1">
                   <h2 className="text-3xl font-bold mb-2">Welcome back! 👋</h2>
                   <p className="text-orange-100 text-lg">Track your nutrition journey today</p>
-                  {/* removed period helper text per request */}
+        {/* removed period helper text per request */}
                 </div>
                 <div className="text-right ml-4">
                   {(() => {
@@ -1673,8 +1315,6 @@ const MealTracker = () => {
               </div>
             </div>
 
-            {/* Removed large Add Meal button to declutter the dashboard */}
-
             {/* Enhanced Summary Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
@@ -1682,7 +1322,7 @@ const MealTracker = () => {
                     <div>
                       <p className="text-sm font-medium text-gray-600 mb-1">Calories</p>
                       <p className="text-3xl font-bold text-gray-900">
-                      {getTodaysNutritionData().calories}
+                      {getTodaysCalories()}
                       </p>
                       <p className="text-sm text-gray-500">/ {getCalorieGoal()} goal</p>
                     </div>
@@ -1694,10 +1334,10 @@ const MealTracker = () => {
                     <div className="w-full bg-gray-200 rounded-full h-3">
                       <div
                         className="bg-gradient-to-r from-orange-400 to-red-500 h-3 rounded-full transition-all duration-500"
-                                                      style={{ width: `${Math.min(((getTodaysNutritionData()?.calories || 0) / getCalorieGoal()) * 100, 100)}%` }}
+                                                    style={{ width: `${Math.min(((getTodaysNutritionData()?.calories || 0) / getCalorieGoal()) * 100, 100)}%` }}
                       ></div>
                     </div>
-                                          <p className="text-xs text-gray-500 mt-2">{Math.round(((getTodaysNutritionData()?.calories || 0) / getCalorieGoal()) * 100)}% of daily goal</p>
+                  <p className="text-xs text-gray-500 mt-2">{Math.round((getTodaysCalories() / getCalorieGoal()) * 100)}% of daily goal</p>
                   </div>
                 </div>
 
@@ -1706,7 +1346,7 @@ const MealTracker = () => {
                     <div>
                       <p className="text-sm font-medium text-gray-600 mb-1">Fat (g)</p>
                       <p className="text-3xl font-bold text-gray-900">
-                      {Math.round(getTodaysNutritionData().fat * 10) / 10}
+                      {Math.round(getTodaysFat() * 10) / 10}
                       </p>
                       <p className="text-sm text-gray-500">/ {getMacronutrientGoals().fat.grams}g recommended</p>
                     </div>
@@ -1718,10 +1358,10 @@ const MealTracker = () => {
                     <div className="w-full bg-gray-200 rounded-full h-3">
                       <div
                         className="bg-gradient-to-r from-red-400 to-pink-500 h-3 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.min((getTodaysNutritionData().fat / getMacronutrientGoals().fat.grams) * 100, 100)}%` }}
+                      style={{ width: `${Math.min((getTodaysFat() / getMacronutrientGoals().fat.grams) * 100, 100)}%` }}
                       ></div>
                     </div>
-                  <p className="text-xs text-gray-500 mt-2">{Math.round((getTodaysNutritionData().fat / getMacronutrientGoals().fat.grams) * 100)}% of daily fat</p>
+                  <p className="text-xs text-gray-500 mt-2">{Math.round((getTodaysFat() / getMacronutrientGoals().fat.grams) * 100)}% of daily fat</p>
                   </div>
                 </div>
 
@@ -1730,7 +1370,7 @@ const MealTracker = () => {
                     <div>
                       <p className="text-sm font-medium text-gray-600 mb-1">Cholesterol (mg)</p>
                       <p className="text-3xl font-bold text-gray-900">
-                      {Math.round(getTodaysNutritionData().cholesterol)}
+                      {Math.round(getTodaysCholesterol())}
                       </p>
                       <p className="text-sm text-gray-500">/ {getMacronutrientGoals().cholesterol.mg}mg limit</p>
                     </div>
@@ -1742,10 +1382,10 @@ const MealTracker = () => {
                     <div className="w-full bg-gray-200 rounded-full h-3">
                       <div
                         className="bg-gradient-to-r from-yellow-400 to-orange-500 h-3 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.min((getTodaysNutritionData().cholesterol / getMacronutrientGoals().cholesterol.mg) * 100, 100)}%` }}
+                      style={{ width: `${Math.min((getTodaysCholesterol() / getMacronutrientGoals().cholesterol.mg) * 100, 100)}%` }}
                       ></div>
                     </div>
-                  <p className="text-xs text-gray-500 mt-2">{Math.round((getTodaysNutritionData().cholesterol / getMacronutrientGoals().cholesterol.mg) * 100)}% of daily limit</p>
+                  <p className="text-xs text-gray-500 mt-2">{Math.round((getTodaysCholesterol() / getMacronutrientGoals().cholesterol.mg) * 100)}% of daily limit</p>
                   </div>
                 </div>
 
@@ -1754,7 +1394,7 @@ const MealTracker = () => {
                     <div>
                       <p className="text-sm font-medium text-gray-600 mb-1">Meals Today</p>
                       <p className="text-3xl font-bold text-gray-900">
-                      {getTodaysNutritionData().mealCount}
+                      {getTodaysMealCount()}
                       </p>
                       <p className="text-sm text-gray-500">meals logged</p>
                     </div>
@@ -1770,8 +1410,6 @@ const MealTracker = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Recent Meals moved to bottom with pagination/period filter */}
 
             {/* Enhanced Charts Section */}
             {(dailySummary || mealEntries) && (
@@ -1963,10 +1601,10 @@ const MealTracker = () => {
                                                 <div className="text-center">
                         <p className="text-sm font-medium text-gray-600">Consumed</p>
                           <p className="text-2xl font-bold text-orange-600">
-                            {getTodaysNutritionData()?.calories || 0} kcal
+                            {getTodaysCalories()} kcal
                           </p>
                           <p className="text-xs text-gray-500">
-                            {Math.round(((getTodaysNutritionData()?.calories || 0) / getCalorieGoal()) * 100)}% of goal
+                            {Math.round((getTodaysCalories() / getCalorieGoal()) * 100)}% of goal
                           </p>
                       </div>
                         <div className="w-px h-12 bg-gray-300"></div>
@@ -1979,7 +1617,7 @@ const MealTracker = () => {
                                                 <div className="text-center">
                         <p className="text-sm font-medium text-gray-600">Remaining</p>
                           <p className="text-2xl font-bold text-green-600">
-                            {Math.max(0, getCalorieGoal() - (getTodaysNutritionData()?.calories || 0))} kcal
+                            {Math.max(0, getCalorieGoal() - getTodaysCalories())} kcal
                           </p>
                           <p className="text-xs text-gray-500">Available for today</p>
                       </div>
@@ -1993,7 +1631,7 @@ const MealTracker = () => {
                         <div className="text-center">
                           <p className="text-xs font-medium text-gray-600">Meals Logged</p>
                           <p className="text-lg font-bold text-blue-600">
-                            {getTodaysNutritionData().mealCount}
+                            {getTodaysMealCount()}
                           </p>
                           <p className="text-xs text-gray-500">Today</p>
                         </div>
@@ -2003,13 +1641,8 @@ const MealTracker = () => {
                             {(() => {
                               const todaysMeals = mealEntries ? mealEntries.filter(meal => meal.date === new Date().toISOString().split('T')[0]) : [];
                               if (todaysMeals.length > 0) {
-                                const latestMeal = todaysMeals.sort((a, b) => {
-                                  // Convert time strings to comparable values (e.g., "9:00" -> 900, "14:30" -> 1430)
-                                  const timeA = (a.mealTime || '00:00').replace(':', '');
-                                  const timeB = (b.mealTime || '00:00').replace(':', '');
-                                  return parseInt(timeB) - parseInt(timeA);
-                                })[0];
-                                return latestMeal.mealTime || '--:--';
+                                const latestMeal = todaysMeals.sort((a, b) => new Date(b.mealTime || '00:00') - new Date(a.mealTime || '00:00'))[0];
+                                return latestMeal.mealTime ? new Date(latestMeal.mealTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
                               }
                               return 'None';
                             })()}
@@ -2022,7 +1655,7 @@ const MealTracker = () => {
                             {(() => {
                               const now = new Date();
                               const hoursSince6AM = Math.max(0, now.getHours() - 6);
-                              const todaysCalories = getTodaysNutritionData()?.calories || 0;
+                              const todaysCalories = getTodaysCalories();
                               if (hoursSince6AM > 0) {
                                 return Math.round(todaysCalories / hoursSince6AM);
                               }
@@ -2040,8 +1673,8 @@ const MealTracker = () => {
 
 
 
-            {/* Trend Visualization Section - Removed Weekly Details to avoid duplication */}
-            {false && (
+            {/* Trend Visualization Section */}
+            {(weeklySummary || mealEntries) && (
               <div className="space-y-8">
                 {/* Weekly Overview Header */}
                 <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl p-8 text-white">
@@ -2129,7 +1762,7 @@ const MealTracker = () => {
                         <BarChart
                           data={weeklySummary?.dailyData ? Object.entries(weeklySummary.dailyData).map(([date, data]) => ({
                             day: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
-                            calories: data?.totals?.calories || 0,
+                            calories: data.totals.calories,
                             goal: getCalorieGoal(),
                             date: date
                           })) : []}
@@ -2204,14 +1837,14 @@ const MealTracker = () => {
                         <p className="text-xs text-gray-500">
                           {new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </p>
-                        <p className="text-lg font-bold text-gray-900 mt-2">{data?.totals?.calories || 0}</p>
+                        <p className="text-lg font-bold text-gray-900 mt-2">{data.totals.calories}</p>
                         <p className="text-xs text-gray-500">calories</p>
-                        <p className="text-xs text-gray-400 mt-1">{data?.mealCount || 0} meals</p>
+                        <p className="text-xs text-gray-400 mt-1">{data.mealCount} meals</p>
                         <div className="mt-2">
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div
                               className="bg-orange-500 h-2 rounded-full"
-                              style={{ width: `${Math.min(((data?.totals?.calories || 0) / getCalorieGoal()) * 100, 100)}%` }}
+                              style={{ width: `${Math.min((data.totals.calories / getCalorieGoal()) * 100, 100)}%` }}
                             ></div>
                           </div>
                         </div>
@@ -2234,7 +1867,7 @@ const MealTracker = () => {
                       <p className="text-2xl font-bold text-blue-600">
                         {(() => {
                                                 const maxDay = weeklySummary?.dailyData ? Object.entries(weeklySummary.dailyData).reduce((max, [date, data]) =>
-                        (data?.totals?.calories || 0) > (max?.calories || 0) ? { date, calories: data?.totals?.calories || 0 } : max
+                        data.totals.calories > max.calories ? { date, calories: data.totals.calories } : max
                       , { date: '', calories: 0 }) : { date: '', calories: 0 };
                           return new Date(maxDay.date).toLocaleDateString('en-US', { weekday: 'long' });
                         })()}
@@ -2256,10 +1889,10 @@ const MealTracker = () => {
                   </div>
                 </div>
 
-                {/* Meal Time Analytics - Weekly (Last 7 Days) */}
-                {true ? (
+                {/* Meal Time Analytics */}
+                {mealEntries.length > 0 ? (
                   <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 pb-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-6">Meal Time Analytics ⏰ (Last 7 Days)</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-6">Meal Time Analytics ⏰ (Last 90 Days)</h3>
                                           <div className="space-y-6 mb-2">
                       {/* Meal Time Distribution */}
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -2274,9 +1907,9 @@ const MealTracker = () => {
                                 snack: []
                               };
                               
-                              // Get all meal entries for the last 7 days
+                              // Get all meal entries for the last 90 days
                               const ninetyDaysAgo = new Date();
-                              ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 7);
+                              ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
                               
                               // This would ideally fetch from API, but for now using current mealEntries
                               // In a real implementation, you'd fetch all meals from the last 90 days
@@ -2293,7 +1926,7 @@ const MealTracker = () => {
                               if (!hasData) {
                                 return (
                                   <div className="text-center py-8 text-gray-500">
-                                    <p>No meal time data available for the last 7 days</p>
+                                    <p>No meal time data available for the last 90 days</p>
                                     <p className="text-sm">Add meals with time to see analytics</p>
                                   </div>
                                 );
@@ -2333,7 +1966,7 @@ const MealTracker = () => {
                           <div className="space-y-4">
                             {(() => {
                               const ninetyDaysAgo = new Date();
-                              ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 7);
+                              ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
                               
                               const recentMeals = mealEntries.filter(meal => new Date(meal.date) >= ninetyDaysAgo);
                               const mealsWithTime = recentMeals.filter(meal => meal.mealTime);
@@ -2407,7 +2040,7 @@ const MealTracker = () => {
                                       </span>
                                     </div>
                                     <p className="text-xs text-gray-600 mt-1">
-                                      Most frequent meal time in the last 7 days
+                                      Most frequent meal time in the last 90 days
                                     </p>
                                   </div>
 
@@ -2472,11 +2105,11 @@ const MealTracker = () => {
                       {/* Meal Time Chart */}
                       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                         <div className="lg:col-span-3">
-                           <h4 className="font-medium text-gray-900 mb-4">Daily Meal Pattern (Last 7 Days)</h4>
+                        <h4 className="font-medium text-gray-900 mb-4">Daily Meal Pattern (Last 90 Days)</h4>
                           <div className="h-72">
                           {(() => {
                             const ninetyDaysAgo = new Date();
-                            ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 7);
+                            ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
                             
                             const filteredMeals = mealEntries.filter(meal => {
                               return new Date(meal.date) >= ninetyDaysAgo;
@@ -2486,7 +2119,7 @@ const MealTracker = () => {
                               return (
                                 <div className="flex items-center justify-center h-full text-gray-500">
                                   <div className="text-center">
-                                    <p>No meal data available for the last 7 days</p>
+                                    <p>No meal data available for the last 90 days</p>
                                     <p className="text-sm">Add meals to see the pattern</p>
                                   </div>
                                 </div>
@@ -2588,11 +2221,11 @@ const MealTracker = () => {
                         
                         {/* Top 10 Most Frequent Meals Table */}
                         <div className="mt-4">
-                           <h4 className="font-medium text-gray-900 mb-2">Top 10 Most Frequent Meals (Last 7 Days)</h4>
+                          <h4 className="font-medium text-gray-900 mb-2">Top 10 Most Frequent Meals (Last 90 Days)</h4>
                           <div className="h-32">
                             {(() => {
                               const ninetyDaysAgo = new Date();
-                              ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 7);
+                              ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
                               
                               const filteredMeals = mealEntries.filter(meal => {
                                 return new Date(meal.date) >= ninetyDaysAgo;
@@ -2602,7 +2235,7 @@ const MealTracker = () => {
                                 return (
                                   <div className="flex items-center justify-center h-full text-gray-500">
                                     <div className="text-center">
-                                      <p>No meal data available for the last 7 days</p>
+                                      <p>No meal data available for the last 90 days</p>
                                       <p className="text-sm">Add meals to see frequent meal analysis</p>
                       </div>
                                   </div>
@@ -2817,7 +2450,7 @@ const MealTracker = () => {
                           <div className="space-y-3">
                             {(() => {
                               const ninetyDaysAgo = new Date();
-                              ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 7);
+                              ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
                               
                               const filteredMeals = mealEntries.filter(meal => {
                                 return new Date(meal.date) >= ninetyDaysAgo;
@@ -3015,13 +2648,21 @@ const MealTracker = () => {
 
                     </div>
                   </div>
-                ) : null}
+                ) : (
+                  <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-6">Meal Time Analytics ⏰</h3>
+                    <div className="text-center py-8 text-gray-500">
+                      <p>No meal data available</p>
+                      <p className="text-sm">Add your first meal to see analytics</p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Historical Meal Logs */}
                 {mealEntries?.length > 0 && (
                   <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
                     <h3 className="text-xl font-semibold text-gray-900 mb-6">Historical Meal Logs 📋</h3>
-                  <div className="overflow-x-auto flex-1">
+                    <div className="overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
@@ -3149,261 +2790,23 @@ const MealTracker = () => {
                 )}
               </div>
             )}
-
-            {/* Recent Meals - Bottom Section with Period Tabs and Aggregation */}
-            {Array.isArray(mealEntries) && mealEntries.length > 0 && (
-              <div className="mt-10">
-                <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-semibold text-gray-900">Recent Meals</h3>
-                    <button onClick={() => setShowAddMealPopup(true)} className="text-orange-600 hover:text-orange-700 font-medium">Add meal</button>
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {[
-                      { id: 'today', label: 'Today' },
-                      { id: 'yesterday', label: 'Yesterday' },
-                      { id: '7', label: 'Last 7 Days' },
-                      { id: '15', label: '15 Days' },
-                      { id: '30', label: '30 Days' },
-                      { id: '60', label: '60 Days' },
-                      { id: '90', label: '90 Days' },
-                    ].map(p => (
-                      <button
-                        key={p.id}
-                        onClick={() => setRecentPeriod(p.id)}
-                        className={`px-3 py-1.5 rounded-full text-sm border ${recentPeriod === p.id ? 'bg-orange-100 text-orange-700 border-orange-200' : 'text-gray-600 hover:text-gray-900 border-gray-200 hover:bg-gray-50'}`}
-                      >
-                        {p.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {(() => {
-                    const now = new Date();
-                    let start = new Date(now);
-                    let end = new Date(now);
-                    start.setHours(0,0,0,0);
-                    end.setHours(23,59,59,999);
-                    if (recentPeriod === 'yesterday') {
-                      start.setDate(start.getDate() - 1);
-                      end.setDate(end.getDate() - 1);
-                    } else if (['7','15','30','60','90'].includes(recentPeriod)) {
-                      start.setDate(start.getDate() - (parseInt(recentPeriod, 10) - 1));
-                    }
-
-                    const inRange = (d) => {
-                      // Normalize incoming date string 'YYYY-MM-DD' without timezone shifts
-                      const dateStr = typeof d === 'string' && d.length >= 10 ? d.slice(0,10) : new Date(d).toISOString().slice(0,10);
-                      const s = new Date(start); s.setHours(0,0,0,0);
-                      const e = new Date(end); e.setHours(23,59,59,999);
-                      const dd = new Date(dateStr + 'T12:00:00');
-                      return dd >= s && dd <= e;
-                    };
-
-                    const filtered = [...(mealEntries || [])]
-                      .filter(m => inRange(m.date))
-                      .sort((a,b) => (b.date || '').localeCompare(a.date || '') || (b.mealTime || '').localeCompare(a.mealTime || ''));
-
-                    // Aggregation per day for non-today/yesterday ranges
-                    const showAggregates = !['today', 'yesterday'].includes(recentPeriod);
-                    let aggregates = [];
-                    if (showAggregates) {
-                      const byDate = new Map();
-                      filtered.forEach(m => {
-                        const key = new Date(m.date).toISOString().slice(0,10);
-                        if (!byDate.has(key)) byDate.set(key, { date: key, calories: 0, fat: 0, protein: 0, carbs: 0, cholesterol: 0, count: 0, meals: [] });
-                        const acc = byDate.get(key);
-                        acc.calories += m.calories || 0;
-                        acc.fat += m.fat || 0;
-                        acc.protein += m.protein || 0;
-                        acc.carbs += m.carbs || 0;
-                        acc.cholesterol += m.cholesterol || 0;
-                        acc.count += 1;
-                        acc.meals.push(m);
-                      });
-                      aggregates = Array.from(byDate.values()).sort((a,b) => new Date(b.date) - new Date(a.date));
-                    }
-
-                    return (
-                      <div className="mt-6">
-                        {showAggregates ? (
-                          <div className="space-y-4">
-                            {(() => {
-                              const pageSize = 5;
-                              const totalPages = Math.max(1, Math.ceil(aggregates.length / pageSize));
-                              const safePage = Math.min(recentPage, totalPages);
-                              const startIdx = (safePage - 1) * pageSize;
-                              const pageItems = aggregates.slice(startIdx, startIdx + pageSize);
-                              return (
-                                <>
-                                  {pageItems.map((d) => {
-                                  const isOpen = !!expandedDates[d.date];
-                                  const idxInAgg = aggregates.findIndex(a => a.date === d.date);
-                                  const prevAgg = idxInAgg >= 0 && idxInAgg + 1 < aggregates.length ? aggregates[idxInAgg + 1] : null;
-                                  const calDelta = prevAgg ? d.calories - (prevAgg.calories || 0) : 0;
-                                  const proteinDelta = prevAgg ? Math.round((d.protein - (prevAgg.protein || 0)) * 10) / 10 : 0;
-                                  const calDeltaClass = calDelta > 0 ? 'text-red-600' : calDelta < 0 ? 'text-green-600' : 'text-gray-500';
-                                  const proteinDeltaClass = proteinDelta > 0 ? 'text-red-600' : proteinDelta < 0 ? 'text-green-600' : 'text-gray-500';
-                                  return (
-                                    <div key={d.date} className="border rounded-lg transition hover:shadow-md">
-                                  <button
-                                    onClick={() => setExpandedDates(prev => ({ ...prev, [d.date]: !prev[d.date] }))}
-                                        className="w-full p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg"
-                                    aria-expanded={isOpen}
-                                  >
-                                    <div className="text-left">
-                                      <p className="font-semibold text-gray-900">{new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-                                          <p className="text-xs text-gray-500">
-                                            {d.count} meals • Fat {Math.round(d.fat*10)/10}g • Protein {Math.round(d.protein*10)/10}g • Carbs {Math.round(d.carbs*10)/10}g
-                                          </p>
-                                    </div>
-                                        {/* Middle delta chips */}
-                                        <div className="flex items-center space-x-3">
-                                          {(() => {
-                                            const calChip = `px-2 py-0.5 rounded-full text-xs font-semibold ${calDelta > 0 ? 'bg-red-100 text-red-700' : calDelta < 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`;
-                                            const protChip = `px-2 py-0.5 rounded-full text-xs font-semibold ${proteinDelta > 0 ? 'bg-red-100 text-red-700' : proteinDelta < 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`;
-                                            const calArrow = calDelta > 0 ? '▲' : calDelta < 0 ? '▼' : '•';
-                                            const protArrow = proteinDelta > 0 ? '▲' : proteinDelta < 0 ? '▼' : '•';
-                                            return (
-                                              <>
-                                                <span className={calChip}>{`${calArrow} ${calDelta > 0 ? '+' : calDelta < 0 ? '' : ''}${calDelta} kcal`}</span>
-                                                <span className={protChip}>{`${protArrow} ${proteinDelta > 0 ? '+' : proteinDelta < 0 ? '' : ''}${proteinDelta}g protein`}</span>
-                                              </>
-                                            );
-                                          })()}
-                                        </div>
-                                    <div className="flex items-center space-x-3">
-                                      <p className="text-sm text-gray-600">Calories</p>
-                                          <div className="text-right">
-                                            <p className="text-lg font-bold text-orange-600">{d.calories}</p>
-                                          </div>
-                                      <span className={`transform transition ${isOpen ? 'rotate-180' : ''}`}>⌄</span>
-                                    </div>
-                                  </button>
-                                  {isOpen && (
-                                    <div className="px-4 pb-4 divide-y divide-gray-100">
-                                      {d.meals
-                                        .sort((a,b) => (a.mealTime || '').localeCompare(b.mealTime || ''))
-                                        .map((meal, idx) => (
-                                          <div key={meal._id || idx} className="py-3 flex items-center justify-between">
-                                            <div>
-                                              <p className="text-sm font-medium text-gray-900">{meal.foodName}</p>
-                                              <p className="text-xs text-gray-500">{meal.mealType?.charAt(0).toUpperCase() + meal.mealType?.slice(1)} • {meal.mealTime || '--:--'}</p>
-                                            </div>
-                                            <div className="flex items-center space-x-4">
-                                              <span className="text-sm text-gray-600">{parseFloat(meal.quantity).toFixed(0)} {meal.unit}</span>
-                                              <span className="font-semibold text-orange-600">{meal.calories || 0} cal</span>
-                                              {(recentPeriod === 'today' || recentPeriod === 'yesterday') && (
-                                                <button onClick={() => handleEditMeal(meal)} className="text-blue-600 hover:text-blue-700 text-sm">Edit</button>
-                                              )}
-                                            </div>
-                                          </div>
-                                        ))}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                                  {/* Pagination */}
-                                  {aggregates.length > pageSize && (
-                                    <div className="flex items-center justify-between pt-2">
-                                      <p className="text-xs text-gray-500">Page {Math.min(recentPage, Math.ceil(aggregates.length / pageSize))} of {Math.ceil(aggregates.length / pageSize)}</p>
-                                      <div className="space-x-2">
-                                        <button
-                                          className="px-3 py-1.5 text-sm border rounded disabled:opacity-50"
-                                          onClick={() => setRecentPage(p => Math.max(1, p - 1))}
-                                          disabled={recentPage <= 1}
-                                        >
-                                          Prev
-                                        </button>
-                                        <button
-                                          className="px-3 py-1.5 text-sm border rounded disabled:opacity-50"
-                                          onClick={() => setRecentPage(p => Math.min(Math.ceil(aggregates.length / pageSize), p + 1))}
-                                          disabled={recentPage >= Math.ceil(aggregates.length / pageSize)}
-                                        >
-                                          Next
-                                        </button>
-                                      </div>
-                                    </div>
-                                  )}
-                                </>
-                              );
-                            })()}
-                          </div>
-                        ) : (
-                          <div className="divide-y divide-gray-100">
-                            {[...(filtered || [])]
-                              .sort((a, b) => (b.mealTime || '00:00').localeCompare(a.mealTime || '00:00'))
-                              .map((meal, idx) => {
-                              const mealDate = new Date(meal.date);
-                              const mealDateStr = mealDate.toISOString().slice(0,10);
-                              const todayStr = new Date().toISOString().slice(0,10);
-                              const isToday = mealDateStr === todayStr;
-                              const isLatest = idx === 0;
-                              return (
-                                <div key={meal._id || idx} className="py-3 flex items-center justify-between">
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex items-center space-x-3">
-                                      <p className="font-medium text-gray-900 truncate">{meal.foodName}</p>
-                                      <div className="flex items-center space-x-2">
-                                        {recentPeriod === 'today' && isLatest && (
-                                          <span className="text-[10px] uppercase tracking-wide bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Latest</span>
-                                        )}
-                                        {isToday && <span className="text-[10px] uppercase tracking-wide bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Today</span>}
-                                      </div>
-                                    </div>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                      {meal.mealType?.charAt(0).toUpperCase() + meal.mealType?.slice(1) || 'Meal'} • {meal.mealTime || '--:--'} • {mealDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                    </p>
-                                  </div>
-                                  <div className="flex items-center space-x-4">
-                                    <span className="text-sm text-gray-600">{parseFloat(meal.quantity).toFixed(0)} {meal.unit}</span>
-                                    <span className="font-semibold text-orange-600">{meal.calories || 0} cal</span>
-                                    <span className="text-xs text-gray-500">{Math.round((meal.protein||0)*10)/10}g protein</span>
-                                    <span className="text-xs text-gray-500">{Math.round((meal.carbs||0)*10)/10}g carbs</span>
-                                    {(recentPeriod === 'today' || recentPeriod === 'yesterday') && (
-                                      <button onClick={() => handleEditMeal(meal)} className="text-blue-600 hover:text-blue-700 text-sm">Edit</button>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                            {filtered.length === 0 && (
-                              <div className="py-6 text-center text-sm text-gray-500">No meals in this period</div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-            )}
           </div>
         )}
 
-        {/* Add Meal Tab - Removed to fix errors */}
-        {false && (
-          <div className="space-y-8">
-            {/* Header Section */}
-            <div className="bg-gradient-to-r from-green-500 to-blue-500 rounded-xl p-8 text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-3xl font-bold mb-2">Add New Meal 🍽️</h2>
-                  <p className="text-green-100 text-lg">Track your nutrition intake</p>
-                  <p className="text-green-100 mt-2">Date: {new Date(selectedDate).toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-4xl font-bold">{dailySummary?.totals.calories || 0}</div>
-                  <div className="text-green-100">Calories Today</div>
-                </div>
-              </div>
-            </div>
+        {/* Add Meal Tab */}
+        {activeTab === 'add-meal' && (
+          <AddMealPage 
+            foodDatabase={foodDatabase}
+            onMealAdded={(newMeal) => {
+              // Refresh meal entries after adding a new meal
+              fetchMealEntries();
+              fetchDailySummary();
+              fetchWeeklySummary();
+              fetchMonthlySummary();
+            }}
+            onBack={() => setActiveTab('dashboard')}
+          />
+        )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Food Selection Panel */}
@@ -3421,8 +2824,8 @@ const MealTracker = () => {
                     <input
                       type="text"
                       placeholder="Search for food items..."
-                      value={searchTerm || ''}
-                      onChange={(e) => setSearchTerm(e.target.value || '')}
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                       className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     />
                     <FaSearch className="absolute left-3 top-3.5 text-gray-400" />
@@ -3432,104 +2835,86 @@ const MealTracker = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Category</label>
                     <select
-                      value={selectedCategory || 'all'}
-                      onChange={(e) => setSelectedCategory(e.target.value || 'all')}
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="all">All Categories</option>
-                      {categories?.map((category) => (
-                        <option key={category || 'unknown'} value={category || 'unknown'}>{category || 'Unknown'}</option>
+                      {categories.map((category) => (
+                        <option key={category} value={category}>{category}</option>
                       ))}
                     </select>
                   </div>
 
                   {/* Food List */}
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {(() => {
-                      const filteredFoods = foodDatabase?.filter(food => {
-                        if (!food || !food.name) return false;
-                        const searchLower = (searchTerm || '').toLowerCase();
-                        const categoryMatch = selectedCategory === 'all' || food.category === selectedCategory;
-                        return (food.name.toLowerCase().includes(searchLower) ||
-                               (food.hinglish && food.hinglish.toLowerCase().includes(searchLower))) && categoryMatch;
-                      }) || [];
-                      
-                      return filteredFoods.map((food, index) => (
+                    {filteredFoods.map((food, index) => (
                       <div
                         key={index}
                         className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                          selectedFood?.name === food?.name
+                          selectedFood?.name === food.name
                             ? 'border-orange-500 bg-orange-50'
                             : 'border-gray-200 hover:border-orange-300 hover:bg-gray-50'
                         }`}
                         onClick={() => {
                           setSelectedFood(food);
-                          setSelectedFoodForHistory(food?.name || '');
+                          setSelectedFoodForHistory(food.name);
                         }}
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <h4 className="font-medium text-gray-900 text-sm">{food?.name || 'Unknown Food'}</h4>
-                            <p className="text-xs text-gray-500 italic">{food?.hinglish || ''}</p>
+                            <h4 className="font-medium text-gray-900 text-sm">{food.name}</h4>
+                            <p className="text-xs text-gray-500 italic">{food.hinglish}</p>
                             <div className="flex items-center mt-1 space-x-3">
-                              <span className="text-xs font-semibold text-orange-600">{(food?.calories || 0)} cal</span>
-                              <span className="text-xs text-red-600">{(food?.fat || 0)}g fat</span>
+                              <span className="text-xs font-semibold text-orange-600">{food.calories || 0} cal</span>
+                              <span className="text-xs text-red-600">{food.fat}g fat</span>
                               <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                (food?.cholesterol || 0) <= 50 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                food.cholesterol <= 50 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                               }`}>
-                                {(food?.cholesterol || 0)}mg ❤️
+                                {food.cholesterol}mg ❤️
                               </span>
                             </div>
                           </div>
                           <div className="text-right">
                             <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                              {food?.category || 'Unknown'}
+                              {food.category}
                             </span>
                           </div>
                         </div>
                       </div>
-                    ));
-                    })()}
+                    ))}
                   </div>
 
-                  {/* Recent Meal History for Selected Food (show latest 3) */}
+                  {/* Recent Meal History for Selected Food */}
                   {selectedFoodForHistory && (
                     <div className="mt-4 border-t pt-4">
                       <h4 className="font-medium text-gray-900 mb-3 text-sm">Recent History for "{selectedFoodForHistory}"</h4>
-                      <div className="space-y-2">
-                        {[...(mealEntries || [])]
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {mealEntries
                           .filter(meal => meal.foodName === selectedFoodForHistory)
                           .sort((a, b) => new Date(b.date) - new Date(a.date))
-                          .slice(0, 3)
-                          .map((meal, index) => {
-                            const mealDate = new Date(meal.date);
-                            const mealDateStr = mealDate.toISOString().slice(0, 10);
-                            const todayStr = new Date().toISOString().slice(0, 10);
-                            const isToday = mealDateStr === todayStr;
-                            const isLatest = index === 0;
-                            return (
-                              <div key={index} className="p-2 bg-gray-50 rounded text-xs flex items-center justify-between">
-                                <div className="min-w-0">
-                                  <div className="flex items-center space-x-2">
+                          .slice(0, 5)
+                          .map((meal, index) => (
+                            <div key={index} className="p-2 bg-gray-50 rounded text-xs">
+                              <div className="flex justify-between items-center">
                                 <span className="text-gray-600">
-                                      {mealDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  {new Date(meal.date).toLocaleDateString('en-US', { 
+                                    month: 'short', 
+                                    day: 'numeric' 
+                                  })}
                                 </span>
-                                    {isLatest && (<span className="text-[10px] uppercase bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full">Latest</span>)}
-                                    {isToday && (<span className="text-[10px] uppercase bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Today</span>)}
+                                <span className="text-gray-500">{parseFloat(meal.quantity).toFixed(2)} {meal.unit}</span>
+                                <span className="font-semibold text-orange-600">{meal.calories || 0} cal</span>
                               </div>
-                                  <div className="text-gray-500 mt-1 truncate">
+                              <div className="text-gray-500 mt-1">
                                 {meal.mealType.charAt(0).toUpperCase() + meal.mealType.slice(1)} • {meal.mealTime || '--:--'}
                               </div>
                             </div>
-                                <div className="flex items-center space-x-3">
-                                  <span className="text-gray-500">{parseFloat(meal.quantity).toFixed(0)} {meal.unit}</span>
-                                  <span className="font-semibold text-orange-600">{meal?.calories || 0} cal</span>
+                          ))}
+                        {mealEntries.filter(meal => meal.foodName === selectedFoodForHistory).length === 0 && (
+                          <div className="text-center py-2 text-gray-500 text-xs">
+                            No previous entries for this food
                           </div>
-                              </div>
-                            );
-                          })}
-                        {([...(mealEntries || [])].filter(meal => meal.foodName === selectedFoodForHistory).length === 0) && (
-                          <div className="text-center py-2 text-gray-500 text-xs">No previous entries for this food</div>
                         )}
                       </div>
                     </div>
@@ -3560,7 +2945,7 @@ const MealTracker = () => {
                             <p className="text-sm text-gray-500 mt-1">{selectedFood.category}</p>
                           </div>
                           <div className="text-right">
-                                                          <p className="text-2xl font-bold text-green-600">{(selectedFood?.calories || 0)} cal</p>
+                            <p className="text-2xl font-bold text-green-600">{selectedFood.calories || 0} cal</p>
                             <p className="text-sm text-gray-500">per 100g</p>
                           </div>
                         </div>
@@ -3574,9 +2959,9 @@ const MealTracker = () => {
                             <PieChart>
                               <Pie
                                 data={[
-                                  { name: 'Fat', value: selectedFood?.fat || 0, color: '#ef4444' },
-                                  { name: 'Protein', value: Math.round(((selectedFood?.calories || 0)) * 0.15 / 4), color: '#3b82f6' },
-                                  { name: 'Carbs', value: Math.round((((selectedFood?.calories || 0)) - (((selectedFood?.fat || 0)) * 9) - (Math.round(((selectedFood?.calories || 0)) * 0.15 / 4) * 4)) / 4), color: '#10b981' },
+                                  { name: 'Fat', value: selectedFood.fat || 0, color: '#ef4444' },
+                                  { name: 'Protein', value: Math.round((selectedFood.calories || 0) * 0.15 / 4), color: '#3b82f6' },
+                                  { name: 'Carbs', value: Math.round(((selectedFood.calories || 0) - ((selectedFood.fat || 0) * 9) - (Math.round((selectedFood.calories || 0) * 0.15 / 4) * 4)) / 4), color: '#10b981' },
                                 ]}
                                 cx="50%"
                                 cy="50%"
@@ -3586,9 +2971,9 @@ const MealTracker = () => {
                                 label={({ name, value }) => `${name}: ${value}g`}
                               >
                                 {[
-                                  { name: 'Fat', value: selectedFood?.fat || 0, color: '#ef4444' },
-                                  { name: 'Protein', value: Math.round(((selectedFood?.calories || 0)) * 0.15 / 4), color: '#3b82f6' },
-                                  { name: 'Carbs', value: Math.round((((selectedFood?.calories || 0)) - (((selectedFood?.fat || 0)) * 9) - (Math.round(((selectedFood?.calories || 0)) * 0.15 / 4) * 4)) / 4), color: '#10b981' },
+                                  { name: 'Fat', value: selectedFood.fat || 0, color: '#ef4444' },
+                                  { name: 'Protein', value: Math.round((selectedFood.calories || 0) * 0.15 / 4), color: '#3b82f6' },
+                                  { name: 'Carbs', value: Math.round(((selectedFood.calories || 0) - ((selectedFood.fat || 0) * 9) - (Math.round((selectedFood.calories || 0) * 0.15 / 4) * 4)) / 4), color: '#10b981' },
                                 ].map((entry, index) => (
                                   <Cell key={`cell-${index}`} fill={entry.color} />
                                 ))}
@@ -3608,7 +2993,7 @@ const MealTracker = () => {
                             </label>
                             <input
                               type="number"
-                              value={quantity || ''}
+                              value={quantity}
                               onChange={(e) => setQuantity(parseFloat(e.target.value) || 0)}
                               min="0"
                               step="0.1"
@@ -3621,8 +3006,8 @@ const MealTracker = () => {
                               Unit
                             </label>
                             <select
-                              value={unit || ''}
-                              onChange={(e) => setUnit(e.target.value || '')}
+                              value={unit}
+                              onChange={(e) => setUnit(e.target.value)}
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             >
                               <option value="">Select Unit</option>
@@ -3642,8 +3027,8 @@ const MealTracker = () => {
                             Meal Type
                           </label>
                           <select
-                            value={mealType || ''}
-                            onChange={(e) => setMealType(e.target.value || '')}
+                            value={mealType}
+                            onChange={(e) => setMealType(e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           >
                             <option value="">Select Meal Type</option>
@@ -3659,8 +3044,8 @@ const MealTracker = () => {
                             Notes (Optional)
                           </label>
                           <textarea
-                            value={notes || ''}
-                            onChange={(e) => setNotes(e.target.value || '')}
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
                             rows="3"
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Add any notes about this meal..."
@@ -3769,7 +3154,6 @@ const MealTracker = () => {
 
         {/* Food Database Tab */}
         {activeTab === 'food-database' && (
-          <>
           <div className="bg-white rounded-lg shadow-sm border">
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">Food Database</h2>
@@ -3804,105 +3188,6 @@ const MealTracker = () => {
 
               {/* Food Table */}
               <div className="overflow-x-auto">
-                {/* Quick Edit Manager moved below table */}
-                {/* Add Food CTA */}
-                <div className="flex justify-end mb-4">
-                  <button
-                    onClick={() => setShowAddFood(true)}
-                    className="inline-flex items-center px-3 py-2 text-sm rounded-md bg-orange-600 text-white hover:bg-orange-700"
-                  >
-                    + Add Food
-                  </button>
-                </div>
-
-                {/* Add Food Modal */}
-                {showAddFood && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold">Add Custom Food</h3>
-                        <button onClick={() => setShowAddFood(false)} className="text-gray-500 hover:text-gray-700">✕</button>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="md:col-span-2">
-                          <label className="block text-sm text-gray-700 mb-1">Food Item</label>
-                          <input value={newFood.name} onChange={e=>setNewFood(prev=>({...prev,name:e.target.value}))} className="w-full px-3 py-2 border rounded-md" placeholder="e.g., Almonds (roasted)" />
-                        </div>
-                        <div>
-                          <label className="block text-sm text-gray-700 mb-1">Quantity</label>
-                          <input type="number" step="0.01" value={newFood.quantity} onChange={e=>setNewFood(prev=>({...prev,quantity:e.target.value}))} className="w-full px-3 py-2 border rounded-md" placeholder="e.g., 1" />
-                        </div>
-                        <div>
-                          <label className="block text-sm text-gray-700 mb-1">Unit</label>
-                          <select value={newFood.unit} onChange={e=>setNewFood(prev=>({...prev,unit:e.target.value}))} className="w-full px-3 py-2 border rounded-md">
-                            <option value="">Select Unit</option>
-                            <option value="grams">grams</option>
-                            <option value="cups">cups</option>
-                            <option value="tsp">tsp</option>
-                            <option value="tbsp">tbsp</option>
-                            <option value="ml">ml</option>
-                            <option value="pieces">pieces</option>
-                            <option value="slices">slices</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm text-gray-700 mb-1">Category</label>
-                          <select value={newFood.category} onChange={e=>setNewFood(prev=>({...prev,category:e.target.value}))} className="w-full px-3 py-2 border rounded-md">
-                            {[...new Set([...(categories||[]), 'Fruit', 'Cold Drinks', 'Juice', 'Other'])].map(c => (<option key={c} value={c}>{c}</option>))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm text-gray-700 mb-1">Calories (kcal)
-                            <button type="button" className="ml-1 text-gray-400" title="Use values provided by your nutritionist or trusted internet sources.">ⓘ</button>
-                          </label>
-                          <input type="number" value={newFood.calories} onChange={e=>setNewFood(prev=>({...prev,calories:e.target.value}))} className="w-full px-3 py-2 border rounded-md" />
-                        </div>
-                        <div>
-                          <label className="block text-sm text-gray-700 mb-1">Fat (g)
-                            <button type="button" className="ml-1 text-gray-400" title="Use values provided by your nutritionist or trusted internet sources.">ⓘ</button>
-                          </label>
-                          <input type="number" step="0.1" value={newFood.fat} onChange={e=>setNewFood(prev=>({...prev,fat:e.target.value}))} className="w-full px-3 py-2 border rounded-md" />
-                        </div>
-                        <div>
-                          <label className="block text-sm text-gray-700 mb-1">Cholesterol (mg)
-                            <button type="button" className="ml-1 text-gray-400" title="Use values provided by your nutritionist or trusted internet sources.">ⓘ</button>
-                          </label>
-                          <input type="number" value={newFood.cholesterol} onChange={e=>setNewFood(prev=>({...prev,cholesterol:e.target.value}))} className="w-full px-3 py-2 border rounded-md" />
-                        </div>
-                      </div>
-                      <div className="mt-6 flex justify-end space-x-2">
-                        <button onClick={()=>setShowAddFood(false)} className="px-4 py-2 text-sm rounded-md border">Cancel</button>
-                        <button
-                          onClick={async ()=>{
-                            try{
-                              const storedUser = JSON.parse(localStorage.getItem('currentUser')||'{}');
-                              const userId = (currentUser?.id||currentUser?._id||storedUser?.id||storedUser?._id);
-                              if(!userId){ console.error('No user id'); return; }
-                              if(!newFood.name || !newFood.category) return;
-                              await foodAPI.addUserFood({ userId, ...newFood, calories:Number(newFood.calories), fat:Number(newFood.fat), cholesterol:Number(newFood.cholesterol), quantity: newFood.quantity? Number(newFood.quantity): null, unit: newFood.unit||'' });
-                              toast.success('New food item added');
-                              setShowAddFood(false);
-                              setNewFood({ name:'', category: categories?.[0]||'Beverages', calories:'', fat:'', cholesterol:'', quantity:'', unit:'' });
-                              // Refresh list with userId to include custom food
-                              const response = await api.get('/meals/food-database', { params: { userId } });
-                              if(response.data?.success){
-                                setFoodDatabase(response.data.data.foods);
-                                setCategories(response.data.data.categories);
-                                // Jump to first page so the user sees their item immediately
-                                setCurrentPage(1);
-                              }
-                            }catch(err){
-                              console.error('Add food failed', err);
-                            }
-                          }}
-                          className="px-4 py-2 text-sm rounded-md bg-orange-600 text-white hover:bg-orange-700"
-                        >
-                          Save Food
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
                 {loading ? (
                   <div className="flex justify-center items-center py-12">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
@@ -3928,31 +3213,13 @@ const MealTracker = () => {
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Cholesterol (mg)
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quick Edit</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {/* Pin user foods to the top of page 1 */}
-                        {(() => {
-                          const userFirst = (foods) => {
-                            const userFoods = foods.filter(f => f.isUserFood);
-                            const others = foods.filter(f => !f.isUserFood);
-                            return [...userFoods, ...others];
-                          };
-                          const pageItems = currentPage === 1 ? userFirst(paginatedFoods) : paginatedFoods;
-                          return pageItems.map((food, index) => (
+                        {paginatedFoods.map((food, index) => (
                           <tr key={index} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center space-x-2">
-                                <div className="text-sm font-medium text-gray-900">{food.displayName || food.name}</div>
-                                {food.isUserFood && (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 border border-orange-200">Only for you</span>
-                                )}
-                                {!food.isUserFood && (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-200">Default</span>
-                                )}
-                              </div>
+                              <div className="text-sm font-medium text-gray-900">{food.name}</div>
                               {food.hinglish && (
                                 <div className="text-xs text-gray-400 italic">{food.hinglish}</div>
                               )}
@@ -3963,116 +3230,24 @@ const MealTracker = () => {
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {food?.calories || 0}
+                              {food.calories}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {food?.fat || 0}
+                              {food.fat}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                (food?.cholesterol || 0) <= 50
+                                food.cholesterol <= 50
                                   ? 'bg-green-100 text-green-800'
                                   : 'bg-yellow-100 text-yellow-800'
                               }`}>
-                                {food?.cholesterol || 0}
+                                {food.cholesterol}
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              {food.isUserFood ? (
-                                <div className="flex items-center space-x-2">
-                                  <button
-                                    className="px-2 py-1 text-xs rounded border hover:bg-gray-50"
-                                    onClick={() => {
-                                      setShowAddFood(true);
-                                      setNewFood({
-                                        name: food.name,
-                                        category: food.category,
-                                        calories: String(food.calories||''),
-                                        fat: String(food.fat||''),
-                                        cholesterol: String(food.cholesterol||''),
-                                        quantity: String(food.quantity||''),
-                                        unit: food.unit||''
-                                      });
-                                    }}
-                                  >Edit</button>
-                                  <button
-                                    className="px-2 py-1 text-xs rounded border border-red-300 text-red-600 hover:bg-red-50"
-                                    onClick={() => { setFoodPendingDelete(food); setShowDeleteConfirm(true); }}
-                                  >Delete</button>
-                                </div>
-                              ) : (
-                                <span className="text-xs text-gray-400">—</span>
-                              )}
-                            </td>
-                            {/* Quick Edit action button (Food Database page) */}
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              {(() => {
-                                const inQuick = quickEditFoods.find(q => q.name === (food.displayName || food.name));
-                                const canAdd = quickEditFoods.length < 10 && !inQuick;
-                                return (
-                                  <button
-                                    className={`inline-flex items-center px-2 py-1 text-xs rounded ${canAdd ? 'bg-orange-600 text-white hover:bg-orange-700' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
-                                    disabled={!canAdd}
-                                    onClick={() => {
-                                      if (!canAdd) return;
-                                      setQuickEditFoods(prev => [...prev, { name: (food.displayName || food.name) }]);
-                                      toast.success('Added to Quick Edit');
-                                    }}
-                                    title={inQuick ? 'Already in Quick Edit' : (quickEditFoods.length >= 10 ? 'Quick Edit is full (10 items)' : 'Add to Quick Edit')}
-                                  >
-                                    <FaRegStar className="mr-1" /> Add
-                                  </button>
-                                );
-                              })()}
-                            </td>
                           </tr>
-                          ));
-                        })()}
+                        ))}
                       </tbody>
                     </table>
-
-                    {/* Quick Edit Manager moved outside the Food Database container */}
-
-                    {/* Beautiful Delete Confirmation Modal */}
-                    {showDeleteConfirm && (
-                      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40">
-                        <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6">
-                          <div className="flex items-start space-x-3">
-                            <div className="shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-semibold">!</div>
-                            <div className="flex-1">
-                              <h4 className="text-lg font-semibold text-gray-900">Delete food item?</h4>
-                              <p className="text-sm text-gray-600 mt-1">Do you really want to delete <span className="font-bold text-gray-900">{foodPendingDelete?.displayName || foodPendingDelete?.name}</span>? This action cannot be undone.</p>
-                            </div>
-                          </div>
-                          <div className="mt-6 flex justify-end space-x-3">
-                            <button
-                              className="px-4 py-2 rounded-lg border bg-white hover:bg-gray-50"
-                              onClick={() => { setShowDeleteConfirm(false); setFoodPendingDelete(null); }}
-                            >Cancel</button>
-                            <button
-                              className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
-                              onClick={async () => {
-                                try {
-                                  const toDelete = foodPendingDelete;
-                                  setShowDeleteConfirm(false);
-                                  setFoodPendingDelete(null);
-                                  await api.delete(`/meals/food/${toDelete._id}`);
-                                  toast.success('Food item deleted');
-                                  const storedUser = JSON.parse(localStorage.getItem('currentUser')||'{}');
-                                  const userId = (currentUser?.id||currentUser?._id||storedUser?.id||storedUser?._id);
-                                  const resp = await api.get('/meals/food-database', { params: { userId } });
-                                  if(resp.data?.success){
-                                    setFoodDatabase(resp.data.data.foods);
-                                    setCategories(resp.data.data.categories);
-                                    setCurrentPage(1);
-                                  }
-                                } catch(e){ console.error('Delete user food failed', e); }
-                              }}
-                            >Delete</button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                     
                     {/* Enhanced Pagination Controls */}
                     <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
@@ -4203,100 +3378,37 @@ const MealTracker = () => {
               </div>
             </div>
           </div>
-
-          {/* Quick Edit Manager (outside of the table container) */}
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mt-6">
-            <div className="max-w-6xl mx-auto">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-semibold text-orange-800">Quick Edit List</h4>
-                <span className="text-xs text-orange-700">{quickEditFoods.length}/10</span>
-              </div>
-              {quickEditFoods.length === 0 ? (
-                <p className="text-sm text-orange-700">Add items using the “Add” buttons in the Food Database table above. You can add up to 10 and reorder them here.</p>
-              ) : (
-                <div className="space-y-2">
-                  {quickEditFoods.map((q, idx) => (
-                    <div key={q.name} className="flex items-center justify-between bg-white rounded border border-orange-200 px-3 py-2">
-                      <span className="text-sm font-medium text-gray-900 truncate">{q.name}</span>
-                      <div className="flex items-center space-x-2">
-                        <button className="text-gray-600 hover:text-gray-800 disabled:opacity-40" disabled={idx===0} onClick={() => setQuickEditFoods(prev => { const arr=[...prev]; const t=arr[idx]; arr[idx]=arr[idx-1]; arr[idx-1]=t; return arr; })}><FaArrowUp /></button>
-                        <button className="text-gray-600 hover:text-gray-800 disabled:opacity-40" disabled={idx===quickEditFoods.length-1} onClick={() => setQuickEditFoods(prev => { const arr=[...prev]; const t=arr[idx]; arr[idx]=arr[idx+1]; arr[idx+1]=t; return arr; })}><FaArrowDown /></button>
-                        <button className="text-red-600 hover:text-red-700" onClick={() => setQuickEditFoods(prev => prev.filter((_,i)=>i!==idx))}><FaTimes /></button>
-                      </div>
-                    </div>
-                  ))}
-          </div>
-              )}
-            </div>
-          </div>
-          </>
         )}
 
         {/* Nutrition Info Tab */}
         {activeTab === 'nutrition-info' && (
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Nutrition Information</h2>
-            <div className="flex flex-col space-y-6">
-              {/* Energy Expenditure (4 columns, high to low) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Energy Expenditure */}
               <div className="bg-gray-50 p-6 rounded-lg shadow-sm border">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Energy Expenditure</h3>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 table-fixed">
+                  <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-100">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Activity</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Energy (kcal/hr)</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Activity</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Energy (kcal/hr)</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Activity
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Energy (kcal/hour)
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {(() => {
-                        const sorted = [...energyExpenditure].sort((a,b) => b.energy - a.energy);
-                        const rows = [];
-                        for (let i = 0; i < sorted.length; i += 2) {
-                          const a = sorted[i];
-                          const b = sorted[i+1];
-                          rows.push(
-                            <tr key={i} className="hover:bg-gray-50">
-                              <td className="px-4 py-3 whitespace-normal text-sm font-medium text-gray-900 break-words">{a?.activity || ''}</td>
-                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{a?.energy ?? ''}</td>
-                              <td className="px-4 py-3 whitespace-normal text-sm font-medium text-gray-900 break-words">{b?.activity || ''}</td>
-                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{b?.energy ?? ''}</td>
-                            </tr>
-                          );
-                        }
-                        return rows;
-                      })()}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Standard Portions (right of Energy Expenditure) */}
-              <div className="bg-gray-50 p-6 rounded-lg shadow-sm border">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Standard Portions</h3>
-                <div>
-                  <table className="min-w-full table-fixed divide-y divide-gray-200">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3">Food Group</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">Portion (g)</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">Energy (kcal)</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">Protein (g)</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">Carbs (g)</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">Fat (g)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {standardPortions.map((portion, index) => (
+                      {energyExpenditure.map((activity, index) => (
                         <tr key={index} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 whitespace-normal text-sm font-medium text-gray-900 break-words">{portion.foodGroup}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{portion.portion}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{portion.energy}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{portion.protein}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{portion.carbs}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{portion.fat}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {activity.activity}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {activity.energy}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -4305,31 +3417,31 @@ const MealTracker = () => {
               </div>
 
               {/* Dietary Allowances */}
-              <div className="bg-gray-50 p-6 rounded-lg shadow-sm border md:col-span-2">
+              <div className="bg-gray-50 p-6 rounded-lg shadow-sm border">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Dietary Allowances</h3>
-                <div>
-                  <table className="min-w-full table-fixed divide-y divide-gray-200">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-100">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Group
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Weight (kg)
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Energy (kcal)
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Protein (g)
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Fat (g)
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Calcium (mg)
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Iron (mg)
                         </th>
                       </tr>
@@ -4337,25 +3449,25 @@ const MealTracker = () => {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {dietaryAllowances.map((group, index) => (
                         <tr key={index} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 whitespace-normal text-sm font-medium text-gray-900 break-words">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {group.group}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {group.weight}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {group.energy}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {group.protein}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {group.fat}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {group.calcium}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {group.iron}
                           </td>
                         </tr>
@@ -4365,78 +3477,63 @@ const MealTracker = () => {
                 </div>
               </div>
 
-
-              {/* Glycemic Index – explainer with right sidebar */}
-              <div className="bg-white p-6 rounded-lg shadow-sm border md:col-span-2">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Glycemic Index (GI)</h3>
-                <div className="grid grid-cols-1 gap-6">
-                  {/* Main GI explainer */}
-                  <div>
-                    <p className="text-sm text-gray-700 mb-4">GI is a 0–100 scale that shows how fast a carbohydrate food raises blood sugar compared to pure glucose (GI 100). High‑GI foods act quickly and can spike glucose; low‑GI foods are slower and steadier.</p>
-
-                    {/* Visual scale */}
-                    <div className="mb-6">
-                      <div className="relative h-3 rounded-full bg-gradient-to-r from-green-400 via-yellow-400 to-red-500">
-                        <span className="absolute -top-6 left-0 text-xs font-medium text-green-700">Low ≤ 55</span>
-                        <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-medium text-yellow-700">Medium 56–69</span>
-                        <span className="absolute -top-6 right-0 text-xs font-medium text-red-700">High ≥ 70</span>
+              {/* Standard Portions */}
+              <div className="bg-gray-50 p-6 rounded-lg shadow-sm border">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Standard Portions</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Food Group
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Portion (g)
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Energy (kcal)
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Protein (g)
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Carbs (g)
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Fat (g)
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {standardPortions.map((portion, index) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {portion.foodGroup}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {portion.portion}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {portion.energy}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {portion.protein}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {portion.carbs}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {portion.fat}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* How it works */}
-                      <div className="bg-gray-50 rounded-md p-5 border">
-                        <p className="text-sm font-semibold text-gray-900 mb-3">How it works</p>
-                        <ul className="space-y-2 text-sm text-gray-700">
-                          <li className="flex items-start gap-2"><FaInfoCircle className="mt-0.5 text-gray-500"/><span><span className="font-medium">Carbohydrates only:</span> GI applies to carb‑containing foods.</span></li>
-                          <li className="flex items-start gap-2"><FaInfoCircle className="mt-0.5 text-gray-500"/><span><span className="font-medium">Reference food:</span> Glucose is GI 100.</span></li>
-                          <li className="flex items-start gap-2"><FaInfoCircle className="mt-0.5 text-gray-500"/><span><span className="font-medium">Ranking:</span> A food with GI 70 raises blood sugar ~30% less than glucose.</span></li>
-                          <li className="flex items-start gap-2"><FaInfoCircle className="mt-0.5 text-gray-500"/><span className="flex flex-wrap items-center gap-2"><span className="font-medium">Categories:</span>
-                            <span className="px-2 py-0.5 text-xs rounded-full bg-green-100 text-green-800">Low ≤ 55</span>
-                            <span className="px-2 py-0.5 text-xs rounded-full bg-yellow-100 text-yellow-800">Medium 56–69</span>
-                            <span className="px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-800">High ≥ 70</span>
-                          </span></li>
-                        </ul>
-                      </div>
-
-                      {/* Factors affecting GI */}
-                      <div className="bg-gray-50 rounded-md p-5 border">
-                        <p className="text-sm font-semibold text-gray-900 mb-3">Factors affecting GI</p>
-                        <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
-                          <li>Processing and refinement</li>
-                          <li>Fiber content</li>
-                          <li>Cooking method (e.g., cook and cool rice to lower GI)</li>
-                          <li>Ripeness of fruits/vegetables</li>
-                          <li>Fat and protein with the meal</li>
-                        </ul>
-                      </div>
-
-                      {/* Why it’s important */}
-                      <div className="bg-gray-50 rounded-md p-5 border">
-                        <p className="text-sm font-semibold text-gray-900 mb-3">Why is GI important?</p>
-                        <ul className="space-y-2 text-sm text-gray-700">
-                          <li className="flex items-start gap-2"><FaCheckCircle className="mt-0.5 text-green-600"/><span>Helpful for blood sugar management</span></li>
-                          <li className="flex items-start gap-2"><FaCheckCircle className="mt-0.5 text-green-600"/><span>May support weight management via better satiety</span></li>
-                          <li className="flex items-start gap-2"><FaCheckCircle className="mt-0.5 text-green-600"/><span>Fits within a balanced, nutrient‑dense eating pattern</span></li>
-                        </ul>
-                      </div>
-
-                      {/* Important considerations */}
-                      <div className="bg-gray-50 rounded-md p-5 border">
-                        <p className="text-sm font-semibold text-gray-900 mb-3">Important considerations</p>
-                        <ul className="space-y-2 text-sm text-gray-700">
-                          <li className="flex items-start gap-2"><FaInfoCircle className="mt-0.5 text-gray-500"/><span>GI is one input. Also consider portions, nutrients, and overall diet quality.</span></li>
-                          <li className="flex items-start gap-2"><FaInfoCircle className="mt-0.5 text-gray-500"/><span>Individual responses vary; track how foods affect you.</span></li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Glycemic Index – table with right sidebar (symmetric cards) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 items-stretch">
-                <div className="bg-gray-50 p-6 rounded-lg shadow-sm border h-full flex flex-col">
+              {/* Glycemic Index */}
+              <div className="bg-gray-50 p-6 rounded-lg shadow-sm border">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Glycemic Index</h3>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
@@ -4464,90 +3561,6 @@ const MealTracker = () => {
                     </tbody>
                   </table>
                 </div>
-                </div>
-                <aside className="bg-gray-50 rounded-lg shadow-sm p-6 border h-full flex flex-col">
-                  <p className="text-sm font-semibold text-gray-900 mb-4">Low‑GI friendly choices</p>
-                  <div className="space-y-3 mb-4 flex-1 overflow-auto">
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Fruits</p>
-                      <div className="flex flex-wrap gap-2">
-                        {['Apples','Berries','Oranges','Lemons','Limes','Grapefruit'].map(i=> <span key={i} className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">{i}</span>)}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Non‑starchy vegetables</p>
-                      <div className="flex flex-wrap gap-2">
-                        {['Broccoli','Cauliflower','Carrots','Spinach','Tomatoes'].map(i=> <span key={i} className="px-2 py-1 text-xs rounded-full bg-green-50 text-green-800 border border-green-200">{i}</span>)}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Whole grains</p>
-                      <div className="flex flex-wrap gap-2">
-                        {['Quinoa','Barley','Buckwheat','Farro','Oats'].map(i=> <span key={i} className="px-2 py-1 text-xs rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">{i}</span>)}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Legumes</p>
-                      <div className="flex flex-wrap gap-2">
-                        {['Lentils','Black beans','Chickpeas','Kidney beans'].map(i=> <span key={i} className="px-2 py-1 text-xs rounded-full bg-teal-50 text-teal-800 border border-teal-200">{i}</span>)}
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="text-sm font-semibold text-gray-900 mb-2">Very low / no‑GI foods</p>
-                  <div className="space-y-3 mb-4">
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Meat & poultry</p>
-                      <div className="flex flex-wrap gap-2">
-                        {['Beef','Bison','Lamb','Pork','Chicken','Turkey','Duck','Goose'].map(i=> <span key={i} className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">{i}</span>)}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Seafood</p>
-                      <div className="flex flex-wrap gap-2">
-                        {['Tuna','Salmon','Shrimp','Mackerel','Anchovies','Sardines'].map(i=> <span key={i} className="px-2 py-1 text-xs rounded-full bg-blue-50 text-blue-800 border border-blue-200">{i}</span>)}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Oils, nuts, seeds</p>
-                      <div className="flex flex-wrap gap-2">
-                        {['Olive oil','Coconut oil','Avocado oil','Vegetable oil','Almonds','Macadamia','Walnuts','Pistachios','Chia','Sesame','Hemp','Flax'].map(i=> <span key={i} className="px-2 py-1 text-xs rounded-full bg-amber-50 text-amber-800 border border-amber-200">{i}</span>)}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Herbs & spices</p>
-                      <div className="flex flex-wrap gap-2">
-                        {['Turmeric','Black pepper','Cumin','Dill','Basil','Rosemary','Cinnamon'].map(i=> <span key={i} className="px-2 py-1 text-xs rounded-full bg-purple-50 text-purple-800 border border-purple-200">{i}</span>)}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Some pastas</p>
-                      <div className="flex flex-wrap gap-2">
-                        {['Semolina pasta','Whole‑grain pasta'].map(i=> <span key={i} className="px-2 py-1 text-xs rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200">{i}</span>)}
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="text-sm font-semibold text-gray-900 mb-2">Limit high‑GI foods</p>
-                  <div className="space-y-3">
-                    {[
-                      {title:'Bread', items:['White bread','Bagels','Naan','Pita bread']},
-                      {title:'Rice', items:['White rice','Jasmine rice','Arborio rice']},
-                      {title:'Cereals', items:['Instant oats','Breakfast cereals']},
-                      {title:'Starchy vegetables', items:['Mashed potatoes','Potatoes','French fries']},
-                      {title:'Baked goods', items:['Cake','Doughnuts','Cookies','Croissants','Muffins']},
-                      {title:'Snacks', items:['Chocolate','Crackers','Microwave popcorn','Chips','Pretzels']},
-                      {title:'Sugary drinks', items:['Soda','Fruit juice','Sports drinks']}
-                    ].map(section => (
-                      <div key={section.title} className="">
-                        <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">{section.title}</p>
-                        <div className="flex flex-wrap gap-2">
-                          {section.items.map(i=> <span key={i} className="px-2 py-1 text-xs rounded-full bg-red-50 text-red-800 border border-red-200">{i}</span>)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </aside>
               </div>
             </div>
           </div>
@@ -4636,13 +3649,13 @@ const MealTracker = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Daily Calorie Trend */}
               <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-6">Daily Calorie Trend (This Week)</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-6">Daily Calorie Trend</h3>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart
                       data={weeklySummary?.dailyData ? Object.entries(weeklySummary.dailyData).map(([date, data]) => {
                         const goal = getCalorieGoal();
-                        const consumed = data?.totals?.calories || 0;
+                        const consumed = data.totals.calories;
                         const deficit = goal - consumed;
                         const deficitPercentage = goal > 0 ? ((deficit / goal) * 100) : 0;
                         
@@ -4733,7 +3746,7 @@ const MealTracker = () => {
 
             {/* Daily Breakdown */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-6">Daily Breakdown (This Week)</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-6">Daily Breakdown</h3>
               <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
                 {weeklySummary?.dailyData ? Object.entries(weeklySummary.dailyData).map(([date, data]) => (
                   <div key={date} className="text-center p-4 bg-gray-50 rounded-lg">
@@ -4743,14 +3756,14 @@ const MealTracker = () => {
                     <p className="text-xs text-gray-500">
                       {new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </p>
-                    <p className="text-lg font-bold text-gray-900 mt-2">{data?.totals?.calories || 0}</p>
+                    <p className="text-lg font-bold text-gray-900 mt-2">{data.totals.calories}</p>
                     <p className="text-xs text-gray-500">calories</p>
-                    <p className="text-xs text-gray-400 mt-1">{data?.mealCount || 0} meals</p>
+                    <p className="text-xs text-gray-400 mt-1">{data.mealCount} meals</p>
                     <div className="mt-2">
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
                           className="bg-orange-500 h-2 rounded-full"
-                          style={{ width: `${Math.min(((data?.totals?.calories || 0) / getCalorieGoal()) * 100, 100)}%` }}
+                          style={{ width: `${Math.min((data.totals.calories / getCalorieGoal()) * 100, 100)}%` }}
                         ></div>
                       </div>
                     </div>
@@ -4773,7 +3786,7 @@ const MealTracker = () => {
                   <p className="text-2xl font-bold text-blue-600">
                     {(() => {
                       const maxDay = weeklySummary?.dailyData ? Object.entries(weeklySummary.dailyData).reduce((max, [date, data]) => 
-                        (data?.totals?.calories || 0) > (max?.calories || 0) ? { date, calories: data?.totals?.calories || 0 } : max
+                        data.totals.calories > max.calories ? { date, calories: data.totals.calories } : max
                       , { date: '', calories: 0 }) : { date: '', calories: 0 };
                       return new Date(maxDay.date).toLocaleDateString('en-US', { weekday: 'long' });
                     })()}
@@ -4795,8 +3808,8 @@ const MealTracker = () => {
               </div>
             </div>
 
-            {/* Weekly charts shown above; 90-day analytics moved to Monthly View */}
-            {false && mealEntries?.length > 0 ? (
+            {/* Meal Time Analytics */}
+            {mealEntries?.length > 0 ? (
               <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
                 <h3 className="text-xl font-semibold text-gray-900 mb-6">Meal Time Analytics ⏰ (Last 90 Days)</h3>
                 <div className="space-y-6">
@@ -5036,9 +4049,9 @@ const MealTracker = () => {
                           const dataPoint = {
                             time: timeInHours,
                             mealType: meal.mealType,
-                            calories: meal?.calories || 0,
+                            calories: meal.calories || 0,
                             x: timeInHours,
-                                                          y: meal?.calories || 0,
+                            y: meal.calories || 0,
                             hasTime: !!meal.mealTime,
                             foodName: meal.foodName
                           };
@@ -5069,7 +4082,7 @@ const MealTracker = () => {
                               />
                               <Tooltip 
                                 formatter={(value, name, props) => [
-                                  `${props.payload?.calories || 0} calories`, 
+                                  `${props.payload.calories} calories`, 
                                   `${props.payload.mealType} at ${Math.floor(props.payload.time)}:${Math.round((props.payload.time % 1) * 60).toString().padStart(2, '0')}${props.payload.hasTime ? '' : ' (estimated)'}`
                                 ]}
                                 labelFormatter={(label) => `Time: ${Math.floor(label)}:${Math.round((label % 1) * 60).toString().padStart(2, '0')}`}
@@ -5119,10 +4132,10 @@ const MealTracker = () => {
                                   const sortedData = data.sort((a, b) => a.time - b.time);
                                   const trendData = sortedData.map((point, index) => ({
                                     time: point.time,
-                                    calories: point?.calories || 0,
+                                    calories: point.calories,
                                     trend: index > 0 ? 
-                                                                              ((sortedData[index]?.calories || 0) + (sortedData[index-1]?.calories || 0)) / 2 : 
-                                                                              point?.calories || 0
+                                      (sortedData[index].calories + sortedData[index-1].calories) / 2 : 
+                                      point.calories
                                   }));
                                   
                                   const colors = {
@@ -5156,24 +4169,20 @@ const MealTracker = () => {
                   </div>
                 </div>
               </div>
-            ) : null}
+            ) : (
+              <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-6">Meal Time Analytics ⏰</h3>
+                <div className="text-center py-8 text-gray-500">
+                  <p>No meal data available</p>
+                  <p className="text-sm">Add your first meal to see analytics</p>
+                </div>
+              </div>
+            )}
 
             {/* Historical Meal Logs */}
             {mealEntries?.length > 0 && (
               <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold text-gray-900">Historical Meal Logs 📋</h3>
-                  <button
-                    onClick={downloadHistoricalCSV}
-                    className="inline-flex items-center px-3 py-1.5 text-sm rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 shadow-sm"
-                    title="Download CSV"
-                  >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
-                    </svg>
-                    Download CSV
-                  </button>
-                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-6">Historical Meal Logs 📋</h3>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -5183,10 +4192,10 @@ const MealTracker = () => {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Food</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Meal Type</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Calories</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Fat (g)</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cholesterol (mg)</th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Calories</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fat (g)</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cholesterol (mg)</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -5225,11 +4234,11 @@ const MealTracker = () => {
                                 {(meal.mealType || 'snack').charAt(0).toUpperCase() + (meal.mealType || 'snack').slice(1)}
                               </span>
                             </td>
-                            <td className="px-3 py-2 whitespace-nowrap text-xs font-semibold text-orange-600 text-right">{meal?.calories || 0}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-700 text-right">{typeof meal.fat === 'number' ? Math.round(meal.fat * 10) / 10 : 0}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-700 text-right">{meal?.cholesterol || 0}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-xs font-semibold text-orange-600">
+                                                              {meal.calories || 0}
+                            </td>
                             <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
-                              <div className="flex items-center justify-center space-x-3">
+                              <div className="flex space-x-1">
                                 {canEditMeal(meal) ? (
                               <button
                                     onClick={() => handleEditMeal(meal)}
@@ -5323,7 +4332,7 @@ const MealTracker = () => {
                     <p className="text-3xl font-bold text-gray-900">
                       {(() => {
                         const filteredMeals = getFilteredMeals();
-                        return filteredMeals.reduce((sum, meal) => sum + (meal?.calories || 0), 0);
+                        return filteredMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
                       })()}
                     </p>
                     <p className="text-sm text-gray-500">kcal in 90 days</p>
@@ -5409,9 +4418,9 @@ const MealTracker = () => {
                           if (!dailyData[date]) {
                             dailyData[date] = { calories: 0, fat: 0, cholesterol: 0 };
                           }
-                          dailyData[date].calories += (meal?.calories || 0);
-                                                      dailyData[date].fat += (meal?.fat || 0);
-                            dailyData[date].cholesterol += (meal?.cholesterol || 0);
+                          dailyData[date].calories += (meal.calories || 0);
+                          dailyData[date].fat += meal.fat;
+                          dailyData[date].cholesterol += meal.cholesterol;
                         });
                         
                         return Object.entries(dailyData).map(([date, data]) => {
@@ -5490,14 +4499,14 @@ const MealTracker = () => {
                             if (!weeklyData[dayOfWeek]) {
                               weeklyData[dayOfWeek] = { calories: 0, count: 0 };
                             }
-                            weeklyData[dayOfWeek].calories += (meal?.calories || 0);
+                            weeklyData[dayOfWeek].calories += (meal.calories || 0);
                             weeklyData[dayOfWeek].count += 1;
                           });
                           
                           return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => ({
                             day: day,
-                                                          avgCalories: weeklyData[day] ? Math.round((weeklyData[day]?.calories || 0) / (weeklyData[day]?.count || 1)) : 0,
-                                                          totalMeals: weeklyData[day] ? (weeklyData[day]?.count || 0) : 0
+                            avgCalories: weeklyData[day] ? Math.round(weeklyData[day].calories / weeklyData[day].count) : 0,
+                            totalMeals: weeklyData[day] ? weeklyData[day].count : 0
                         }));
                       })()}
                         margin={{ top: 20, right: 40, left: 20, bottom: 20 }}
@@ -5541,14 +4550,14 @@ const MealTracker = () => {
                             });
                             
                             // Calculate total calories for percentage
-                            const totalCalories = Object.values(mealTypeData).reduce((sum, data) => sum + (data?.calories || 0), 0);
+                            const totalCalories = Object.values(mealTypeData).reduce((sum, data) => sum + (data.calories || 0), 0);
                             
                             const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b'];
                             return Object.entries(mealTypeData).map(([type, data], index) => ({
                               name: type.charAt(0).toUpperCase() + type.slice(1),
-                              calories: data?.calories || 0,
+                              calories: data.calories || 0,
                               count: data.count,
-                                                              percentage: totalCalories > 0 ? Math.round(((data?.calories || 0) / totalCalories) * 100) : 0,
+                                                              percentage: totalCalories > 0 ? Math.round(((data.calories || 0) / totalCalories) * 100) : 0,
                               color: colors[index % colors.length]
                             }));
                           })()}
@@ -5564,11 +4573,10 @@ const MealTracker = () => {
                             const filteredMeals = getFilteredMeals();
                             
                             filteredMeals.forEach(meal => {
-                              if (!meal || !meal.mealType) return;
                               if (!mealTypeData[meal.mealType]) {
                                 mealTypeData[meal.mealType] = { calories: 0, count: 0 };
                               }
-                              mealTypeData[meal.mealType].calories += (meal?.calories || 0);
+                              mealTypeData[meal.mealType].calories += (meal.calories || 0);
                               mealTypeData[meal.mealType].count += 1;
                             });
                             
@@ -5588,127 +4596,6 @@ const MealTracker = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Meal Time Analytics (Last 90 Days) - moved from Weekly to Monthly */}
-              {mealEntries?.length > 0 && (
-                <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mt-8">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-6">Meal Time Analytics ⏰ (Last 90 Days)</h3>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-4">Meal Time Distribution</h4>
-                      <div className="space-y-3">
-                        {(() => {
-                          const mealTimes = { breakfast: [], lunch: [], dinner: [], snack: [] };
-                          const ninetyDaysAgo = new Date();
-                          ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-                          mealEntries?.forEach(meal => {
-                            if (meal && meal.mealTime && new Date(meal.date) >= ninetyDaysAgo) {
-                              const hour = parseInt((meal.mealTime || '00:00').split(':')[0]);
-                              if (!isNaN(hour) && meal.mealType && mealTimes[meal.mealType]) {
-                                mealTimes[meal.mealType].push(hour);
-                              }
-                            }
-                          });
-                          const hasData = Object.values(mealTimes).some(t => t.length > 0);
-                          if (!hasData) return <div className="text-gray-500 text-sm">No data for last 90 days</div>;
-                          return Object.entries(mealTimes).map(([type, times]) => {
-                            if (!times.length) return null;
-                            const avgHour = Math.round(times.reduce((s, h) => s + h, 0) / times.length);
-                            const variance = Math.sqrt(times.reduce((s, h) => s + Math.pow(h - avgHour, 2), 0) / times.length);
-                            return (
-                              <div key={type} className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                                <div className="flex items-center space-x-2">
-                                  <span className="inline-block w-2 h-2 rounded-full bg-orange-400"></span>
-                                  <span className="capitalize text-sm text-gray-700">{type}</span>
-                                </div>
-                                <div className="text-right">
-                                  <div className="text-sm font-medium text-gray-900">{String(avgHour).padStart(2, '0')}:00</div>
-                                  <div className="text-xs text-gray-500">{times.length} meals • {variance.toFixed(1)}h variance</div>
-                                </div>
-                              </div>
-                            );
-                          });
-                        })()}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-4">Meal Timing Insights (90 Days)</h4>
-                      <div className="space-y-2">
-                        {(() => {
-                          const mealTimes = { breakfast: [], lunch: [], dinner: [], snack: [] };
-                          const ninetyDaysAgo = new Date();
-                          ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-                          mealEntries?.forEach(meal => {
-                            if (meal && meal.mealTime && new Date(meal.date) >= ninetyDaysAgo) {
-                              const hour = parseInt((meal.mealTime || '00:00').split(':')[0]);
-                              if (!isNaN(hour) && meal.mealType && mealTimes[meal.mealType]) {
-                                mealTimes[meal.mealType].push(hour);
-                              }
-                            }
-                          });
-                          const insights = Object.entries(mealTimes).flatMap(([type, times]) => {
-                            if (!times.length) return [];
-                            const avg = times.reduce((s, h) => s + h, 0) / times.length;
-                            const variance = Math.sqrt(times.reduce((s, h) => s + Math.pow(h - avg, 2), 0) / times.length);
-                            const consistent = variance <= 2;
-                            return [{ type, msg: consistent ? `✅ ${type} times are consistent` : `⚠️ ${type} times vary by ~${variance.toFixed(1)}h` }];
-                          });
-                          if (!insights.length) return <div className="text-gray-500 text-sm">No insights available</div>;
-                          return insights.map((i, idx) => (
-                            <div key={idx} className={`p-3 rounded ${i.msg.startsWith('✅') ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}`}>{i.msg}</div>
-                          ));
-                        })()}
-                      </div>
-                    </div>
-                  </div>
-                  {/* Daily Meal Pattern Scatter (Last 90 Days) */}
-                  <div className="mt-8">
-                    <h4 className="font-medium text-gray-900 mb-4">Daily Meal Pattern (Last 90 Days)</h4>
-                    <div className="h-80">
-                      {(() => {
-                        const ninetyDaysAgo = new Date();
-                        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-                        const categorized = { breakfast: [], lunch: [], dinner: [], snack: [] };
-                        (mealEntries || [])
-                          .filter(m => m && m.mealTime && new Date(m.date) >= ninetyDaysAgo)
-                          .forEach(m => {
-                            const hour = parseInt((m.mealTime || '00:00').split(':')[0]);
-                            const calories = m.calories || 0;
-                            const type = (m.mealType || 'other').toLowerCase();
-                            const point = { hour: isNaN(hour) ? 0 : hour, calories };
-                            if (categorized[type]) categorized[type].push(point);
-                          });
-                        const series = [
-                          { key: 'breakfast', name: 'Breakfast', color: '#f97316' },
-                          { key: 'lunch', name: 'Lunch', color: '#10b981' },
-                          { key: 'dinner', name: 'Dinner', color: '#3b82f6' },
-                          { key: 'snack', name: 'Snack', color: '#ef4444' },
-                        ].filter(s => categorized[s.key] && categorized[s.key].length > 0);
-                        const hasAny = series.length > 0;
-                        if (!hasAny) return <div className="text-center text-gray-500 py-8">No data for last 90 days</div>;
-                        return (
-                          <ResponsiveContainer width="100%" height="100%">
-                            <ScatterChart>
-                              <CartesianGrid />
-                              <XAxis type="number" dataKey="hour" name="Hour" domain={[0, 23]} tickFormatter={(h) => `${h}:00`} />
-                              <YAxis type="number" dataKey="calories" name="Calories" />
-                              <Tooltip cursor={{ strokeDasharray: '3 3' }} formatter={(value, name) => {
-                                if (name === 'hour') return [`${value}:00`, 'Time'];
-                                if (name === 'calories') return [`${value} kcal`, 'Calories'];
-                                return [value, name];
-                              }} />
-                              <Legend />
-                              {series.map(s => (
-                                <Scatter key={s.key} name={s.name} data={categorized[s.key]} fill={s.color} />
-                              ))}
-                            </ScatterChart>
-                          </ResponsiveContainer>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Monthly Calendar View */}
@@ -5764,7 +4651,7 @@ const MealTracker = () => {
                     if (!mealDataMap[mealDate]) {
                       mealDataMap[mealDate] = { calories: 0, mealCount: 0 };
                     }
-                                                  mealDataMap[mealDate].calories += (meal?.calories || 0);
+                    mealDataMap[mealDate].calories += (meal.calories || 0);
                     mealDataMap[mealDate].mealCount += 1;
                   });
                   
@@ -5815,7 +4702,7 @@ const MealTracker = () => {
                       ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
                       
                       const recentMeals = mealEntries.filter(meal => new Date(meal.date) >= ninetyDaysAgo);
-                                              const totalCalories = recentMeals.reduce((sum, meal) => sum + (meal?.calories || 0), 0);
+                                              const totalCalories = recentMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
                       const daysWithMeals = new Set(recentMeals.map(meal => new Date(meal.date).toISOString().split('T')[0])).size;
                       
                       return daysWithMeals > 0 ? Math.round(totalCalories / daysWithMeals) : 0;
@@ -5903,17 +4790,7 @@ const MealTracker = () => {
         </div>
       </div>
       
-      {/* Floating Add Meal Button */}
-      <button
-        onClick={() => setShowAddMealPopup(true)}
-        className="fixed bottom-8 right-8 w-20 h-20 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center z-[9999] hover:scale-110"
-        title="Add New Meal"
-      >
-        <FaPlus className="text-3xl" />
-      </button>
 
-      {/* Add Meal Popup */}
-      {showAddMealPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full">
             {/* Header */}
@@ -5937,104 +4814,66 @@ const MealTracker = () => {
             {/* Content */}
             <div className="p-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Left Column - Food Search (Add Meal shows read-only Quick Edit chips) */}
+                {/* Left Column - Food Search */}
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-gray-900">Quick Edit</h3>
-                    <span className="text-xs text-gray-500">{quickEditFoods.length}/10</span>
-                  </div>
-                  {/* Quick Edit integrated into the list below (no separate dropdown) */}
+                  <h3 className="font-semibold text-gray-900 mb-3">Quick Edit</h3>
                   
                   {/* Search Input */}
                   <div className="relative mb-4">
                     <input
                       type="text"
                       placeholder="Search for food items..."
-                      value={quickSearchTerm || ''}
-                      onChange={(e) => setQuickSearchTerm(e.target.value || '')}
+                      value={searchTerm || ''}
+                      onChange={(e) => setSearchTerm(e.target.value || '')}
                       className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                     />
                     <FaSearch className="absolute left-3 top-2.5 text-gray-400" />
                   </div>
                   
-                  {/* Food List (with Quick Edit action) */}
+                  {/* Food List */}
                   <div className="border border-gray-200 rounded-lg max-h-64 overflow-y-auto">
                     {(() => {
-                      let filteredFoods = foodDatabase?.filter(food => {
+                      const filteredFoods = foodDatabase?.filter(food => {
                         if (!food || !food.name) return false;
-                        const searchLower = (quickSearchTerm || '').toLowerCase();
+                        const searchLower = (searchTerm || '').toLowerCase();
                         return food.name.toLowerCase().includes(searchLower) ||
                                (food.hinglish && food.hinglish.toLowerCase().includes(searchLower));
                       }) || [];
-                       const searchLowerOuter = (quickSearchTerm || '').toLowerCase();
-                       if ((filteredFoods.length === 0) && searchLowerOuter.length > 1) {
-                         return (
-                           <div className="p-4 text-center">
-                             <p className="text-sm text-gray-600">No foods found for "{quickSearchTerm}".</p>
-                             <p className="text-xs text-gray-500 mt-1">Tip: You can add this item in Food Database using <span className="font-medium text-orange-600">Add Food</span>.</p>
-                           </div>
-                         );
-                       }
-                      // Build prioritized list in the exact order defined by Quick Edit
-                      const quickOrdered = (quickEditFoods || [])
-                        .map((q, idx) => ({ name: q.name, order: Number.isFinite(q.order) ? q.order : idx }))
-                        .sort((a, b) => a.order - b.order)
-                        .map(q => q.name);
-
-                      const nameOf = (f) => (f.displayName || f.name);
-                      const inQuickSet = new Set(quickOrdered);
-
-                      // First: quick edit items that match the current filter, in their defined order
-                      const quickItems = quickOrdered
-                        .map(n => filteredFoods.find(f => nameOf(f) === n))
-                        .filter(Boolean);
-
-                      // Then: fill up to 10 with defaults (non-quick) that match the filter
-                      const nonQuick = filteredFoods.filter(f => !inQuickSet.has(nameOf(f)));
-                      const fillCount = Math.max(0, 10 - quickItems.length);
-                      const defaultFill = nonQuick.slice(0, fillCount);
-
-                      const prioritized = [...quickItems, ...defaultFill, ...nonQuick.slice(fillCount)];
-
-                      return prioritized.slice(0, 8).map((food) => {
-                        const inQuickEdit = quickEditFoods.find(q => q.name === (food.displayName || food.name));
-                        const canAddQuick = quickEditFoods.length < 10 && !inQuickEdit;
-                        return (
+                      
+                      return filteredFoods.slice(0, 8).map((food) => (
                         <div
                           key={food?.name || Math.random()}
-                        onClick={() => setSelectedFood(food)}
-                        className={`p-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 transition-all ${
+                          onClick={() => setSelectedFood(food)}
+                          className={`p-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 transition-all ${
                             selectedFood?.name === food?.name ? 'bg-orange-50 border-orange-200' : ''
-                        }`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
+                          }`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
                               <p className="font-medium text-gray-900 text-sm">{food?.name || 'Unknown Food'}</p>
                               {food?.hinglish && (
-                              <p className="text-xs text-gray-500 italic">{food.hinglish}</p>
-                            )}
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700">
+                                <p className="text-xs text-gray-500 italic">{food.hinglish}</p>
+                              )}
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700">
                                   {food?.category || 'Unknown'}
-                              </span>
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                </span>
+                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                                   (food?.cholesterol || 0) <= 50
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-yellow-100 text-yellow-800'
-                              }`}>
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-yellow-100 text-yellow-800'
+                                }`}>
                                   {(food?.cholesterol || 0)}mg
-                              </span>
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                          <div className="text-right ml-2">
+                            <div className="text-right ml-2">
                               <p className="font-bold text-gray-900 text-sm">{(food?.calories || 0)} cal</p>
                               <p className="text-xs text-gray-500">{(food?.fat || 0)}g fat</p>
-                              {/* Add-to-Quick-Edit action is managed on Food Database page, not here */}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                        );
-                      });
+                      ));
                     })()}
                   </div>
                 </div>
@@ -6150,7 +4989,7 @@ const MealTracker = () => {
                                   else if (unit === 'pieces') gramsEquivalent = parseFloat(quantity) * 50; // 1 piece ≈ 50g
                                   else if (unit === 'slices') gramsEquivalent = parseFloat(quantity) * 30; // 1 slice ≈ 30g
                                   
-                                  return Math.round(((selectedFood?.calories || 0)) * gramsEquivalent / 100);
+                                  return Math.round((selectedFood.calories || 0) * gramsEquivalent / 100);
                                 })()}
                               </p>
                             </div>
@@ -6290,7 +5129,7 @@ const MealTracker = () => {
                     })}</p>
                   </div>
                   <div className="text-right">
-                                                <p className="text-2xl font-bold text-blue-600">{editingMeal?.calories || 0} cal</p>
+                                                <p className="text-2xl font-bold text-blue-600">{editingMeal.calories || 0} cal</p>
                     <p className="text-sm text-gray-500">original value</p>
                   </div>
                 </div>
@@ -6383,7 +5222,7 @@ const MealTracker = () => {
                       <p className="text-gray-600 text-xs">Calories</p>
                       <p className="text-lg font-bold text-orange-600">
                         {(() => {
-                          if (!editQuantity || parseFloat(editQuantity) <= 0) return editingMeal?.calories || 0;
+                          if (!editQuantity || parseFloat(editQuantity) <= 0) return editingMeal.calories || 0;
                           let gramsEquivalent = parseFloat(editQuantity);
                           if (editUnit === 'cups') gramsEquivalent = parseFloat(editQuantity) * 240;
                           else if (editUnit === 'tsp') gramsEquivalent = parseFloat(editQuantity) * 5;
@@ -6392,7 +5231,7 @@ const MealTracker = () => {
                           else if (editUnit === 'pieces') gramsEquivalent = parseFloat(editQuantity) * 50;
                           else if (editUnit === 'slices') gramsEquivalent = parseFloat(editQuantity) * 30;
                           
-                                                        return Math.round(((editingMeal?.calories || 0)) * gramsEquivalent / (((editingMeal?.quantity || 1)) * (editingMeal?.unit === 'cups' ? 240 : editingMeal?.unit === 'tsp' ? 5 : editingMeal?.unit === 'tbsp' ? 15 : editingMeal?.unit === 'ml' ? 1 : editingMeal?.unit === 'pieces' ? 50 : editingMeal?.unit === 'slices' ? 30 : 1)));
+                                                        return Math.round((editingMeal.calories || 0) * gramsEquivalent / ((editingMeal.quantity || 1) * (editingMeal.unit === 'cups' ? 240 : editingMeal.unit === 'tsp' ? 5 : editingMeal.unit === 'tbsp' ? 15 : editingMeal.unit === 'ml' ? 1 : editingMeal.unit === 'pieces' ? 50 : editingMeal.unit === 'slices' ? 30 : 1)));
                         })()}
                       </p>
                     </div>

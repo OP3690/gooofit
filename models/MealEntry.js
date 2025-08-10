@@ -27,6 +27,14 @@ const mealEntrySchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  protein: {
+    type: Number,
+    default: 0
+  },
+  carbs: {
+    type: Number,
+    default: 0
+  },
   cholesterol: {
     type: Number,
     default: 0
@@ -35,6 +43,10 @@ const mealEntrySchema = new mongoose.Schema({
     type: String,
     enum: ['breakfast', 'lunch', 'dinner', 'snack'],
     default: 'snack'
+  },
+  mealTime: {
+    type: String,
+    default: ''
   },
   date: {
     type: Date,

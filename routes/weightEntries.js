@@ -253,6 +253,57 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Get latest weight entry for a user
+router.get('/latest/:userId', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    if (userId === 'demo') {
+      // Return demo latest weight
+      const today = new Date();
+      const baseWeight = 76 - 0.1;
+      const fluctuation = (Math.random() - 0.5) * 0.3;
+      const weight = Math.round((baseWeight + fluctuation) * 10) / 10;
+      
+      return res.json({
+        success: true,
+        data: {
+          weight,
+          date: today.toISOString(),
+          notes: 'Demo latest weight'
+        }
+      });
+    }
+    
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    
+    // Get the most recent weight entry
+    const latestEntry = await WeightEntry.findOne({ userId: new mongoose.Types.ObjectId(userId) })
+      .sort({ date: -1 })
+      .select('weight date notes');
+    
+    if (!latestEntry) {
+      return res.status(404).json({ success: false, message: 'No weight entries found' });
+    }
+    
+    res.json({
+      success: true,
+      data: {
+        weight: latestEntry.weight,
+        date: latestEntry.date,
+        notes: latestEntry.notes
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching latest weight:', error);
+    res.status(500).json({ success: false, message: 'Error fetching latest weight' });
+  }
+});
+
 // Update weight entry
 router.put('/:id', validateWeightEntry, async (req, res) => {
   if (req.body.userId === 'demo' || req.params.id === 'demo') {

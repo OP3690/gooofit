@@ -702,12 +702,60 @@ router.get('/:id', authenticateToken, async (req, res) => {
       goalId: user.goalId?.toString(),
       pastGoals: user.pastGoals,
       goals: user.goals,
+      quickEditFoods: user.quickEditFoods || [],
       createdAt: user.createdAt,
       updatedAt: user.updatedAt
     });
   } catch (error) {
     console.error('Error fetching user:', error);
     res.status(500).json({ message: 'Error fetching user' });
+  }
+});
+
+// Get Quick Edit foods for a user
+router.get('/:id/quick-edit', authenticateToken, async (req, res) => {
+  try {
+    // Allow demo without DB
+    if (req.params.id === 'demo') {
+      return res.json({ success: true, data: [] });
+    }
+    if (req.user?.id !== req.params.id) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    const user = await User.findById(req.params.id).select('quickEditFoods');
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true, data: user.quickEditFoods || [] });
+  } catch (e) {
+    console.error('[QUICK_EDIT_GET] error:', e);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Set Quick Edit foods for a user
+router.put('/:id/quick-edit', authenticateToken, async (req, res) => {
+  try {
+    if (req.params.id === 'demo') {
+      // No persistence for demo
+      return res.json({ success: true, data: [] });
+    }
+    if (req.user?.id !== req.params.id) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+    const sanitized = items
+      .filter(it => it && typeof it.name === 'string' && it.name.trim().length > 0)
+      .slice(0, 10)
+      .map((it, idx) => ({ name: it.name.trim(), order: Number.isFinite(it.order) ? it.order : idx }));
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { quickEditFoods: sanitized },
+      { new: true }
+    ).select('quickEditFoods');
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true, data: user.quickEditFoods });
+  } catch (e) {
+    console.error('[QUICK_EDIT_PUT] error:', e);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 

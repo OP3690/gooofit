@@ -111,6 +111,15 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  quickEditFoods: {
+    type: [
+      {
+        name: { type: String, required: true },
+        order: { type: Number, default: 0 }
+      }
+    ],
+    default: []
+  },
   goalCreatedAt: { type: Date },
   goalInitialWeight: { type: Number },
 }, {

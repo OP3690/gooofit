@@ -371,24 +371,24 @@ async function sendWelcomeEmail(to, name) {
     const transporter = createGmailTransporter();
     
     const html = `
-      <!DOCTYPE html>
+    <!DOCTYPE html>
       <html>
-      <head>
+    <head>
         <meta charset="utf-8">
         <title>Welcome to GoooFit</title>
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         </style>
-      </head>
+    </head>
       <body style="font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #fff7ed;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07);">
           <!-- Header with orange gradient -->
           <div style="background: linear-gradient(135deg, #ffb347 0%, #ffcc80 100%); padding: 40px 30px; text-align: center;">
             <h1 style="color: #fff; margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.5px;">🎉 Welcome to GoooFit!</h1>
             <p style="color: rgba(255,255,255,0.95); margin: 10px 0 0 0; font-size: 16px;">Your Health Journey Starts Here</p>
-          </div>
-          
-          <!-- Content -->
+            </div>
+            
+            <!-- Content -->
           <div style="padding: 40px 30px;">
             <h2 style="color: #b45309; margin: 0 0 20px 0; font-size: 24px; font-weight: 600;">Hi ${name || 'there'}! 👋</h2>
             
@@ -406,30 +406,30 @@ async function sendWelcomeEmail(to, name) {
                 <li style="margin-bottom: 10px;"><strong>💡 Smart Insights:</strong> Get personalized recommendations</li>
                 <li style="margin-bottom: 10px;"><strong>👥 Community:</strong> Join health enthusiasts worldwide</li>
                 <li style="margin-bottom: 0;"><strong>🎯 Goal Setting:</strong> Set and achieve your fitness targets</li>
-              </ul>
-            </div>
-            
+                    </ul>
+                </div>
+                
             <!-- Action Button -->
             <div style="text-align: center; margin: 30px 0;">
               <a href="https://gooofit.com" style="background: linear-gradient(135deg, #ffb347 0%, #ffcc80 100%); color: #fff; padding: 16px 32px; text-decoration: none; border-radius: 12px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(255,179,71,0.15); transition: all 0.3s ease;">Start Your Journey</a>
-            </div>
-            
+                </div>
+                
             <p style="color: #b45309; margin: 30px 0 0 0; font-size: 14px;">
               Ready to transform your health? Start by exploring our health calculators and tracking your progress!
-            </p>
-          </div>
-          
-          <!-- Footer -->
+                </p>
+            </div>
+            
+            <!-- Footer -->
           <div style="background: #fff3e0; padding: 30px; text-align: center; border-top: 1px solid #ffe0b2;">
             <p style="color: #b45309; margin: 0 0 10px 0; font-size: 14px; font-weight: 600;">Best regards,</p>
             <p style="color: #b45309; margin: 0; font-size: 14px;">The GoooFit Team 💪</p>
             <div style="margin-top: 20px;">
               <a href="https://gooofit.com" style="color: #fb923c; text-decoration: none; font-size: 14px; font-weight: 500;">gooofit.com</a>
+                </div>
             </div>
-          </div>
         </div>
-      </body>
-      </html>
+    </body>
+    </html>
     `;
     
     const mailOptions = {
@@ -475,23 +475,23 @@ async function sendPasswordResetEmail(to, resetToken, name = 'User') {
     const resetUrl = `${process.env.CLIENT_URL || 'https://gooofit.com'}/reset-password?otp=${resetToken}`;
     
     const html = `
-      <!DOCTYPE html>
+    <!DOCTYPE html>
       <html>
-      <head>
+    <head>
         <meta charset="utf-8">
         <title>Password Reset - GoooFit</title>
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         </style>
-      </head>
+    </head>
       <body style="font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #fff7ed;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07);">
           <!-- Header with orange gradient -->
           <div style="background: linear-gradient(135deg, #ffb347 0%, #ffcc80 100%); padding: 40px 30px; text-align: center;">
             <h1 style="color: #fff; margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.5px;">🔐 Password Reset</h1>
             <p style="color: rgba(255,255,255,0.95); margin: 10px 0 0 0; font-size: 16px;">GoooFit - Your Health Journey</p>
-          </div>
-          
+            </div>
+            
           <!-- Content -->
           <div style="padding: 40px 30px;">
             <h2 style="color: #b45309; margin: 0 0 20px 0; font-size: 24px; font-weight: 600;">Hi ${name || 'there'}! 👋</h2>
@@ -507,8 +507,8 @@ async function sendPasswordResetEmail(to, resetToken, name = 'User') {
               <div style="background: #fff; border-radius: 8px; padding: 20px; display: inline-block; border: 2px solid #ffb347;">
                 <span style="font-size: 32px; font-weight: 700; color: #ea580c; letter-spacing: 4px; font-family: 'Courier New', monospace;">${resetToken}</span>
               </div>
-            </div>
-            
+                </div>
+                
             <!-- Action Button -->
             <div style="text-align: center; margin: 30px 0;">
               <a href="${resetUrl}" style="background: linear-gradient(135deg, #ffb347 0%, #ffcc80 100%); color: #fff; padding: 16px 32px; text-decoration: none; border-radius: 12px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(255,179,71,0.15); transition: all 0.3s ease;">Reset Password Now</a>
@@ -534,10 +534,10 @@ async function sendPasswordResetEmail(to, resetToken, name = 'User') {
             <div style="margin-top: 20px;">
               <a href="https://gooofit.com" style="color: #fb923c; text-decoration: none; font-size: 14px; font-weight: 500;">gooofit.com</a>
             </div>
-          </div>
+            </div>
         </div>
-      </body>
-      </html>
+    </body>
+    </html>
     `;
     
     const mailOptions = {
@@ -579,23 +579,23 @@ async function sendRegistrationNotificationEmail(adminEmail, userName, userEmail
     const transporter = createGmailTransporter();
     
     const html = `
-      <!DOCTYPE html>
+    <!DOCTYPE html>
       <html>
-      <head>
+    <head>
         <meta charset="utf-8">
         <title>New User Registration - GoooFit</title>
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         </style>
-      </head>
+    </head>
       <body style="font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #fff7ed;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07);">
           <!-- Header with orange gradient -->
           <div style="background: linear-gradient(135deg, #ffb347 0%, #ffcc80 100%); padding: 40px 30px; text-align: center;">
             <h1 style="color: #fff; margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.5px;">🎉 New User Registration</h1>
             <p style="color: rgba(255,255,255,0.95); margin: 10px 0 0 0; font-size: 16px;">GoooFit - Admin Notification</p>
-          </div>
-          
+            </div>
+            
           <!-- Content -->
           <div style="padding: 40px 30px;">
             <h2 style="color: #b45309; margin: 0 0 20px 0; font-size: 24px; font-weight: 600;">Hello Admin! 👋</h2>
@@ -614,30 +614,30 @@ async function sendRegistrationNotificationEmail(adminEmail, userName, userEmail
                 <p style="margin: 10px 0;"><strong>🌍 Country:</strong> ${getCountryFlag(getCountryName(country))} ${getCountryName(country)}</p>
                 <p style="margin: 10px 0;"><strong>📅 Registration Date:</strong> ${new Date().toLocaleDateString()}</p>
                 <p style="margin: 10px 0;"><strong>⏰ Registration Time:</strong> ${new Date().toLocaleTimeString()}</p>
-              </div>
-            </div>
-            
+                    </div>
+                </div>
+                
             <!-- Action Button -->
             <div style="text-align: center; margin: 30px 0;">
               <a href="https://gooofit.com" style="background: linear-gradient(135deg, #ffb347 0%, #ffcc80 100%); color: #fff; padding: 16px 32px; text-decoration: none; border-radius: 12px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(255,179,71,0.15); transition: all 0.3s ease;">View Dashboard</a>
-            </div>
-            
+                </div>
+                
             <p style="color: #b45309; margin: 30px 0 0 0; font-size: 14px;">
               Welcome them to the GoooFit community and help them start their health journey!
             </p>
-          </div>
-          
+                </div>
+                
           <!-- Footer -->
           <div style="background: #fff3e0; padding: 30px; text-align: center; border-top: 1px solid #ffe0b2;">
             <p style="color: #b45309; margin: 0 0 10px 0; font-size: 14px; font-weight: 600;">Best regards,</p>
             <p style="color: #b45309; margin: 0; font-size: 14px;">GoooFit Admin 🤖</p>
             <div style="margin-top: 20px;">
               <a href="https://gooofit.com" style="color: #fb923c; text-decoration: none; font-size: 14px; font-weight: 500;">gooofit.com</a>
+                </div>
             </div>
-          </div>
         </div>
-      </body>
-      </html>
+    </body>
+    </html>
     `;
     
     const mailOptions = {
@@ -676,7 +676,7 @@ async function sendEmail(emailData) {
     console.log('📧 Sending generic email via Gmail SMTP...');
     
     const transporter = createGmailTransporter();
-    
+
     const mailOptions = {
       from: emailData.from || process.env.EMAIL_USER || 'onboarding.gooofit@gmail.com',
       to: emailData.to,

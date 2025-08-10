@@ -217,6 +217,15 @@ export const userAPI = {
     return response.data.user || response.data; // Return user data directly
   },
 
+  getQuickEdit: async (userId) => {
+    const response = await api.get(`/users/${userId}/quick-edit`);
+    return response.data.data || [];
+  },
+  setQuickEdit: async (userId, items) => {
+    const response = await api.put(`/users/${userId}/quick-edit`, { items });
+    return response.data.data || [];
+  },
+
   deleteUser: async (userId) => {
     if (!isValidObjectId(userId) && userId !== 'demo') {
       throw new Error('Invalid userId: must be a valid MongoDB ObjectId or "demo"');
@@ -408,3 +417,12 @@ export const getBMIPosition = (bmi) => {
 };
 
 export default api; 
+
+// Food API (user-scoped additions)
+export const foodAPI = {
+  addUserFood: async ({ userId, name, category, calories, fat, cholesterol, quantity, unit }) => {
+    if (!isValidObjectId(userId)) throw new Error('Invalid userId');
+    const response = await api.post('/meals/food', { name, category, calories, fat, cholesterol, quantity, unit });
+    return response.data;
+  },
+};

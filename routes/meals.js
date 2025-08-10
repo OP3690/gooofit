@@ -1,43 +1,84 @@
 const express = require('express');
 const router = express.Router();
 const MealEntry = require('../models/MealEntry');
-const foodDatabase = require('../data/foodDatabase');
+const Food = require('../models/Food');
 const auth = require('../middleware/auth');
+const UserFood = require('../models/UserFood');
 
-// Get food database with search and filter
+// Get food database with search and filter (includes user-specific foods when authenticated)
 router.get('/food-database', async (req, res) => {
   try {
-    const { search, category, limit = 50 } = req.query;
+    const { search, category, userId } = req.query;
     
-    let filteredFoods = [...foodDatabase];
+    let query = {};
     
-    // Search by name or Hinglish name
+    // Apply search filter
     if (search) {
       const searchLower = search.toLowerCase();
-      filteredFoods = filteredFoods.filter(food => 
-        food.name.toLowerCase().includes(searchLower) ||
-        (food.hinglish && food.hinglish.toLowerCase().includes(searchLower))
-      );
+      query.$or = [
+        { name: { $regex: searchLower, $options: 'i' } },
+        { hinglish: { $regex: searchLower, $options: 'i' } }
+      ];
     }
     
-    // Filter by category
+    // Apply category filter
     if (category && category !== 'all') {
-      filteredFoods = filteredFoods.filter(food => food.category === category);
+      query.category = category;
     }
     
-    // Get unique categories
-    const categories = [...new Set(foodDatabase.map(food => food.category))];
+    // Get global foods
+    const globalFoods = await Food.find(query).select('name fat cholesterol calories protein category hinglish cholesterolFlag');
+
+    // If a userId is provided/valid, also fetch that user's custom foods
+    let userFoods = [];
+    if (userId) {
+      const ufQuery = {};
+      ufQuery.userId = userId;
+      if (category && category !== 'all') ufQuery.category = category;
+      if (search) {
+        ufQuery.name = { $regex: search, $options: 'i' };
+      }
+      userFoods = await UserFood.find(ufQuery)
+        .select('name calories fat cholesterol category quantity unit createdAt')
+        .sort({ createdAt: -1 });
+    }
     
-    // Limit results
-    const limitedFoods = filteredFoods.slice(0, parseInt(limit));
+    // Get unique categories (union of global + user)
+    const categoriesGlobal = await Food.distinct('category');
+    const categoriesUser = userFoods.length > 0 ? [...new Set(userFoods.map(f => f.category))] : [];
+    const categories = Array.from(new Set([...categoriesGlobal, ...categoriesUser]));
+    
+    // Build combined list; tag user foods
+    const foodsCombined = [
+      // Put user foods first so they appear on page 1
+      ...userFoods.map(f => ({ ...f.toObject(), protein: 0, hinglish: '', cholesterolFlag: (f.cholesterol || 0) <= 50 ? 'Good' : 'Bad', isUserFood: true })),
+      ...globalFoods.map(f => ({ ...f.toObject(), isUserFood: false }))
+    ];
+
+    const foods = foodsCombined
+      .map(item => {
+      // If quantity/unit present, format display name (e.g., Banana (1 Piece))
+      if (item.isUserFood && item.quantity && item.unit) {
+        const unitLabel = String(item.unit).trim();
+        const normalized = unitLabel.toLowerCase().endsWith('s') ? unitLabel : unitLabel; // keep as provided
+        const count = Number(item.quantity);
+        const singular = normalized.replace(/s$/i, '');
+        const label = count === 1 ? singular : normalized;
+        return { ...item, displayName: `${item.name} (${count} ${label})` };
+      }
+      return { ...item, displayName: item.name };
+      });
+
+    // Total count for current query
+    const total = foods.length;
     
     res.json({
       success: true,
       data: {
-        foods: limitedFoods,
-        categories,
-        total: filteredFoods.length,
-        showing: limitedFoods.length
+        foods: foods,
+        categories: categories,
+        total: total,
+        showing: foods.length
       }
     });
   } catch (error) {
@@ -52,7 +93,7 @@ router.post('/add', auth, async (req, res) => {
     const { foodName, quantity, unit, mealType, date, notes } = req.body;
     
     // Find food in database
-    const food = foodDatabase.find(f => f.name === foodName);
+    const food = await Food.findOne({ name: foodName });
     if (!food) {
       return res.status(400).json({ success: false, message: 'Food not found in database' });
     }
@@ -61,6 +102,7 @@ router.post('/add', auth, async (req, res) => {
     const multiplier = quantity / 100; // Assuming base values are per 100g
     const calculatedCalories = Math.round(food.calories * multiplier);
     const calculatedFat = Math.round(food.fat * multiplier * 10) / 10;
+    const calculatedProtein = Math.round(food.protein * multiplier * 10) / 10;
     const calculatedCholesterol = Math.round(food.cholesterol * multiplier);
     
     const mealEntry = new MealEntry({
@@ -70,6 +112,7 @@ router.post('/add', auth, async (req, res) => {
       unit,
       calories: calculatedCalories,
       fat: calculatedFat,
+      protein: calculatedProtein,
       cholesterol: calculatedCholesterol,
       mealType: mealType || 'snack',
       date: date ? new Date(date) : new Date(),
@@ -120,6 +163,68 @@ router.get('/entries', auth, async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching meal entries:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Get all meal entries for a user (for calendar view) - no auth required
+router.get('/entries/all', async (req, res) => {
+  try {
+    const { userId } = req.query;
+    
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'User ID is required' });
+    }
+    
+    // Fetch all meal entries for the user without limit
+    const mealEntries = await MealEntry.find({ userId })
+      .sort({ date: -1 });
+    
+    res.json({
+      success: true,
+      data: mealEntries
+    });
+  } catch (error) {
+    console.error('Error fetching all meal entries:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Add a user-specific food
+router.post('/food', auth, async (req, res) => {
+  try {
+    const { name, category, calories, fat, cholesterol, quantity, unit } = req.body;
+    if (!name || !category || calories == null || fat == null || cholesterol == null) {
+      return res.status(400).json({ success: false, message: 'All fields are required' });
+    }
+    const doc = await UserFood.create({
+      userId: req.user.id,
+      name: name.trim(),
+      category,
+      calories: Number(calories),
+      fat: Number(fat),
+      cholesterol: Number(cholesterol),
+      quantity: quantity != null ? Number(quantity) : null,
+      unit: unit ? String(unit) : '',
+    });
+    res.status(201).json({ success: true, data: doc });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({ success: false, message: 'Food item already exists for this user' });
+    }
+    console.error('Error creating user food:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Delete a user-specific food
+router.delete('/food/:id', auth, async (req, res) => {
+  try {
+    const deleted = await UserFood.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+    if (!deleted) return res.status(404).json({ success: false, message: 'Food not found' });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting user food:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -326,6 +431,50 @@ router.get('/monthly-summary', auth, async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching monthly summary:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Update meal entry
+router.put('/:id', auth, async (req, res) => {
+  try {
+    const { foodName, quantity, unit, mealType, mealTime, date, notes, calories, fat, cholesterol } = req.body;
+    
+    // Find the meal entry and verify ownership
+    const mealEntry = await MealEntry.findOne({
+      _id: req.params.id,
+      userId: req.user.id
+    });
+    
+    if (!mealEntry) {
+      return res.status(404).json({ success: false, message: 'Meal entry not found' });
+    }
+    
+    // Update the meal entry
+    const updatedMeal = await MealEntry.findByIdAndUpdate(
+      req.params.id,
+      {
+        foodName,
+        quantity,
+        unit,
+        calories,
+        fat,
+        cholesterol,
+        mealType,
+        mealTime,
+        date: date ? new Date(date) : mealEntry.date,
+        notes: notes || ''
+      },
+      { new: true }
+    );
+    
+    res.json({
+      success: true,
+      message: 'Meal entry updated successfully',
+      data: updatedMeal
+    });
+  } catch (error) {
+    console.error('Error updating meal entry:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
