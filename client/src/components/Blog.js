@@ -7,6 +7,7 @@ import {
   Clock, 
   User 
 } from 'lucide-react';
+import SEO from './SEO';
 
 // Import images directly for better reliability
 import blogImg1 from '../assets/blog1.jpg';
@@ -36,114 +37,268 @@ import blogImg22 from '../assets/blog22.jpg';
 const blogPosts = [
   {
     id: 1,
+    slug: "weight-loss-injections-2025-complete-guide",
+    title: "Weight Loss Injections 2025: Complete Guide to Semaglutide & Wegovy",
+    excerpt: "Discover the latest weight loss injections and medications revolutionizing weight management in 2025. Learn about Semaglutide, Wegovy, and other breakthrough treatments.",
+    author: "Gooofit Research Team",
+    date: "2025-01-15",
+    readTime: "12 min read",
+    category: "Weight Loss 2025",
+    image: blogImg1,
+    tags: ["weight loss injections", "semaglutide", "wegovy", "weight loss shots", "medical weight loss", "2025 trends"],
+    seoDescription: "Complete guide to weight loss injections in 2025. Learn about Semaglutide, Wegovy, and breakthrough weight loss medications that are transforming lives.",
+    cardTag: "Trending 2025"
+  },
+  {
+    id: 2,
+    slug: "intermittent-fasting-weight-loss-2025",
+    title: "Intermittent Fasting for Weight Loss 2025: Ultimate Guide",
+    excerpt: "Master intermittent fasting for weight loss in 2025. Learn the best fasting protocols, meal timing strategies, and how to maximize fat burning results.",
+    author: "Gooofit Research Team",
+    date: "2025-01-10",
+    readTime: "15 min read",
+    category: "Intermittent Fasting",
+    image: blogImg2,
+    tags: ["intermittent fasting", "fasting weight loss", "16/8 fasting", "meal timing", "fat burning", "2025"],
+    seoDescription: "Ultimate guide to intermittent fasting for weight loss in 2025. Learn the best fasting protocols and meal timing strategies for maximum results.",
+    cardTag: "Hot 2025"
+  },
+  {
+    id: 3,
+    slug: "high-protein-diet-weight-loss-2025",
+    title: "High Protein Diet for Weight Loss 2025: Science-Backed Strategies",
+    excerpt: "Discover how high protein diets accelerate weight loss in 2025. Learn optimal protein intake, meal planning, and the science behind protein's fat-burning power.",
+    author: "Gooofit Research Team",
+    date: "2025-01-08",
+    readTime: "14 min read",
+    category: "High Protein Diet",
+    image: blogImg3,
+    tags: ["high protein diet", "protein weight loss", "meal planning", "fat burning", "muscle building", "2025"],
+    seoDescription: "Science-backed guide to high protein diets for weight loss in 2025. Learn optimal protein intake and meal planning strategies.",
+    cardTag: "Popular 2025"
+  },
+  {
+    id: 4,
+    slug: "ai-weight-loss-coach-2025",
+    title: "AI Weight Loss Coach 2025: How Artificial Intelligence is Revolutionizing Weight Management",
+    excerpt: "Explore how AI weight loss coaches are transforming weight management in 2025. Discover personalized plans, real-time tracking, and intelligent insights.",
+    author: "Gooofit Research Team",
+    date: "2025-01-05",
+    readTime: "11 min read",
+    category: "AI & Technology",
+    image: blogImg4,
+    tags: ["AI weight loss coach", "artificial intelligence", "smart weight loss apps", "personalized plans", "2025 technology"],
+    seoDescription: "Discover how AI weight loss coaches are revolutionizing weight management in 2025. Learn about personalized plans and intelligent tracking.",
+    cardTag: "Innovation 2025"
+  },
+  {
+    id: 5,
+    slug: "body-composition-tracking-weight-loss-2025",
+    title: "Body Composition Tracking for Weight Loss 2025: Beyond the Scale",
+    excerpt: "Learn why body composition tracking is crucial for weight loss success in 2025. Discover advanced methods to measure fat, muscle, and overall progress.",
+    author: "Gooofit Research Team",
+    date: "2025-01-03",
+    readTime: "13 min read",
+    category: "Body Composition",
+    image: blogImg5,
+    tags: ["body composition tracking", "fat percentage", "muscle mass", "weight loss progress", "2025 fitness"],
+    seoDescription: "Essential guide to body composition tracking for weight loss in 2025. Learn advanced methods to measure fat, muscle, and progress beyond the scale.",
+    cardTag: "Essential 2025"
+  },
+  {
+    id: 6,
+    slug: "metabolic-flexibility-training-weight-loss-2025",
+    title: "Metabolic Flexibility Training for Weight Loss 2025: Train Your Body to Burn Fat",
+    excerpt: "Master metabolic flexibility training to accelerate weight loss in 2025. Learn how to train your body to efficiently switch between fuel sources.",
+    author: "Gooofit Research Team",
+    date: "2025-01-01",
+    readTime: "16 min read",
+    category: "Metabolic Training",
+    image: blogImg6,
+    tags: ["metabolic flexibility training", "fat burning", "energy metabolism", "weight loss", "2025 fitness"],
+    seoDescription: "Master metabolic flexibility training for weight loss in 2025. Learn how to train your body to efficiently burn fat and switch fuel sources.",
+    cardTag: "Advanced 2025"
+  },
+  {
+    id: 7,
+    slug: "personalized-weight-loss-plan-2025",
+    title: "Personalized Weight Loss Plan 2025: Custom Strategies for Your Body",
+    excerpt: "Create your personalized weight loss plan for 2025. Learn how to customize diet, exercise, and lifestyle strategies based on your unique needs.",
+    author: "Gooofit Research Team",
+    date: "2024-12-28",
+    readTime: "18 min read",
+    category: "Personalized Plans",
+    image: blogImg7,
+    tags: ["personalized weight loss plan", "custom diet", "individual strategies", "weight loss", "2025"],
+    seoDescription: "Create your personalized weight loss plan for 2025. Learn how to customize diet, exercise, and lifestyle strategies for optimal results.",
+    cardTag: "Custom 2025"
+  },
+  {
+    id: 8,
+    slug: "mindful-eating-weight-loss-2025",
+    title: "Mindful Eating for Weight Loss 2025: Transform Your Relationship with Food",
+    excerpt: "Master mindful eating techniques for sustainable weight loss in 2025. Learn how to develop a healthy relationship with food and overcome emotional eating.",
+    author: "Gooofit Research Team",
+    date: "2024-12-25",
+    readTime: "12 min read",
+    category: "Mindful Eating",
+    image: blogImg8,
+    tags: ["mindful eating", "emotional eating", "food relationship", "weight loss", "2025 wellness"],
+    seoDescription: "Master mindful eating for sustainable weight loss in 2025. Learn techniques to develop a healthy relationship with food and overcome emotional eating.",
+    cardTag: "Wellness 2025"
+  },
+  {
+    id: 9,
+    slug: "rapid-weight-loss-diet-plan-2025",
+    title: "Rapid Weight Loss Diet Plan 2025: Safe and Effective Strategies",
+    excerpt: "Discover safe and effective rapid weight loss diet plans for 2025. Learn how to achieve quick results while maintaining health and sustainability.",
+    author: "Gooofit Research Team",
+    date: "2024-12-22",
+    readTime: "14 min read",
+    category: "Rapid Weight Loss",
+    image: blogImg9,
+    tags: ["rapid weight loss diet plan", "quick results", "safe weight loss", "diet strategies", "2025"],
+    seoDescription: "Safe and effective rapid weight loss diet plans for 2025. Learn how to achieve quick results while maintaining health and sustainability.",
+    cardTag: "Fast Results 2025"
+  },
+  {
+    id: 10,
+    slug: "holistic-weight-management-2025",
+    title: "Holistic Weight Management 2025: Complete Mind-Body Approach",
+    excerpt: "Embrace holistic weight management for 2025. Learn how to integrate physical, mental, and emotional wellness for sustainable weight loss success.",
+    author: "Gooofit Research Team",
+    date: "2024-12-20",
+    readTime: "15 min read",
+    category: "Holistic Health",
+    image: blogImg10,
+    tags: ["holistic weight management", "mind-body wellness", "sustainable weight loss", "2025 health"],
+    seoDescription: "Embrace holistic weight management for 2025. Learn how to integrate physical, mental, and emotional wellness for sustainable success.",
+    cardTag: "Complete 2025"
+  },
+  {
+    id: 11,
+    slug: "5-essential-metrics-successful-weight-loss",
+    title: "5 Essential Metrics for Successful Weight Loss",
+    excerpt: "Discover the key metrics that matter most for achieving sustainable weight loss and maintaining your progress long-term.",
+    author: "Gooofit Research Team",
+    date: "2024-08-10",
+    readTime: "6 min read",
+    category: "Weight Loss Tips",
+    image: blogImg11,
+    tags: ["weight loss", "metrics", "tracking", "progress", "goals", "success"],
+    seoDescription: "Learn the 5 essential metrics for successful weight loss. Track the right data to achieve sustainable results and maintain your progress.",
+    cardTag: "New"
+  },
+  {
+    id: 12,
     slug: "science-weight-loss-metabolism",
     title: "The Science of Weight Loss: Understanding Your Body's Metabolism",
-    excerpt: "Discover how your metabolism works and learn evidence-based strategies to optimize it for sustainable weight loss.",
+    excerpt: "Discover how your metabolism works and learn evidence-based strategies to optimize it for sustainable weight loss in 2025.",
     author: "Gooofit Research Team",
     date: "2024-01-15",
     readTime: "8 min read",
     category: "Science & Research",
-    image: blogImg1,
-    tags: ["metabolism", "weight loss", "BMR", "exercise", "nutrition"],
-    seoDescription: "Learn the science behind metabolism and weight loss. Discover how to optimize your body's energy systems for sustainable weight management results.",
+    image: blogImg12,
+    tags: ["metabolism", "weight loss", "BMR", "exercise", "nutrition", "2025 science"],
+    seoDescription: "Learn the science behind metabolism and weight loss in 2025. Discover how to optimize your body's energy systems for sustainable weight management results.",
     cardTag: "Most Viewed"
   },
   {
-    id: 2,
+    id: 13,
     slug: "nutrition-fundamentals-sustainable-weight-loss",
-    title: "Nutrition Fundamentals for Sustainable Weight Loss",
-    excerpt: "Master the basics of nutrition to create a sustainable eating plan that supports your weight loss goals.",
+    title: "Nutrition Fundamentals for Sustainable Weight Loss 2025",
+    excerpt: "Master the basics of nutrition to create a sustainable eating plan that supports your weight loss goals in 2025.",
     author: "Gooofit Research Team",
     date: "2024-01-20",
     readTime: "10 min read",
     category: "Nutrition",
-    image: blogImg2,
-    tags: ["nutrition", "macronutrients", "weight loss", "healthy eating", "meal planning"],
-    seoDescription: "Master the fundamentals of nutrition for sustainable weight loss. Learn about macronutrients, meal timing, and optimal food choices.",
+    image: blogImg13,
+    tags: ["nutrition", "macronutrients", "weight loss", "healthy eating", "meal planning", "2025"],
+    seoDescription: "Master the fundamentals of nutrition for sustainable weight loss in 2025. Learn about macronutrients, meal timing, and optimal food choices.",
     cardTag: "Popular"
   },
   {
-    id: 3,
+    id: 14,
     slug: "exercise-strategies-maximum-fat-burning",
-    title: "Exercise Strategies for Maximum Fat Burning",
-    excerpt: "Discover the most effective exercise techniques to maximize fat burning and accelerate your weight loss journey.",
+    title: "Exercise Strategies for Maximum Fat Burning 2025",
+    excerpt: "Discover the most effective exercise techniques to maximize fat burning and accelerate your weight loss journey in 2025.",
     author: "Gooofit Research Team",
     date: "2024-01-25",
     readTime: "12 min read",
     category: "Fitness & Exercise",
-    image: blogImg3,
-    tags: ["exercise", "workout", "HIIT", "strength training", "fat burning", "fitness"],
-    seoDescription: "Discover the most effective exercise strategies for maximum fat burning. Learn about HIIT, strength training, and optimal workout planning.",
+    image: blogImg14,
+    tags: ["exercise", "workout", "HIIT", "strength training", "fat burning", "fitness", "2025"],
+    seoDescription: "Discover the most effective exercise strategies for maximum fat burning in 2025. Learn about HIIT, strength training, and optimal workout planning.",
     cardTag: "Featured"
   },
   {
-    id: 4,
+    id: 15,
     slug: "mindset-motivation-psychology-weight-loss",
-    title: "Mindset and Motivation: The Psychology of Weight Loss",
-    excerpt: "Learn how to develop the right mindset and maintain motivation throughout your weight loss journey.",
+    title: "Mindset and Motivation: The Psychology of Weight Loss 2025",
+    excerpt: "Learn how to develop the right mindset and maintain motivation throughout your weight loss journey in 2025.",
     author: "Gooofit Research Team",
     date: "2024-02-01",
     readTime: "7 min read",
     category: "Mindset & Motivation",
-    image: blogImg4,
-    tags: ["motivation", "mindset", "psychology", "weight loss", "goals"],
-    seoDescription: "Develop the right mindset for successful weight loss. Learn psychological strategies to maintain motivation and overcome mental barriers."
+    image: blogImg15,
+    tags: ["motivation", "mindset", "psychology", "weight loss", "goals", "2025"],
+    seoDescription: "Develop the right mindset for successful weight loss in 2025. Learn psychological strategies to maintain motivation and overcome mental barriers."
   },
   {
-    id: 5,
+    id: 16,
     slug: "sleep-weight-loss-hidden-connection",
-    title: "Sleep and Weight Loss: The Hidden Connection",
-    excerpt: "Discover how sleep quality and duration significantly impact your weight loss efforts and overall health.",
+    title: "Sleep and Weight Loss 2025: The Hidden Connection",
+    excerpt: "Discover how sleep quality and duration significantly impact your weight loss efforts and overall health in 2025.",
     author: "Gooofit Research Team",
     date: "2024-02-05",
     readTime: "6 min read",
     category: "Health & Wellness",
-    image: blogImg5,
-    tags: ["sleep", "weight loss", "hormones", "health", "wellness"],
-    seoDescription: "Learn how sleep affects weight loss and discover strategies to optimize your sleep for better health and weight management.",
+    image: blogImg16,
+    tags: ["sleep", "weight loss", "hormones", "health", "wellness", "2025"],
+    seoDescription: "Learn how sleep affects weight loss in 2025 and discover strategies to optimize your sleep for better health and weight management.",
     cardTag: "New"
   },
   {
-    id: 6,
+    id: 17,
     slug: "plateau-breaking-advanced-strategies-weight-loss",
-    title: "Plateau Breaking: Advanced Strategies for Continued Weight Loss",
-    excerpt: "When progress stalls, these advanced techniques can help you break through plateaus and continue your weight loss journey.",
+    title: "Plateau Breaking: Advanced Strategies for Continued Weight Loss 2025",
+    excerpt: "When progress stalls, these advanced techniques can help you break through plateaus and continue your weight loss journey in 2025.",
     author: "Gooofit Research Team",
     date: "2024-02-10",
     readTime: "9 min read",
     category: "Advanced Strategies",
-    image: blogImg6,
-    tags: ["plateau", "weight loss", "advanced strategies", "progress", "motivation"],
-    seoDescription: "Break through weight loss plateaus with advanced strategies. Learn techniques to restart progress and continue your weight loss journey."
+    image: blogImg17,
+    tags: ["plateau", "weight loss", "advanced strategies", "progress", "motivation", "2025"],
+    seoDescription: "Break through weight loss plateaus with advanced strategies in 2025. Learn techniques to restart progress and continue your weight loss journey."
   },
   {
-    id: 7,
+    id: 18,
     slug: "metabolism-weight-loss-science-explained",
-    title: "The Science of Weight Loss: Understanding Your Body's Metabolism",
-    excerpt: "Discover how your metabolism works and learn evidence-based strategies to optimize it for sustainable weight loss.",
+    title: "The Science of Weight Loss: Understanding Your Body's Metabolism 2025",
+    excerpt: "Discover how your metabolism works and learn evidence-based strategies to optimize it for sustainable weight loss in 2025.",
     author: "Gooofit Research Team",
     date: "2024-02-15",
     readTime: "8 min read",
     category: "Science & Research",
-    image: blogImg7,
-    tags: ["metabolism", "weight loss", "BMR", "exercise", "nutrition"],
-    seoDescription: "Learn the science behind metabolism and weight loss. Discover how to optimize your body's energy systems for sustainable weight management results."
+    image: blogImg18,
+    tags: ["metabolism", "weight loss", "BMR", "exercise", "nutrition", "2025"],
+    seoDescription: "Learn the science behind metabolism and weight loss in 2025. Discover how to optimize your body's energy systems for sustainable weight management results."
   },
   {
-    id: 8,
+    id: 19,
     slug: "nutrition-basics-weight-loss-guide",
-    title: "Nutrition Fundamentals for Sustainable Weight Loss",
-    excerpt: "Master the basics of nutrition to create a sustainable eating plan that supports your weight loss goals.",
+    title: "Nutrition Fundamentals for Sustainable Weight Loss 2025",
+    excerpt: "Master the basics of nutrition to create a sustainable eating plan that supports your weight loss goals in 2025.",
     author: "Gooofit Research Team",
     date: "2024-02-20",
     readTime: "10 min read",
     category: "Nutrition",
-    image: blogImg8,
-    tags: ["nutrition", "macronutrients", "weight loss", "healthy eating", "meal planning"],
-    seoDescription: "Master the fundamentals of nutrition for sustainable weight loss. Learn about macronutrients, meal timing, and optimal food choices."
+    image: blogImg19,
+    tags: ["nutrition", "macronutrients", "weight loss", "healthy eating", "meal planning", "2025"],
+    seoDescription: "Master the fundamentals of nutrition for sustainable weight loss in 2025. Learn about macronutrients, meal timing, and optimal food choices."
   },
   {
-    id: 9,
+    id: 20,
     slug: "sunlight-wellness-vitamin-d-mental-health",
     title: "Sunlight for Wellness: Vitamin D & Mental Health",
     excerpt: "Discover the crucial connection between vitamin D, sunlight exposure, and your mental health during weight loss.",
@@ -151,13 +306,13 @@ const blogPosts = [
     date: "2024-02-25",
     readTime: "7 min read",
     category: "Health & Wellness",
-    image: blogImg9,
+    image: blogImg20,
     tags: ["vitamin d", "sunlight", "mental health", "wellness", "weight loss"],
     seoDescription: "Learn about the connection between vitamin D, sunlight exposure, and mental health during your weight loss journey.",
     cardTag: "Trending"
   },
   {
-    id: 10,
+    id: 21,
     slug: "intermittent-fasting-weight-loss-complete-guide",
     title: "Intermittent Fasting: A Complete Guide to Weight Loss Success",
     excerpt: "Master the art of intermittent fasting with proven strategies for sustainable weight loss and improved health.",
@@ -165,13 +320,13 @@ const blogPosts = [
     date: "2024-03-01",
     readTime: "11 min read",
     category: "Fasting & Nutrition",
-    image: blogImg10,
+    image: blogImg21,
     tags: ["intermittent fasting", "weight loss", "nutrition", "health", "metabolism"],
     seoDescription: "Master intermittent fasting for weight loss success. Learn proven strategies, methods, and tips for sustainable results.",
     cardTag: "Popular"
   },
   {
-    id: 11,
+    id: 22,
     slug: "stress-management-weight-loss-connection",
     title: "Stress Management: The Missing Link in Your Weight Loss Journey",
     excerpt: "Discover how stress affects your weight loss efforts and learn effective strategies to manage it for better results.",
@@ -179,12 +334,12 @@ const blogPosts = [
     date: "2024-03-05",
     readTime: "9 min read",
     category: "Mental Health & Wellness",
-    image: blogImg11,
+    image: blogImg22,
     tags: ["stress management", "weight loss", "mental health", "cortisol", "wellness"],
     seoDescription: "Learn how stress affects weight loss and discover effective stress management techniques for better weight loss results."
   },
   {
-    id: 12,
+    id: 23,
     slug: "gut-health-weight-loss-microbiome",
     title: "Gut Health and Weight Loss: The Microbiome Connection",
     excerpt: "Explore the fascinating connection between your gut microbiome and weight loss success.",
@@ -197,7 +352,7 @@ const blogPosts = [
     seoDescription: "Discover the connection between gut health and weight loss. Learn how to optimize your microbiome for better weight management."
   },
   {
-    id: 13,
+    id: 24,
     slug: "exercise-daily-boost-body-mind-happiness",
     title: "Exercise Daily: Boost Body & Mind for Happiness",
     excerpt: "Discover how daily exercise transforms not just your body, but your mental well-being and overall happiness.",
@@ -209,7 +364,7 @@ const blogPosts = [
     tags: ["exercise", "daily fitness", "mental health", "happiness", "wellness"]
   },
   {
-    id: 14,
+    id: 25,
     slug: "mindful-eating-fuel-body-lift-mood",
     title: "Mindful Eating: Fuel Your Body, Lift Your Mood",
     excerpt: "Transform your relationship with food through mindful eating practices that nourish both body and soul.",
@@ -221,7 +376,7 @@ const blogPosts = [
     tags: ["mindful eating", "nutrition", "mental health", "mood", "wellness"]
   },
   {
-    id: 15,
+    id: 26,
     slug: "mental-health-matters-stress-less-live-more",
     title: "Mental Health Matters: Stress Less, Live More",
     excerpt: "Prioritize your mental health with proven strategies to reduce stress and enhance your quality of life.",
@@ -233,7 +388,7 @@ const blogPosts = [
     tags: ["mental health", "stress reduction", "wellness", "life quality", "self-care"]
   },
   {
-    id: 16,
+    id: 27,
     slug: "sleep-success-rest-enhance-well-being",
     title: "Sleep for Success: Rest to Enhance Well-Being",
     excerpt: "Discover how quality sleep is the foundation for weight loss success and overall health improvement.",
@@ -245,7 +400,7 @@ const blogPosts = [
     tags: ["sleep", "well-being", "weight loss", "health", "recovery"]
   },
   {
-    id: 17,
+    id: 28,
     slug: "sunlight-benefits-brighten-mood-build-health",
     title: "Sunlight Benefits: Brighten Mood & Build Health",
     excerpt: "Harness the power of natural sunlight to boost your mood, energy levels, and overall health.",
@@ -257,7 +412,7 @@ const blogPosts = [
     tags: ["sunlight", "vitamin d", "mood", "health", "natural wellness"]
   },
   {
-    id: 18,
+    id: 29,
     slug: "cut-screentime-sharpen-focus-reduce-anxiety",
     title: "Cut Screentime: Sharpen Focus, Reduce Anxiety",
     excerpt: "Learn how reducing screen time can dramatically improve your focus, reduce anxiety, and support your weight loss goals.",
@@ -269,7 +424,7 @@ const blogPosts = [
     tags: ["screen time", "focus", "anxiety", "digital wellness", "mental health"]
   },
   {
-    id: 19,
+    id: 30,
     slug: "fitness-joy-move-body-feel-alive",
     title: "Fitness for Joy: Move Your Body, Feel Alive",
     excerpt: "Discover how movement and fitness can bring joy, energy, and vitality to your life beyond just weight loss.",
@@ -282,7 +437,7 @@ const blogPosts = [
     cardTag: "Trending"
   },
   {
-    id: 20,
+    id: 31,
     slug: "healthy-diet-hacks-nourish-body-spark-happiness",
     title: "Healthy Diet Hacks: Nourish Body, Spark Happiness",
     excerpt: "Learn simple and effective diet hacks that nourish your body while boosting your mood and happiness levels.",
@@ -294,7 +449,7 @@ const blogPosts = [
     tags: ["healthy diet", "nutrition hacks", "happiness", "mood", "wellness"]
   },
   {
-    id: 21,
+    id: 32,
     slug: "meditate-peace-calm-mind-stronger-health",
     title: "Meditate for Peace: Calm Mind, Stronger Health",
     excerpt: "Explore the transformative power of meditation for mental peace, stress reduction, and enhanced overall health.",
@@ -307,7 +462,7 @@ const blogPosts = [
     cardTag: "New"
   },
   {
-    id: 22,
+    id: 33,
     slug: "healthy-eating-happier-stronger-you",
     title: "Healthy Eating for a Happier, Stronger You",
     excerpt: "Discover how nutritious eating habits can transform your mood, energy levels, and overall strength.",
@@ -355,9 +510,44 @@ const Blog = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-purple-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-20">
+    <>
+      <SEO
+        title="Weight Loss Blog - Expert Tips, Strategies & Science-Backed Advice | GoooFit"
+        description="Discover expert weight loss insights, proven strategies, and science-backed tips for your journey. Learn about intermittent fasting, high protein diets, AI coaching, and more."
+        canonical="https://gooofit.com/blog"
+        keywords="weight loss blog, weight loss tips, intermittent fasting, high protein diet, AI weight loss coach, body composition tracking, sustainable weight loss, weight loss strategies, fitness blog, health blog"
+        schemaData={{
+          "@context": "https://schema.org",
+          "@type": "Blog",
+          "name": "GoooFit Weight Loss Blog",
+          "description": "Expert insights and proven strategies for weight loss success",
+          "url": "https://gooofit.com/blog",
+          "publisher": {
+            "@type": "Organization",
+            "name": "GoooFit",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://gooofit.com/logo.png"
+            }
+          },
+          "blogPost": blogPosts.map(post => ({
+            "@type": "BlogPosting",
+            "headline": post.title,
+            "description": post.excerpt,
+            "author": {
+              "@type": "Organization",
+              "name": post.author
+            },
+            "datePublished": post.date,
+            "dateModified": post.date,
+            "image": post.image,
+            "url": `https://gooofit.com/blog/${post.slug}`
+          }))
+        }}
+      />
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-purple-50">
+        {/* Hero Section */}
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-20">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
@@ -543,6 +733,7 @@ const Blog = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

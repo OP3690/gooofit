@@ -10,6 +10,7 @@ import {
   Bookmark 
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEO from './SEO';
 
 // Blog data with SEO-optimized content using local BlogImg images
 const blogPosts = [
@@ -2882,9 +2883,69 @@ const BlogPost = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-purple-50">
-      {/* Hero Section */}
-      <div className="relative h-96 bg-gradient-to-r from-orange-500 to-red-500">
+    <>
+      <SEO
+        title={`${post.title} | GoooFit Weight Loss Blog`}
+        description={post.seoDescription || post.excerpt}
+        canonical={`https://gooofit.com/blog/${post.slug}`}
+        keywords={`${post.tags.join(', ')}, weight loss, fitness, health, nutrition, ${post.category.toLowerCase()}`}
+        ogType="article"
+        articleData={{
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": post.title,
+          "description": post.seoDescription || post.excerpt,
+          "image": post.image,
+          "author": {
+            "@type": "Organization",
+            "name": post.author
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "GoooFit",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://gooofit.com/logo.png"
+            }
+          },
+          "datePublished": post.date,
+          "dateModified": post.date,
+          "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": `https://gooofit.com/blog/${post.slug}`
+          },
+          "articleSection": post.category,
+          "wordCount": post.content.length,
+          "timeRequired": post.readTime
+        }}
+        breadcrumbData={{
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://gooofit.com"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Blog",
+              "item": "https://gooofit.com/blog"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": post.title,
+              "item": `https://gooofit.com/blog/${post.slug}`
+            }
+          ]
+        }}
+      />
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-purple-50">
+        {/* Hero Section */}
+        <div className="relative h-96 bg-gradient-to-r from-orange-500 to-red-500">
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
         <div className="relative h-full flex items-center justify-center">
           <div className="text-center text-white max-w-5xl mx-auto px-6">
@@ -3052,6 +3113,7 @@ const BlogPost = () => {
         </button>
       </div>
     </div>
+    </>
   );
 };
 
