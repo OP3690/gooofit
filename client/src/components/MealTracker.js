@@ -963,8 +963,9 @@ const MealTracker = () => {
       const mealData = {
         userId: userId,
         foodName: selectedFood.name,
-        // Send quantity in grams so backend nutrition math is correct
-        quantity: parseFloat(gramsEquivalent),
+        // Store both original quantity and converted grams
+        quantity: parseFloat(gramsEquivalent), // Store converted grams for calculations
+        originalQuantity: parseFloat(quantity), // Store original user input
         unit: unit,
         calories: Math.round((selectedFood.calories || 0) * gramsEquivalent / 100),
         fat: Math.round((selectedFood.fat || 0) * gramsEquivalent / 100 * 10) / 10,
@@ -1086,7 +1087,8 @@ const MealTracker = () => {
     
     // Set editing meal and populate form
     setEditingMeal(meal);
-    setEditQuantity(meal.quantity.toString());
+    // Use originalQuantity if available, otherwise fallback to quantity
+    setEditQuantity((meal.originalQuantity || meal.quantity).toString());
     setEditUnit(meal.unit);
     setEditMealType(meal.mealType);
     setEditMealTime(meal.mealTime || '');
@@ -1110,10 +1112,11 @@ const MealTracker = () => {
 
       // Find the food item to get base nutrition values
       const foodItem = foodDatabase.find(food => food.name === editingMeal.foodName);
-      
+
       const updatedMealData = {
         foodName: editingMeal.foodName,
-        quantity: parseFloat(editQuantity),
+        quantity: parseFloat(gramsEquivalent), // Store converted grams for calculations
+        originalQuantity: parseFloat(editQuantity), // Store original user input
         unit: editUnit,
         calories: Math.round((foodItem?.calories || editingMeal.calories || 0) * gramsEquivalent / 100),
         fat: Math.round(((foodItem?.fat || editingMeal.fat || 0) * gramsEquivalent / 100) * 10) / 10,
@@ -1698,7 +1701,6 @@ const MealTracker = () => {
                 <div className="flex-1">
                   <h2 className="text-3xl font-bold mb-2">Welcome back! 👋</h2>
                   <p className="text-orange-100 text-lg">Track your nutrition journey today</p>
-                  {/* removed period helper text per request */}
                 </div>
                 <div className="text-right ml-4">
                   {(() => {
@@ -1716,8 +1718,8 @@ const MealTracker = () => {
                 </div>
               </div>
               
-              {/* Add Meal CTA for better mobile UX */}
-              <div className="mt-6 flex justify-center">
+              {/* Add Meal CTA - Centered and moved up in welcome banner */}
+              <div className="mt-4 flex justify-center">
                 <button
                   onClick={() => setShowAddMealPopup(true)}
                   className="bg-white text-orange-600 hover:bg-orange-50 px-8 py-3 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3 group"
@@ -3117,7 +3119,7 @@ const MealTracker = () => {
                                   </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {parseFloat(meal.quantity).toFixed(2)} {meal.unit}
+                                  {meal.originalQuantity || meal.quantity} {meal.unit}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -3347,7 +3349,7 @@ const MealTracker = () => {
                                               <p className="text-xs text-gray-500">{meal.mealType?.charAt(0).toUpperCase() + meal.mealType?.slice(1)} • {meal.mealTime || '--:--'}</p>
                                             </div>
                                             <div className="flex items-center space-x-4">
-                                              <span className="text-sm text-gray-600">{parseFloat(meal.quantity).toFixed(0)} {meal.unit}</span>
+                                              <span className="text-sm text-gray-600">{meal.originalQuantity || meal.quantity} {meal.unit}</span>
                                               <span className="font-semibold text-orange-600">{meal.calories || 0} cal</span>
                                               {(recentPeriod === 'today' || recentPeriod === 'yesterday') && (
                                                 <button onClick={() => handleEditMeal(meal)} className="text-blue-600 hover:text-blue-700 text-sm">Edit</button>
@@ -3413,7 +3415,7 @@ const MealTracker = () => {
                                     </p>
                                   </div>
                                   <div className="flex items-center space-x-4">
-                                    <span className="text-sm text-gray-600">{parseFloat(meal.quantity).toFixed(0)} {meal.unit}</span>
+                                                                                  <span className="text-sm text-gray-600">{meal.originalQuantity || meal.quantity} {meal.unit}</span>
                                     <span className="font-semibold text-orange-600">{meal.calories || 0} cal</span>
                                     <span className="text-xs text-gray-500">{Math.round((meal.protein||0)*10)/10}g protein</span>
                                     <span className="text-xs text-gray-500">{Math.round((meal.carbs||0)*10)/10}g carbs</span>
@@ -3578,7 +3580,7 @@ const MealTracker = () => {
                               </div>
                             </div>
                                 <div className="flex items-center space-x-3">
-                                  <span className="text-gray-500">{parseFloat(meal.quantity).toFixed(0)} {meal.unit}</span>
+                                  <span className="text-gray-500">{meal.originalQuantity || meal.quantity} {meal.unit}</span>
                                   <span className="font-semibold text-orange-600">{meal?.calories || 0} cal</span>
                           </div>
                               </div>
@@ -4268,7 +4270,7 @@ const MealTracker = () => {
                 <span className="text-xs text-orange-700">{quickEditFoods.length}/10</span>
               </div>
               {quickEditFoods.length === 0 ? (
-                <p className="text-sm text-orange-700">Add items using the “Add” buttons in the Food Database table above. You can add up to 10 and reorder them here.</p>
+                <p className="text-sm text-orange-700">Add items using the "Add" buttons in the Food Database table above. You can add up to 10 and reorder them here.</p>
               ) : (
                 <div className="space-y-2">
                   {quickEditFoods.map((q, idx) => (
@@ -4467,7 +4469,7 @@ const MealTracker = () => {
                         </ul>
                       </div>
 
-                      {/* Why it’s important */}
+                      {/* Why it's important */}
                       <div className="bg-gray-50 rounded-md p-5 border">
                         <p className="text-sm font-semibold text-gray-900 mb-3">Why is GI important?</p>
                         <ul className="space-y-2 text-sm text-gray-700">
@@ -5269,7 +5271,7 @@ const MealTracker = () => {
                               </div>
                             </td>
                             <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
-                              {parseFloat(meal.quantity).toFixed(2)} {meal.unit}
+                              {meal.quantity} {meal.unit}
                             </td>
                             <td className="px-3 py-2 whitespace-nowrap">
                               <span className={`inline-flex px-1 py-0.5 text-xs font-semibold rounded-full ${
@@ -5965,7 +5967,7 @@ const MealTracker = () => {
         className="fixed bottom-8 right-8 w-20 h-20 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center z-[9999] hover:scale-110"
         title="Add New Meal"
       >
-        <FaPlus className="text-3xl" />
+        <FaUtensils className="text-3xl" />
       </button>
 
       {/* Add Meal Popup */}
@@ -6440,6 +6442,8 @@ const MealTracker = () => {
                       <p className="text-lg font-bold text-orange-600">
                         {(() => {
                           if (!editQuantity || parseFloat(editQuantity) <= 0) return editingMeal?.calories || 0;
+                          
+                          // Calculate nutrition based on the new quantity and unit
                           let gramsEquivalent = parseFloat(editQuantity);
                           if (editUnit === 'cups') gramsEquivalent = parseFloat(editQuantity) * 240;
                           else if (editUnit === 'tsp') gramsEquivalent = parseFloat(editQuantity) * 5;
@@ -6448,7 +6452,9 @@ const MealTracker = () => {
                           else if (editUnit === 'pieces') gramsEquivalent = parseFloat(editQuantity) * 50;
                           else if (editUnit === 'slices') gramsEquivalent = parseFloat(editQuantity) * 30;
                           
-                                                        return Math.round(((editingMeal?.calories || 0)) * gramsEquivalent / (((editingMeal?.quantity || 1)) * (editingMeal?.unit === 'cups' ? 240 : editingMeal?.unit === 'tsp' ? 5 : editingMeal?.unit === 'tbsp' ? 15 : editingMeal?.unit === 'ml' ? 1 : editingMeal?.unit === 'pieces' ? 50 : editingMeal?.unit === 'slices' ? 30 : 1)));
+                          // Calculate calories per 100g, then apply to new quantity
+                          const caloriesPer100g = (editingMeal?.calories || 0) / (editingMeal?.quantity || 1);
+                          return Math.round(caloriesPer100g * gramsEquivalent);
                         })()}
                       </p>
                     </div>
@@ -6456,7 +6462,9 @@ const MealTracker = () => {
                       <p className="text-gray-600 text-xs">Fat (g)</p>
                       <p className="text-lg font-bold text-red-600">
                         {(() => {
-                          if (!editQuantity || parseFloat(editQuantity) <= 0) return editingMeal.fat;
+                          if (!editQuantity || parseFloat(editQuantity) <= 0) return editingMeal?.fat || 0;
+                          
+                          // Calculate nutrition based on the new quantity and unit
                           let gramsEquivalent = parseFloat(editQuantity);
                           if (editUnit === 'cups') gramsEquivalent = parseFloat(editQuantity) * 240;
                           else if (editUnit === 'tsp') gramsEquivalent = parseFloat(editQuantity) * 5;
@@ -6465,7 +6473,9 @@ const MealTracker = () => {
                           else if (editUnit === 'pieces') gramsEquivalent = parseFloat(editQuantity) * 50;
                           else if (editUnit === 'slices') gramsEquivalent = parseFloat(editQuantity) * 30;
                           
-                          return (editingMeal.fat * gramsEquivalent / (editingMeal.quantity * (editingMeal.unit === 'cups' ? 240 : editingMeal.unit === 'tsp' ? 5 : editingMeal.unit === 'tbsp' ? 15 : editingMeal.unit === 'ml' ? 1 : editingMeal.unit === 'pieces' ? 50 : editingMeal.unit === 'slices' ? 30 : 1))).toFixed(1);
+                          // Calculate fat per 100g, then apply to new quantity
+                          const fatPer100g = (editingMeal?.fat || 0) / (editingMeal.quantity || 1);
+                          return (fatPer100g * gramsEquivalent).toFixed(1);
                         })()}
                       </p>
                     </div>
@@ -6473,7 +6483,9 @@ const MealTracker = () => {
                       <p className="text-gray-600 text-xs">Cholesterol (mg)</p>
                       <p className="text-lg font-bold text-yellow-600">
                         {(() => {
-                          if (!editQuantity || parseFloat(editQuantity) <= 0) return editingMeal.cholesterol;
+                          if (!editQuantity || parseFloat(editQuantity) <= 0) return editingMeal?.cholesterol || 0;
+                          
+                          // Calculate nutrition based on the new quantity and unit
                           let gramsEquivalent = parseFloat(editQuantity);
                           if (editUnit === 'cups') gramsEquivalent = parseFloat(editQuantity) * 240;
                           else if (editUnit === 'tsp') gramsEquivalent = parseFloat(editQuantity) * 5;
@@ -6482,7 +6494,9 @@ const MealTracker = () => {
                           else if (editUnit === 'pieces') gramsEquivalent = parseFloat(editQuantity) * 50;
                           else if (editUnit === 'slices') gramsEquivalent = parseFloat(editQuantity) * 30;
                           
-                          return Math.round(editingMeal.cholesterol * gramsEquivalent / (editingMeal.quantity * (editingMeal.unit === 'cups' ? 240 : editingMeal.unit === 'tsp' ? 5 : editingMeal.unit === 'tbsp' ? 15 : editingMeal.unit === 'ml' ? 1 : editingMeal.unit === 'pieces' ? 50 : editingMeal.unit === 'slices' ? 30 : 1)));
+                          // Calculate cholesterol per 100g, then apply to new quantity
+                          const cholesterolPer100g = (editingMeal?.cholesterol || 0) / (editingMeal.quantity || 1);
+                          return Math.round(cholesterolPer100g * gramsEquivalent);
                         })()}
                       </p>
                     </div>
@@ -6574,7 +6588,7 @@ const MealTracker = () => {
                   </div>
                   <div>
                     <p className="text-gray-600">Quantity</p>
-                    <p className="font-medium text-gray-900">{parseFloat(mealToDelete.quantity).toFixed(2)} {mealToDelete.unit}</p>
+                    <p className="font-medium text-gray-900">{mealToDelete.quantity} {mealToDelete.unit}</p>
                   </div>
                   <div>
                     <p className="text-gray-600">Calories</p>

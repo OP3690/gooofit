@@ -14,6 +14,10 @@ const mealEntrySchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  originalQuantity: {
+    type: Number,
+    required: true
+  },
   unit: {
     type: String,
     required: true,

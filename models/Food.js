@@ -23,6 +23,11 @@ const foodSchema = new mongoose.Schema({
     required: true,
     default: 0
   },
+  carbs: {
+    type: Number,
+    required: true,
+    default: 0
+  },
   category: {
     type: String,
     required: true,

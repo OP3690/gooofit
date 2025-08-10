@@ -90,31 +90,39 @@ router.get('/food-database', async (req, res) => {
 // Add meal entry
 router.post('/add', auth, async (req, res) => {
   try {
-    const { foodName, quantity, unit, mealType, date, notes } = req.body;
+    const { foodName, quantity, originalQuantity, unit, mealType, mealTime, date, notes } = req.body;
     
-    // Find food in database
-    const food = await Food.findOne({ name: foodName });
+    // Find food in database (check both global and user-specific foods)
+    let food = await Food.findOne({ name: foodName });
+    if (!food) {
+      // Check user-specific foods
+      food = await UserFood.findOne({ name: foodName, userId: req.user.id });
+    }
     if (!food) {
       return res.status(400).json({ success: false, message: 'Food not found in database' });
     }
     
-    // Calculate nutrition based on quantity
+    // Calculate nutrition based on quantity (which is now in grams)
     const multiplier = quantity / 100; // Assuming base values are per 100g
-    const calculatedCalories = Math.round(food.calories * multiplier);
-    const calculatedFat = Math.round(food.fat * multiplier * 10) / 10;
-    const calculatedProtein = Math.round(food.protein * multiplier * 10) / 10;
-    const calculatedCholesterol = Math.round(food.cholesterol * multiplier);
+    const calculatedCalories = Math.round((food.calories || 0) * multiplier);
+    const calculatedFat = Math.round((food.fat || 0) * multiplier * 10) / 10;
+    const calculatedProtein = Math.round((food.protein || 0) * multiplier * 10) / 10;
+    const calculatedCarbs = Math.round((food.carbs || 0) * multiplier * 10) / 10;
+    const calculatedCholesterol = Math.round((food.cholesterol || 0) * multiplier);
     
     const mealEntry = new MealEntry({
       userId: req.user.id,
       foodName,
       quantity,
+      originalQuantity: originalQuantity, // Always use the originalQuantity from frontend
       unit,
       calories: calculatedCalories,
       fat: calculatedFat,
       protein: calculatedProtein,
+      carbs: calculatedCarbs,
       cholesterol: calculatedCholesterol,
       mealType: mealType || 'snack',
+      mealTime: mealTime || '',
       date: date ? new Date(date) : new Date(),
       notes: notes || ''
     });
@@ -438,7 +446,7 @@ router.get('/monthly-summary', auth, async (req, res) => {
 // Update meal entry
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { foodName, quantity, unit, mealType, mealTime, date, notes, calories, fat, cholesterol } = req.body;
+    const { foodName, quantity, originalQuantity, unit, mealType, mealTime, date, notes, calories, fat, protein, carbs, cholesterol } = req.body;
     
     // Find the meal entry and verify ownership
     const mealEntry = await MealEntry.findOne({
@@ -456,9 +464,12 @@ router.put('/:id', auth, async (req, res) => {
       {
         foodName,
         quantity,
+        originalQuantity: originalQuantity, // Always use the originalQuantity from frontend
         unit,
         calories,
         fat,
+        protein,
+        carbs,
         cholesterol,
         mealType,
         mealTime,
