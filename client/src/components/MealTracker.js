@@ -967,10 +967,10 @@ const MealTracker = () => {
         quantity: parseFloat(gramsEquivalent),
         unit: unit,
         calories: Math.round((selectedFood.calories || 0) * gramsEquivalent / 100),
-        fat: Math.round(selectedFood.fat * gramsEquivalent / 100 * 10) / 10,
+        fat: Math.round((selectedFood.fat || 0) * gramsEquivalent / 100 * 10) / 10,
         protein: Math.round((selectedFood.protein || 0) * gramsEquivalent / 100 * 10) / 10,
         carbs: Math.round((selectedFood.carbs || 0) * gramsEquivalent / 100 * 10) / 10,
-        cholesterol: Math.round(selectedFood.cholesterol * gramsEquivalent / 100),
+        cholesterol: Math.round((selectedFood.cholesterol || 0) * gramsEquivalent / 100),
         mealType: mealType,
         mealTime: mealTime || new Date().toTimeString().slice(0, 5), // Use current time if not provided
         date: selectedDate,
@@ -1108,22 +1108,34 @@ const MealTracker = () => {
       else if (editUnit === 'pieces') gramsEquivalent = parseFloat(editQuantity) * 50;
       else if (editUnit === 'slices') gramsEquivalent = parseFloat(editQuantity) * 30;
 
+      // Find the food item to get base nutrition values
+      const foodItem = foodDatabase.find(food => food.name === editingMeal.foodName);
+      
       const updatedMealData = {
         foodName: editingMeal.foodName,
         quantity: parseFloat(editQuantity),
         unit: editUnit,
-                                    calories: Math.round((editingMeal.calories || 0) * gramsEquivalent / ((editingMeal.quantity || 1) * (editingMeal.unit === 'cups' ? 240 : editingMeal.unit === 'tsp' ? 5 : editingMeal.unit === 'tbsp' ? 15 : editingMeal.unit === 'ml' ? 1 : editingMeal.unit === 'pieces' ? 50 : editingMeal.unit === 'slices' ? 30 : 1))),
-        fat: Math.round(editingMeal.fat * gramsEquivalent / (editingMeal.quantity * (editingMeal.unit === 'cups' ? 240 : editingMeal.unit === 'tsp' ? 5 : editingMeal.unit === 'tbsp' ? 15 : editingMeal.unit === 'ml' ? 1 : editingMeal.unit === 'pieces' ? 50 : editingMeal.unit === 'slices' ? 30 : 1)) * 10) / 10,
-        cholesterol: Math.round(editingMeal.cholesterol * gramsEquivalent / (editingMeal.quantity * (editingMeal.unit === 'cups' ? 240 : editingMeal.unit === 'tsp' ? 5 : editingMeal.unit === 'tbsp' ? 15 : editingMeal.unit === 'ml' ? 1 : editingMeal.unit === 'pieces' ? 50 : editingMeal.unit === 'slices' ? 30 : 1))),
+        calories: Math.round((foodItem?.calories || editingMeal.calories || 0) * gramsEquivalent / 100),
+        fat: Math.round(((foodItem?.fat || editingMeal.fat || 0) * gramsEquivalent / 100) * 10) / 10,
+        protein: Math.round(((foodItem?.protein || editingMeal.protein || 0) * gramsEquivalent / 100) * 10) / 10,
+        carbs: Math.round(((foodItem?.carbs || editingMeal.carbs || 0) * gramsEquivalent / 100) * 10) / 10,
+        cholesterol: Math.round((foodItem?.cholesterol || editingMeal.cholesterol || 0) * gramsEquivalent / 100),
         mealType: editMealType,
         mealTime: editMealTime || new Date().toTimeString().slice(0, 5),
         date: editingMeal.date,
         notes: editNotes
       };
 
-      const response = await api.put(`/meals/${editingMeal._id}`, updatedMealData);
-      
-      if (response.data.success) {
+      // For demo user, skip API and update local state directly
+      if (editingMeal.userId === 'demo') {
+        setMealEntries(prevEntries => 
+          prevEntries.map(meal => 
+            meal._id === editingMeal._id 
+              ? { ...meal, ...updatedMealData }
+              : meal
+          )
+        );
+        
         // Reset form
         setEditingMeal(null);
         setEditQuantity('');
@@ -1133,9 +1145,39 @@ const MealTracker = () => {
         setEditNotes('');
         setShowEditMealPopup(false);
         
-        // Refresh data
+        // Refresh summaries
         fetchDailySummary();
+        fetchWeeklySummary();
+        fetchMonthlySummary();
+        
+        toast.success('Meal updated (demo)');
+        return;
+      }
+
+      const response = await api.put(`/meals/${editingMeal._id}`, updatedMealData);
+      
+      if (response.data.success) {
+        // Immediately update local state for instant update
+        setMealEntries(prevEntries => 
+          prevEntries.map(meal => 
+            meal._id === editingMeal._id 
+              ? { ...meal, ...updatedMealData }
+              : meal
+          )
+        );
+        
+        // Reset form
+        setEditingMeal(null);
+        setEditQuantity('');
+        setEditUnit('grams');
+        setEditMealType('breakfast');
+        setEditMealTime('');
+        setEditNotes('');
+        setShowEditMealPopup(false);
+        
+        // Also refresh from server to ensure consistency
         fetchMealEntries();
+        fetchDailySummary();
         fetchWeeklySummary();
         fetchMonthlySummary();
         
@@ -1521,16 +1563,13 @@ const MealTracker = () => {
           }
         });
       } else {
-        // New structure with flat fields - these are already calculated totals
+        // New structure with flat fields
         console.log('🔍 Using flat fields structure');
         mealCalories = meal.calories || 0;
         mealFat = meal.fat || 0;
         mealProtein = meal.protein || 0;
         mealCarbs = meal.carbs || 0;
         mealCholesterol = meal.cholesterol || 0;
-        
-        // Ensure we're using the calculated totals, not per-100g values
-        console.log('🔍 Using calculated totals:', { mealCalories, mealFat, mealProtein, mealCarbs, mealCholesterol });
       }
       
       console.log('🔍 Calculated meal nutrition:', { mealCalories, mealFat, mealProtein, mealCarbs, mealCholesterol });
@@ -1661,34 +1700,32 @@ const MealTracker = () => {
                   <p className="text-orange-100 text-lg">Track your nutrition journey today</p>
                   {/* removed period helper text per request */}
                 </div>
-                <div className="flex items-center space-x-6">
-                  {/* Add Meal CTA for better mobile UX */}
-                  <div className="text-center">
-                    <button
-                      onClick={() => setShowAddMealPopup(true)}
-                      className="bg-white text-orange-600 hover:bg-orange-50 px-4 py-3 rounded-lg font-semibold transition-colors duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl"
-                    >
-                      <span className="text-xl">+</span>
-                      <span className="hidden sm:inline">Add Meal</span>
-                    </button>
-                    <p className="text-xs text-orange-100 mt-1">Quick Add</p>
-                  </div>
-                  
-                  <div className="text-right ml-4">
-                    {(() => {
-                      const goals = getMacronutrientGoals();
-                      return (
-                        <>
-                          <div className="text-4xl font-bold">{goals.tdee}</div>
-                          <div className="text-orange-100">Daily Goal (kcal)</div>
-                          <div className="text-orange-100 text-sm mt-1">
-                            Fat: {goals.fat.percentage}% | Protein: {goals.protein.percentage}% | Carbs: {goals.carbs.percentage}%
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
+                <div className="text-right ml-4">
+                  {(() => {
+                    const goals = getMacronutrientGoals();
+                    return (
+                      <>
+                        <div className="text-4xl font-bold">{goals.tdee}</div>
+                        <div className="text-orange-100">Daily Goal (kcal)</div>
+                        <div className="text-orange-100 text-sm mt-1">
+                          Fat: {goals.fat.percentage}% | Protein: {goals.protein.percentage}% | Carbs: {goals.carbs.percentage}%
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
+              </div>
+              
+              {/* Add Meal CTA for better mobile UX */}
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={() => setShowAddMealPopup(true)}
+                  className="bg-white text-orange-600 hover:bg-orange-50 px-8 py-3 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3 group"
+                >
+                  <span className="text-2xl group-hover:scale-110 transition-transform">🍽️</span>
+                  Add Your First Meal Today
+                  <span className="text-xl group-hover:translate-x-1 transition-transform">→</span>
+                </button>
               </div>
             </div>
 
