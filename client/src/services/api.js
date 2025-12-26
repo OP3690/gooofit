@@ -23,7 +23,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000, // Increased timeout to 15 seconds
+  timeout: 20000, // Increased timeout to 20 seconds (Render free tier can be slow)
 });
 
 // Simple cache for API responses
@@ -248,7 +248,10 @@ export const userAPI = {
   },
 
   register: async (data) => {
-    const response = await api.post('/users/register', data);
+    // Use longer timeout for registration (30 seconds) as Render free tier can be slow to wake up
+    const response = await api.post('/users/register', data, {
+      timeout: 30000 // 30 seconds for registration
+    });
     return response.data;
   },
 

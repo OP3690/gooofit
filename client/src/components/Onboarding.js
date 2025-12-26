@@ -355,6 +355,20 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
     } catch (error) {
       console.error('Registration/Login error:', error);
       
+      // Handle timeout errors specifically
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        toast.error('Request timed out. The server may be starting up. Please try again in a few seconds.');
+        return;
+      }
+      
+      // Handle network errors
+      if (!error.response && error.message) {
+        if (error.message.includes('Network Error') || error.message.includes('Failed to fetch')) {
+          toast.error('Unable to connect to server. Please check your internet connection and try again.');
+          return;
+        }
+      }
+      
       // Handle validation errors
       if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
         const errorMessages = error.response.data.errors.map(err => err.msg || err.message).join(', ');
