@@ -317,11 +317,16 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
         const today = new Date();
         const daysToTarget = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
         
+        // Sanitize country code: remove dashes and ensure proper format
+        const sanitizedCountryCode = countryCode.replace(/-/g, '');
+        // Ensure mobile number is properly formatted (remove any spaces or dashes)
+        const sanitizedMobileNumber = data.mobileNumber.replace(/[\s-]/g, '');
+        
         const response = await userAPI.register({
           name: data.name,
           email: data.email,
           password: data.password,
-          mobileNumber: `${countryCode}${data.mobileNumber}`,
+          mobileNumber: `${sanitizedCountryCode}${sanitizedMobileNumber}`,
           country: selectedCountry,
           goalWeight: parseFloat(data.goalWeight),
           currentWeight: parseFloat(data.currentWeight),
@@ -348,7 +353,19 @@ const Onboarding = ({ onSuccess, onClose, initialMode }) => {
         onSuccess({ ...response.user, token: response.token });
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'An error occurred');
+      console.error('Registration/Login error:', error);
+      
+      // Handle validation errors
+      if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+        const errorMessages = error.response.data.errors.map(err => err.msg || err.message).join(', ');
+        toast.error(errorMessages || 'Validation failed. Please check your input.');
+      } else if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else if (error.message) {
+        toast.error(error.message);
+      } else {
+        toast.error('An error occurred. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
