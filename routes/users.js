@@ -254,69 +254,13 @@ router.post('/register', [
       // Don't fail registration if weight entry creation fails
     }
     
-    console.log('✅ Initial weight entry created, sending welcome email...');
-    
-    // Send welcome email
-    try {
-      await sendWelcomeEmail(user.email, user.name);
-      console.log('Welcome email sent successfully to:', user.email);
-    } catch (emailError) {
-      console.error('Failed to send welcome email:', emailError);
-      // Don't fail registration if email fails
-    }
-    
-    // Send registration notification email to admin
-    try {
-      console.log('📧 Attempting to send registration notification email to admin...');
-      console.log('📧 User data being passed:', {
-        name: user.name,
-        email: user.email,
-        mobileNumber: user.mobileNumber,
-        country: user.country,
-        age: user.age,
-        height: user.height,
-        currentWeight: user.currentWeight,
-        goalWeight: user.goalWeight,
-        gender: user.gender,
-        targetDate: user.targetDate,
-        daysToTarget: user.daysToTarget
-      });
-      
-      const notificationResult = await sendRegistrationNotificationEmail(
-        'omprakashutaha@gmail.com', // Admin email
-        user.name,
-        user.email,
-        user.country
-      );
-      
-      console.log('✅ Registration notification email sent to admin!');
-      console.log('📧 Notification result:', notificationResult);
-      
-      // Store result for debugging
-      res.locals.registrationNotificationResult = notificationResult;
-      res.locals.registrationNotificationError = null;
-      
-    } catch (notificationError) {
-      console.error('❌ Failed to send registration notification email:', notificationError);
-      console.error('❌ Error stack:', notificationError.stack);
-      
-      // Store error for debugging
-      res.locals.registrationNotificationResult = null;
-      res.locals.registrationNotificationError = {
-        message: notificationError.message,
-        stack: notificationError.stack
-      };
-      
-      // Don't fail registration if email fails
-    }
-    
-    console.log('✅ Registration completed successfully!');
+    console.log('✅ Initial weight entry created, preparing response...');
     
     // Generate JWT token for immediate login
     const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET || 'secretkey', { expiresIn: '7d' });
     
-    // In the registration response, include the notification result for debugging (TEMPORARY)
-    return res.status(201).json({
+    // Send response immediately (don't wait for emails)
+    const responseData = {
       message: 'User registered successfully',
       token, // Include JWT token for immediate login
       user: {
@@ -337,10 +281,56 @@ router.post('/register', [
         goalStatus: user.goalStatus,
         goalCreatedAt: user.goalCreatedAt,
         goalId: user.goalId?.toString()
-      },
-      registrationNotificationResult: res.locals.registrationNotificationResult,
-      registrationNotificationError: res.locals.registrationNotificationError
+      }
+    };
+    
+    // Send response immediately
+    res.status(201).json(responseData);
+    
+    // Send emails asynchronously after response (non-blocking)
+    setImmediate(async () => {
+      try {
+        console.log('📧 Sending welcome email to:', user.email);
+        await sendWelcomeEmail(user.email, user.name);
+        console.log('✅ Welcome email sent successfully to:', user.email);
+      } catch (emailError) {
+        console.error('❌ Failed to send welcome email:', emailError);
+        // Don't fail registration if email fails
+      }
+      
+      try {
+        console.log('📧 Attempting to send registration notification email to admin...');
+        console.log('📧 User data being passed:', {
+          name: user.name,
+          email: user.email,
+          mobileNumber: user.mobileNumber,
+          country: user.country,
+          age: user.age,
+          height: user.height,
+          currentWeight: user.currentWeight,
+          goalWeight: user.goalWeight,
+          gender: user.gender,
+          targetDate: user.targetDate,
+          daysToTarget: user.daysToTarget
+        });
+        
+        const notificationResult = await sendRegistrationNotificationEmail(
+          'omprakashutaha@gmail.com', // Admin email
+          user.name,
+          user.email,
+          user.country
+        );
+        
+        console.log('✅ Registration notification email sent to admin!');
+        console.log('📧 Notification result:', notificationResult);
+      } catch (notificationError) {
+        console.error('❌ Failed to send registration notification email:', notificationError);
+        console.error('❌ Error stack:', notificationError.stack);
+        // Don't fail registration if email fails
+      }
     });
+    
+    console.log('✅ Registration completed successfully! Response sent.');
   } catch (error) {
     console.error('❌ Registration error:', error);
     console.error('❌ Error stack:', error.stack);
