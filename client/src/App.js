@@ -1,42 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import './NoSpinner.css';
 
-// Google Analytics
-import GoogleAnalytics from './components/GoogleAnalytics';
-
-// Performance Monitoring
-import { PerformanceMonitor } from './components/PerformanceOptimizer';
-
-// Components
-import Dashboard from './components/Dashboard';
-import Profile from './components/Profile';
-import Analytics from './components/Analytics';
-import Navigation from './components/Navigation';
-import Onboarding from './components/Onboarding';
-import BMICalculator from './components/BMICalculator';
-import BMICalculatorPage from './components/BMICalculatorPage';
-import BrandAssets from './components/BrandAssets';
-import CalorieCalculatorPage from './components/CalorieCalculatorPage';
-import BodyFatCalculatorPage from './components/BodyFatCalculatorPage';
-import BMRCalculatorPage from './components/BMRCalculatorPage';
-import CarbohydrateCalculatorPage from './components/CarbohydrateCalculatorPage';
-import ProteinCalculatorPage from './components/ProteinCalculatorPage';
-import FatIntakeCalculatorPage from './components/FatIntakeCalculatorPage';
-import VitaminCalculatorPage from './components/VitaminCalculatorPage';
-import HealthCalculator from './components/HealthCalculator';
-import HomePage from './components/HomePage';
-import Blog from './components/Blog';
-import BlogPost from './components/BlogPost';
-import Careers from './components/Careers';
-import MealTracker from './components/MealTracker';
-import Contact from './components/Contact';
-
-
-// Context
+// Context (needed immediately)
 import { UserProvider } from './context/UserContext';
+
+// Lazy-load heavy components to reduce initial bundle and TBT
+const GoogleAnalytics = lazy(() => import('./components/GoogleAnalytics'));
+const PerformanceMonitor = lazy(() => import('./components/PerformanceOptimizer').then(m => ({ default: m.PerformanceMonitor })));
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const Profile = lazy(() => import('./components/Profile'));
+const Analytics = lazy(() => import('./components/Analytics'));
+const Navigation = lazy(() => import('./components/Navigation'));
+const Onboarding = lazy(() => import('./components/Onboarding'));
+const BMICalculator = lazy(() => import('./components/BMICalculator'));
+const BMICalculatorPage = lazy(() => import('./components/BMICalculatorPage'));
+const BrandAssets = lazy(() => import('./components/BrandAssets'));
+const CalorieCalculatorPage = lazy(() => import('./components/CalorieCalculatorPage'));
+const BodyFatCalculatorPage = lazy(() => import('./components/BodyFatCalculatorPage'));
+const BMRCalculatorPage = lazy(() => import('./components/BMRCalculatorPage'));
+const CarbohydrateCalculatorPage = lazy(() => import('./components/CarbohydrateCalculatorPage'));
+const ProteinCalculatorPage = lazy(() => import('./components/ProteinCalculatorPage'));
+const FatIntakeCalculatorPage = lazy(() => import('./components/FatIntakeCalculatorPage'));
+const VitaminCalculatorPage = lazy(() => import('./components/VitaminCalculatorPage'));
+const HealthCalculator = lazy(() => import('./components/HealthCalculator'));
+const HomePage = lazy(() => import('./components/HomePage'));
+const Blog = lazy(() => import('./components/Blog'));
+const BlogPost = lazy(() => import('./components/BlogPost'));
+const Careers = lazy(() => import('./components/Careers'));
+const MealTracker = lazy(() => import('./components/MealTracker'));
+const Contact = lazy(() => import('./components/Contact'));
+
+function PageFallback() {
+  return (
+    <div className="min-h-[40vh] flex items-center justify-center">
+      <div className="loading" aria-hidden="true" />
+    </div>
+  );
+}
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -95,23 +97,22 @@ function App() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-purple-50 flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+        <div className="text-center">
+          <div className="loading mx-auto mb-4" aria-hidden="true" />
           <p className="text-gray-600">Loading your dashboard...</p>
-        </motion.div>
+        </div>
       </div>
     );
   }
 
   return (
     <UserProvider value={{ currentUser, setCurrentUser: handleUserLogin, logout: handleUserLogout }}>
-      <GoogleAnalytics />
-      <PerformanceMonitor />
+      <Suspense fallback={null}>
+        <GoogleAnalytics />
+        <PerformanceMonitor />
+      </Suspense>
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-purple-50 flex flex-col">
+        <Suspense fallback={<PageFallback />}>
         <Routes>
           {/* Blog Routes - Accessible to everyone */}
           <Route path="/blog" element={<Blog />} />
@@ -177,6 +178,7 @@ function App() {
           {/* Default redirect */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
+        </Suspense>
 
         {/* Onboarding Modal */}
         {showOnboarding && (

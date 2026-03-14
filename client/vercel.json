@@ -2,6 +2,10 @@
   "version": 2,
   "headers": [
     {
+      "source": "/robots.txt",
+      "headers": [{ "key": "Content-Type", "value": "text/plain; charset=utf-8" }]
+    },
+    {
       "source": "/sitemap.xml",
       "headers": [{ "key": "Content-Type", "value": "application/xml" }]
     },
@@ -59,6 +63,10 @@
     {
       "src": "/googleed73e626632e7451.html",
       "dest": "/googleed73e626632e7451.html"
+    },
+    {
+      "src": "/robots.txt",
+      "dest": "/robots.txt"
     },
     {
       "src": "/sitemap.xml",

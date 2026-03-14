@@ -1,46 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6M2CW6E7B3"></script>
+    <!-- Defer third-party scripts until after load to reduce Total Blocking Time -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-6M2CW6E7B3');
+      function gtag_report_conversion(url) {
+        var callback = function () { if (typeof url != 'undefined') window.location = url; };
+        gtag('event', 'conversion', { 'send_to': 'AW-996988244/vW6RCPDU6fYaENSqs9sD', 'value': 1.0, 'currency': 'INR', 'event_callback': callback });
+        return false;
+      }
+      function loadThirdPartyScripts() {
+        var g1 = document.createElement('script'); g1.async = true; g1.src = 'https://www.googletagmanager.com/gtag/js?id=G-6M2CW6E7B3'; document.head.appendChild(g1);
+        var g2 = document.createElement('script'); g2.async = true; g2.src = 'https://www.googletagmanager.com/gtag/js?id=AW-996988244'; document.head.appendChild(g2);
+        var ad = document.createElement('script'); ad.async = true; ad.crossOrigin = 'anonymous'; ad.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6349841658473646'; document.head.appendChild(ad);
+        g1.onload = function() { gtag('js', new Date()); gtag('config', 'G-6M2CW6E7B3'); gtag('config', 'AW-996988244'); };
+      }
+      if (window.requestIdleCallback) requestIdleCallback(loadThirdPartyScripts, { timeout: 2000 });
+      else window.addEventListener('load', function() { setTimeout(loadThirdPartyScripts, 1); });
     </script>
-    
-    <!-- Google tag (gtag.js) - Google Ads -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-996988244"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'AW-996988244');
-    </script>
-    
-    <!-- Event snippet for Page view conversion page -->
-    <script>
-    function gtag_report_conversion(url) {
-      var callback = function () {
-        if (typeof(url) != 'undefined') {
-          window.location = url;
-        }
-      };
-      gtag('event', 'conversion', {
-          'send_to': 'AW-996988244/vW6RCPDU6fYaENSqs9sD',
-          'value': 1.0,
-          'currency': 'INR',
-          'event_callback': callback
-      });
-      return false;
-    }
-    </script>
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6349841658473646"
-         crossorigin="anonymous"></script>
     <meta charset="utf-8" />
     
     <!-- Critical CSS for above-the-fold rendering -->

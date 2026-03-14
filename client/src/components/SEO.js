@@ -192,16 +192,7 @@ const SEO = ({
         </script>
       ))}
       
-      {/* Preconnect to external domains for performance */}
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      <link rel="preconnect" href="https://www.googletagmanager.com" />
-      <link rel="preconnect" href="https://www.google-analytics.com" />
-      
-      {/* DNS Prefetch for performance */}
-      <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-      <link rel="dns-prefetch" href="//www.googletagmanager.com" />
-      <link rel="dns-prefetch" href="//www.google-analytics.com" />
+      {/* Preconnect only for origins requested early; removed unused hints (Lighthouse) */}
     </Helmet>
   );
 };
