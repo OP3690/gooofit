@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+</head>
+<body>
+    <h1>API Test Page</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        // Test 1: Check environment variable
+        results.innerHTML += '<h3>Environment Variables:</h3>';
+        results.innerHTML += '<p>REACT_APP_API_URL: ' + (window.REACT_APP_API_URL || 'Not set') + '</p>';
+        
+        // Test 2: Try API call
+        results.innerHTML += '<h3>API Test:</h3>';
+        
+        fetch('https://weight-loss-final.onrender.com/api/health')
+            .then(response => {
+                results.innerHTML += '<p>✅ Health check successful: ' + response.status + '</p>';
+                return response.text();
+            })
+            .then(data => {
+                results.innerHTML += '<p>Response: ' + data.substring(0, 100) + '...</p>';
+            })
+            .catch(error => {
+                results.innerHTML += '<p>❌ Health check failed: ' + error.message + '</p>';
+            });
+            
+        // Test 3: Try favicon
+        results.innerHTML += '<h3>Favicon Test:</h3>';
+        fetch('https://weight-loss-final.onrender.com/favicon.ico')
+            .then(response => {
+                results.innerHTML += '<p>✅ Favicon accessible: ' + response.status + '</p>';
+                results.innerHTML += '<p>Content-Type: ' + response.headers.get('content-type') + '</p>';
+            })
+            .catch(error => {
+                results.innerHTML += '<p>❌ Favicon failed: ' + error.message + '</p>';
+            });
+    </script>
+</body>
+</html> 

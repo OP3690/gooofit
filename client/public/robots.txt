@@ -1,0 +1,141 @@
+# GoooFit Robots.txt
+# Optimized for search engine crawling and indexing
+
+User-agent: *
+Allow: /
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /private/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
+Disallow: /temp/
+Disallow: /cache/
+Disallow: /logs/
+
+# Allow important pages
+Allow: /blog/
+Allow: /careers/
+Allow: /contact/
+Allow: /dashboard/
+Allow: /profile/
+Allow: /meal-tracker/
+Allow: /analytics/
+Allow: /health-calculator/
+Allow: /bmi-calculator/
+Allow: /calorie-calculator/
+Allow: /protein-calculator/
+Allow: /body-fat-calculator/
+Allow: /bmr-calculator/
+Allow: /carbohydrate-calculator/
+Allow: /fat-intake-calculator/
+Allow: /vitamin-calculator/
+
+# Allow public calculator pages
+Allow: /bmi-calculator-page/
+Allow: /calorie-calculator-page/
+Allow: /protein-calculator-page/
+Allow: /body-fat-calculator-page/
+Allow: /bmr-calculator-page/
+Allow: /carbohydrate-calculator-page/
+Allow: /fat-intake-calculator-page/
+Allow: /vitamin-calculator-page/
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1
+
+# Sitemap locations
+Sitemap: https://gooofit.com/sitemap.xml
+
+# Additional sitemaps for different content types
+Sitemap: https://gooofit.com/blog-sitemap.xml
+Sitemap: https://gooofit.com/calculators-sitemap.xml
+Sitemap: https://gooofit.com/logo-sitemap.xml
+
+# Host directive
+Host: https://gooofit.com
+
+# Specific bot instructions
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2
+
+User-agent: DuckDuckBot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 2
+
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 2
+
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+User-agent: UptimeRobot
+Disallow: /
+
+User-agent: Pingdom
+Disallow: /
+
+User-agent: StatusCake
+Disallow: /
+
+# Block scraping tools
+User-agent: *bot
+Disallow: /api/
+Disallow: /admin/
+Disallow: /private/
+
+# Allow legitimate crawlers
+User-agent: Googlebot-Image
+Allow: /
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.gif$
+Allow: /*.png$
+Allow: /*.webp$
+Allow: /*.svg$
+
+User-agent: Googlebot-Mobile
+Allow: /
+
+User-agent: Mediapartners-Google
+Allow: /
+
+User-agent: AdsBot-Google
+Allow: /
+
+User-agent: APIS-Google
+Allow: /
+
+User-agent: Favicon
+Allow: /
+Allow: /favicon.ico
+Allow: /favicon.png
+Allow: /apple-touch-icon.png

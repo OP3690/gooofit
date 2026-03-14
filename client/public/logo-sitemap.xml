@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  
+           <!-- Main Logo Files -->
+         <url>
+           <loc>https://www.gooofit.com/</loc>
+           <lastmod>2025-01-15</lastmod>
+           <changefreq>weekly</changefreq>
+           <priority>1.0</priority>
+           <image:image>
+             <image:loc>https://www.gooofit.com/android-chrome-512x512.png</image:loc>
+             <image:title>GoooFit Logo - 512x512</image:title>
+             <image:caption>Official GoooFit logo in high resolution for Google Knowledge Graph</image:caption>
+           </image:image>
+           <image:image>
+             <image:loc>https://gooofit.com/android-chrome-192x192.png</image:loc>
+             <image:title>GoooFit Logo - 192x192</image:title>
+             <image:caption>GoooFit logo for mobile devices and Android</image:caption>
+           </image:image>
+           <image:image>
+             <image:loc>https://gooofit.com/favicon-32x32.png</image:loc>
+             <image:title>GoooFit Logo - 32x32</image:title>
+             <image:caption>GoooFit favicon for web browsers</image:caption>
+           </image:image>
+           <image:image>
+             <image:loc>https://gooofit.com/favicon-16x16.png</image:loc>
+             <image:title>GoooFit Logo - 16x16</image:title>
+             <image:caption>GoooFit small favicon for compact displays</image:caption>
+           </image:image>
+           <image:image>
+             <image:loc>https://gooofit.com/apple-touch-icon.png</image:loc>
+             <image:title>GoooFit Logo - Apple Touch Icon</image:title>
+             <image:caption>GoooFit logo for iOS devices and Apple ecosystem</image:caption>
+           </image:image>
+           <image:image>
+             <image:loc>https://gooofit.com/favicon.ico</image:loc>
+             <image:title>GoooFit Logo - ICO</image:title>
+             <image:caption>GoooFit favicon in traditional ICO format</image:caption>
+           </image:image>
+           <image:image>
+             <image:loc>https://gooofit.com/favicon.svg</image:loc>
+             <image:title>GoooFit Logo - SVG</image:title>
+             <image:caption>GoooFit logo in scalable vector format for modern browsers</image:caption>
+           </image:image>
+         </url>
+  
+           <!-- Brand Assets Page (if you have one) -->
+         <url>
+           <loc>https://www.gooofit.com/brand-assets</loc>
+           <lastmod>2025-01-15</lastmod>
+           <changefreq>monthly</changefreq>
+           <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/android-chrome-512x512.png</image:loc>
+      <image:title>GoooFit Logo - Download</image:title>
+      <image:caption>Download official GoooFit logo files</image:caption>
+    </image:image>
+  </url>
+  
+</urlset>

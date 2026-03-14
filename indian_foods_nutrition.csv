@@ -1,0 +1,199 @@
+Food,Fat (gms.),Cholesterol (mgs.),Calories (Kcals.),Protein (gms.),Hindi/Common Name (Hinglish),Cholesterol Flag
+Tea (1 cup with 2tsp cream & 2tsp sugar),2.9,10,70,1,Chai (cream aur chini ke saath),Good
+Coffee (1 cup with 2tsp cream & 2tsp sugar),2.9,10,70,1,Coffee (cream aur chini ke saath),Good
+Masala Chai (1 cup),1.5,5,45,1.2,Masala Chai,Good
+Green Tea (1 cup),0,0,2,0,Green Tea,Good
+Lassi Sweet (1 glass),4,15,130,3,Meethi Lassi,Good
+Buttermilk (1 glass),0.5,3,60,3,Chaas,Good
+Coconut Water (1 glass),0.5,0,45,1.8,Nariyal Pani,Good
+Sugarcane Juice (1 glass),0.2,0,180,0.2,Ganne ka Ras,Good
+Nimbu Paani (1 glass),0,0,40,0,Nimbu Paani,Good
+Aam Panna (1 glass),0.2,0,80,0.5,Aam Panna,Good
+Idli (2 pieces),0.5,0,120,3.2,Idli,Good
+Dosa Plain (1 medium),2,0,150,3,Dosa,Good
+Masala Dosa (1 medium),8,0,280,5,Masala Dosa,Good
+Upma (1 bowl),4,0,200,6.5,Upma,Good
+Poha (1 bowl),2,0,180,3.5,Poha,Good
+Paratha Plain (1 medium),8,0,250,4.5,Paratha,Good
+Aloo Paratha (1 medium),12,0,320,6,Aloo Paratha,Good
+Paneer Paratha (1 medium),15,25,350,12,Paneer Paratha,Good
+Methi Paratha (1 medium),10,0,280,7,Methi Paratha,Good
+Thepla (1 piece),5,0,180,4,Thepla,Good
+Dhokla (4 pieces),3,0,150,5,Dhokla,Good
+Khandvi (4 pieces),2,5,120,4,Khandvi,Good
+Besan Chilla (1 medium),6,0,180,8,Besan Chilla,Good
+Oats Upma (1 bowl),4,0,170,6,Oats Upma,Good
+Ragi Dosa (1 medium),2.5,0,140,4,Ragi Dosa,Good
+Rice White Cooked (1 cup),0.3,0,200,4,Chawal,Good
+Rice Brown Cooked (1 cup),1.8,0,220,5,Brown Rice,Good
+Biryani Vegetable (1 plate),12,0,400,8,Veg Biryani,Good
+Biryani Chicken (1 plate),18,45,500,20,Chicken Biryani,High
+Biryani Mutton (1 plate),25,60,550,25,Mutton Biryani,High
+Khichdi Plain (1 bowl),2,0,180,6,Khichdi,Good
+Khichdi with Ghee (1 bowl),8,20,250,6,Ghee wali Khichdi,Good
+Dal Khichdi (1 bowl),4,0,320,12,Dal Khichdi,Good
+Pulao Vegetable (1 plate),8,0,320,6,Veg Pulao,Good
+Jeera Rice (1 cup),5,0,250,4.5,Jeera Rice,Good
+Dal Tadka (1 bowl),3,0,170,8,Dal Tadka,Good
+Dal Fry (1 bowl),5,0,190,9,Dal Fry,Good
+Dal Makhani (1 bowl),15,30,280,12,Dal Makhani,High
+Sambar (1 bowl),3,0,150,5,Sambar,Good
+Rasam (1 bowl),2,0,80,2,Rasam,Good
+Chana Dal (1 bowl),4,0,200,10,Chana Dal,Good
+Moong Dal (1 bowl),2,0,160,8.5,Moong Dal,Good
+Masoor Dal (1 bowl),3,0,180,9,Masoor Dal,Good
+Toor Dal (1 bowl),3.5,0,195,8.8,Arhar Dal,Good
+Urad Dal (1 bowl),4,0,210,10,Urad Dal,Good
+Aloo Sabzi (1 cup),6,0,150,3,Aloo ki Sabzi,Good
+Palak Paneer (1 cup),16,45,280,14,Palak Paneer,Good
+Paneer Butter Masala (1 cup),32,45,350,14,Paneer Butter Masala,Good
+Mixed Vegetable Curry (1 cup),8,0,180,6,Mix Veg,Good
+Bhindi Masala (1 cup),5,0,120,3,Bhindi,Good
+Baingan Bharta (1 cup),8,0,140,3.5,Baingan Bharta,Good
+Aloo Gobi (1 cup),6,0,160,4,Aloo Gobi,Good
+Cabbage Sabzi (1 cup),4,0,100,2.5,Patta Gobi,Good
+Cauliflower Curry (1 cup),5,0,130,3.5,Phool Gobi,Good
+Green Beans Sabzi (1 cup),3,0,80,2,Sem ki Sabzi,Good
+Bottle Gourd Curry (1 cup),2,0,70,2,Lauki,Good
+Ridge Gourd Curry (1 cup),3,0,85,2.5,Turai,Good
+Bitter Gourd Curry (1 cup),4,0,90,3,Karela,Good
+Drumstick Curry (1 cup),9,0,180,6,Sahjan,Good
+Spinach Curry (1 cup),3,0,95,4,Palak,Good
+Chicken Curry (1 cup),18,85,280,22,Chicken Curry,High
+Chicken Tandoori (2 pieces),12,90,250,30,Tandoori Chicken,High
+Chicken Biryani (1 plate),18,45,500,20,Chicken Biryani,High
+Butter Chicken (1 cup),28,90,400,25,Butter Chicken,High
+Chicken Tikka (4 pieces),8,65,200,25,Chicken Tikka,High
+Chicken Korma (1 cup),25,80,380,23,Chicken Korma,High
+Chicken Vindaloo (1 cup),15,75,300,24,Chicken Vindaloo,High
+Chicken Jalfrezi (1 cup),12,70,250,22,Chicken Jalfrezi,High
+Chicken 65 (6 pieces),20,85,350,28,Chicken 65,High
+Chicken Tikka Masala (1 cup),22,85,370,26,Chicken Tikka Masala,High
+Mutton Curry (1 cup),25,95,420,28,Mutton Curry,Very High
+Mutton Biryani (1 plate),25,60,550,25,Mutton Biryani,High
+Mutton Korma (1 cup),30,100,450,26,Mutton Korma,Very High
+Mutton Rogan Josh (1 cup),22,90,380,24,Rogan Josh,High
+Keema Curry (1 cup),18,75,320,22,Keema,High
+Mutton Vindaloo (1 cup),20,85,350,25,Mutton Vindaloo,High
+Fish Curry (1 cup),12,45,220,20,Fish Curry,Good
+Fish Fry (2 pieces),15,50,250,22,Fish Fry,Good
+Fish Tikka (4 pieces),8,40,180,18,Fish Tikka,Good
+Prawn Curry (1 cup),10,120,200,18,Jhinga Curry,High
+Fish Amritsari (2 pieces),18,55,280,20,Amritsari Fish,Good
+Boiled Egg (1 large),5,186,70,6,Anda,High
+Scrambled Eggs (2 eggs),12,372,180,12,Bhurji,High
+Egg Curry (2 eggs),15,372,220,14,Anda Curry,High
+Omelette (2 eggs),14,372,200,12,Omelette,High
+Egg Bhurji (2 eggs),15,372,210,13,Anda Bhurji,High
+Chapati/Roti (1 medium),1.5,0,120,3,Roti,Good
+Naan Plain (1 medium),8,15,280,8,Naan,Good
+Butter Naan (1 medium),12,20,320,8,Butter Naan,Good
+Garlic Naan (1 medium),10,18,300,8.5,Garlic Naan,Good
+Kulcha (1 medium),9,12,260,7,Kulcha,Good
+Puri (4 small),12,0,240,6,Puri,Good
+Bhatura (1 large),15,0,350,8,Bhatura,Good
+Lachha Paratha (1 medium),18,0,320,6,Lachha Paratha,Good
+Roomali Roti (1 large),3,5,180,5,Roomali Roti,Good
+Tandoori Roti (1 medium),2,0,140,4,Tandoori Roti,Good
+Samosa (1 medium),12,0,290,6,Samosa,Good
+Kachori (1 medium),10,0,250,5,Kachori,Good
+Pakora Mixed (6 pieces),15,0,220,8,Pakora,Good
+Dhokla (4 pieces),3,0,150,5,Dhokla,Good
+Vada Pav (1 piece),8,0,200,4,Vada Pav,Good
+Pav Bhaji (1 plate),15,25,400,8,Pav Bhaji,Good
+Chole Bhature (1 plate),20,10,400,12,Chole Bhature,Good
+Dahi Vada (2 pieces),8,15,180,6,Dahi Vada,Good
+Bhel Puri (1 plate),5,0,150,4,Bhel Puri,Good
+Sev Puri (6 pieces),8,0,180,5,Sev Puri,Good
+Pani Puri (6 pieces),2,0,120,3,Pani Puri,Good
+Aloo Tikki (2 pieces),10,0,200,4,Aloo Tikki,Good
+Raj Kachori (1 large),15,20,350,8,Raj Kachori,Good
+Momos Veg (6 pieces),6,0,180,5,Momos,Good
+Momos Chicken (6 pieces),8,35,220,12,Chicken Momos,Good
+Spring Roll (2 pieces),12,0,200,4,Spring Roll,Good
+Cutlet Veg (2 pieces),8,0,160,4,Veg Cutlet,Good
+Bread Pakora (2 pieces),15,5,280,8,Bread Pakora,Good
+Aloo Bonda (3 pieces),12,0,220,5,Aloo Bonda,Good
+Gulab Jamun (2 pieces),8,25,200,3,Gulab Jamun,Good
+Rasgulla (2 pieces),2,10,120,4,Rasgulla,Good
+Jalebi (3 pieces),6,15,180,2,Jalebi,Good
+Kheer (1 bowl),8,20,180,5,Kheer,Good
+Halwa Suji (1 bowl),12,25,220,4,Suji Halwa,Good
+Ladoo Besan (2 pieces),15,0,250,6,Besan Ladoo,Good
+Barfi (2 pieces),10,20,180,5,Barfi,Good
+Kulfi (1 piece),8,25,150,4,Kulfi,Good
+Ras Malai (2 pieces),12,30,200,6,Ras Malai,Good
+Mysore Pak (2 pieces),18,35,280,4,Mysore Pak,Good
+Idli Sambar (2 idli + sambar),3,0,250,8,Idli Sambar,Good
+Dosa Masala (1 large),8,0,280,5,Masala Dosa,Good
+Uttapam (1 medium),5,0,200,6,Uttapam,Good
+Vada (2 pieces),8,0,180,6,Vada,Good
+Appam (2 pieces),3,0,140,3,Appam,Good
+Puttu (1 cup),2,0,150,4,Puttu,Good
+Upma Rava (1 bowl),4,0,200,6.5,Rava Upma,Good
+Pongal (1 bowl),6,15,220,7,Pongal,Good
+Coconut Chutney (2 tbsp),4,0,60,1.3,Coconut Chutney,Good
+Tomato Chutney (2 tbsp),2,0,40,1,Tomato Chutney,Good
+Dhokla Khaman (4 pieces),3,0,150,5,Khaman Dhokla,Good
+Khandvi (4 pieces),2,5,120,4,Khandvi,Good
+Thepla (2 pieces),10,0,280,8,Thepla,Good
+Undhiyu (1 cup),8,0,180,5,Undhiyu,Good
+Handvo (1 slice),6,0,160,4,Handvo,Good
+Fafda (3 pieces),12,0,200,6,Fafda,Good
+Gathiya (1 cup),15,0,220,8,Gathiya,Good
+Sarson Saag (1 cup),8,0,150,6,Sarson ka Saag,Good
+Makki Roti (1 medium),3,0,140,4,Makki ki Roti,Good
+Rajma (1 cup),2,0,220,14,Rajma,Good
+Chole (1 cup),6,0,250,12,Chole,Good
+Kulcha Chole (1 plate),15,10,450,15,Kulcha Chole,Good
+Lassi Punjabi (1 glass),6,20,150,4,Punjabi Lassi,Good
+Fish Curry Bengali (1 cup),12,45,220,20,Macher Jhol,Good
+Luchi (4 pieces),12,0,240,6,Luchi,Good
+Mishti Doi (1 bowl),5,15,120,4,Mishti Doi,Good
+Rasgulla Bengali (3 pieces),3,15,180,6,Rasgulla,Good
+Sandesh (2 pieces),6,20,140,5,Sandesh,Good
+Poha (1 bowl),2,0,180,3.5,Poha,Good
+Misal Pav (1 plate),12,0,320,10,Misal Pav,Good
+Vada Pav Mumbai (1 piece),8,0,200,4,Vada Pav,Good
+Pav Bhaji Mumbai (1 plate),15,25,400,8,Pav Bhaji,Good
+Bhakri (1 medium),2,0,120,3,Bhakri,Good
+Almonds (10 pieces),5,0,70,2.5,Badam,Good
+Cashews (10 pieces),4,0,55,1.8,Kaju,Good
+Walnuts (5 halves),6.5,0,65,1.5,Akhrot,Good
+Pistachios (10 pieces),1.3,0,30,1.1,Pista,Good
+Raisins (2 tbsp),0.1,0,60,0.6,Kishmish,Good
+Dates (3 pieces),0.2,0,60,0.4,Khajur,Good
+Apple (1 medium),0.3,0,95,0.5,Seb,Good
+Banana (1 medium),0.4,0,105,1.3,Kela,Good
+Orange (1 medium),0.2,0,60,1.2,Santra,Good
+Mango (1 cup sliced),0.6,0,107,1,Aam,Good
+Grapes (1 cup),0.2,0,80,0.8,Angur,Good
+Papaya (1 cup),0.4,0,55,0.9,Papita,Good
+Guava (1 medium),1,0,112,4,Amrud,Good
+Pomegranate (1/2 cup),1,0,134,3,Anar,Good
+Mango Pickle (1 tbsp),3,0,35,0.2,Aam ka Achaar,Good
+Lemon Pickle (1 tbsp),2,0,25,0.1,Nimbu ka Achaar,Good
+Mint Chutney (2 tbsp),1,0,20,0.5,Pudina Chutney,Good
+Tamarind Chutney (2 tbsp),0.2,0,40,0.2,Imli Chutney,Good
+Coconut Chutney (2 tbsp),4,0,60,1.3,Nariyal Chutney,Good
+Roasted Chana (1/4 cup),2,0,120,6,Bhuna Chana,Good
+Murmura (1 cup),0.5,0,54,1,Murmura,Good
+Sev (2 tbsp),5,0,80,3,Sev,Good
+Mathri (4 pieces),12,0,200,5,Mathri,Good
+Namak Para (6 pieces),8,0,150,4,Namak Para,Good
+Banana Chips (1 oz),10,0,150,1.6,Kele ke Chips,Good
+Kadhi (1 bowl),5,10,120,4,Kadhi,Good
+Baingan Masala (1 cup),8,0,140,3.5,Baingan Masala,Good
+Paneer Tikka (6 pieces),12,40,220,18,Paneer Tikka,Good
+Tandoori Vegetables (1 cup),6,0,120,4,Tandoori Sabzi,Good
+Jeera Aloo (1 cup),8,0,160,3,Jeera Aloo,Good
+Daal Baati (2 baati + dal),25,0,480,12,Daal Baati,Good
+Gatte ki Sabzi (1 cup),8,0,180,6,Gatte ki Sabzi,Good
+Laal Maas (1 cup),28,95,420,26,Laal Maas,Very High
+Hyderabadi Biryani (1 plate),22,50,520,18,Hyderabadi Biryani,High
+Mysore Masala Dosa (1 large),12,0,320,6,Mysore Masala Dosa,Good
+Jaljeera (1 glass),0.2,0,45,0.5,Jaljeera,Good
+Thandai (1 glass),8,15,180,4,Thandai,Good
+Sattu Drink (1 glass),2,0,120,8,Sattu Drink,Good
+Badam Milk (1 glass),6,15,150,5,Badam Milk,Good
+Rose Milk (1 glass),4,12,130,3.5,Gulab Milk,Good

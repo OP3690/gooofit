@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  
+  <!-- Health Calculator Hub -->
+  <url>
+    <loc>https://gooofit.com/health-calculator</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/og-image.svg</image:loc>
+      <image:title>GoooFit Health Calculators</image:title>
+      <image:caption>Comprehensive health and fitness calculators for your wellness journey</image:caption>
+    </image:image>
+  </url>
+
+  <!-- BMI Calculator -->
+  <url>
+    <loc>https://gooofit.com/bmi-calculator</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/bmi-calculator.jpg</image:loc>
+      <image:title>BMI Calculator - Calculate Your Body Mass Index</image:title>
+      <image:caption>Free BMI calculator to assess your body mass index and health status</image:caption>
+    </image:image>
+  </url>
+  
+  <url>
+    <loc>https://gooofit.com/bmi-calculator-page</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/bmi-calculator-page.jpg</image:loc>
+      <image:title>BMI Calculator Page - Public Access</image:title>
+      <image:caption>Public BMI calculator with detailed health insights and recommendations</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Calorie Calculator -->
+  <url>
+    <loc>https://gooofit.com/calorie-calculator</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/calorie-calculator.jpg</image:loc>
+      <image:title>Calorie Calculator - Daily Calorie Needs</image:title>
+      <image:caption>Calculate your daily calorie needs for weight loss, maintenance, or gain</image:caption>
+    </image:image>
+  </url>
+  
+  <url>
+    <loc>https://gooofit.com/calorie-calculator-page</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/calorie-calculator-page.jpg</image:loc>
+      <image:title>Calorie Calculator Page - Public Access</image:title>
+      <image:caption>Public calorie calculator with personalized nutrition guidance</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Protein Calculator -->
+  <url>
+    <loc>https://gooofit.com/protein-calculator</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/protein-calculator.jpg</image:loc>
+      <image:title>Protein Calculator - Daily Protein Requirements</image:title>
+      <image:caption>Calculate your daily protein needs based on activity level and goals</image:caption>
+    </image:image>
+  </url>
+  
+  <url>
+    <loc>https://gooofit.com/protein-calculator-page</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/protein-calculator-page.jpg</image:loc>
+      <image:title>Protein Calculator Page - Public Access</image:title>
+      <image:caption>Public protein calculator with food suggestions and meal planning</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Body Fat Calculator -->
+  <url>
+    <loc>https://gooofit.com/body-fat-calculator</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/body-fat-calculator.jpg</image:loc>
+      <image:title>Body Fat Calculator - Body Fat Percentage</image:title>
+      <image:caption>Calculate your body fat percentage using multiple measurement methods</image:caption>
+    </image:image>
+  </url>
+  
+  <url>
+    <loc>https://gooofit.com/body-fat-calculator-page</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/body-fat-calculator-page.jpg</image:loc>
+      <image:title>Body Fat Calculator Page - Public Access</image:title>
+      <image:caption>Public body fat calculator with health assessment and recommendations</image:caption>
+    </image:image>
+  </url>
+
+  <!-- BMR Calculator -->
+  <url>
+    <loc>https://gooofit.com/bmr-calculator</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/bmr-calculator.jpg</image:loc>
+      <image:title>BMR Calculator - Basal Metabolic Rate</image:title>
+      <image:caption>Calculate your basal metabolic rate for accurate calorie planning</image:caption>
+    </image:image>
+  </url>
+  
+  <url>
+    <loc>https://gooofit.com/bmr-calculator-page</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/bmr-calculator-page.jpg</image:loc>
+      <image:title>BMR Calculator Page - Public Access</image:title>
+      <image:caption>Public BMR calculator with metabolism insights and tips</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Carbohydrate Calculator -->
+  <url>
+    <loc>https://gooofit.com/carbohydrate-calculator</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/carbohydrate-calculator.jpg</image:loc>
+      <image:title>Carbohydrate Calculator - Daily Carb Needs</image:title>
+      <image:caption>Calculate your daily carbohydrate requirements for optimal performance</image:caption>
+    </image:image>
+  </url>
+  
+  <url>
+    <loc>https://gooofit.com/carbohydrate-calculator-page</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/carbohydrate-calculator-page.jpg</image:loc>
+      <image:title>Carbohydrate Calculator Page - Public Access</image:title>
+      <image:caption>Public carbohydrate calculator with food suggestions and meal planning</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Fat Intake Calculator -->
+  <url>
+    <loc>https://gooofit.com/fat-intake-calculator</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/fat-intake-calculator.jpg</image:loc>
+      <image:title>Fat Intake Calculator - Daily Fat Requirements</image:title>
+      <image:caption>Calculate your daily fat intake needs for balanced nutrition</image:caption>
+    </image:image>
+  </url>
+  
+  <url>
+    <loc>https://gooofit.com/fat-intake-calculator-page</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/fat-intake-calculator-page.jpg</image:loc>
+      <image:title>Fat Intake Calculator Page - Public Access</image:title>
+      <image:caption>Public fat intake calculator with healthy fat food recommendations</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Vitamin Calculator -->
+  <url>
+    <loc>https://gooofit.com/vitamin-calculator</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/vitamin-calculator.jpg</image:loc>
+      <image:title>Vitamin Calculator - Daily Vitamin Needs</image:title>
+      <image:caption>Calculate your daily vitamin requirements for optimal health</image:caption>
+    </image:image>
+  </url>
+  
+  <url>
+    <loc>https://gooofit.com/vitamin-calculator-page</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/vitamin-calculator-page.jpg</image:loc>
+      <image:title>Vitamin Calculator Page - Public Access</image:title>
+      <image:caption>Public vitamin calculator with food sources and supplementation guidance</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Additional Health Tools -->
+  <url>
+    <loc>https://gooofit.com/meal-tracker</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/meal-tracker.jpg</image:loc>
+      <image:title>Meal Tracker - Track Your Daily Nutrition</image:title>
+      <image:caption>Comprehensive meal tracking tool for better nutrition management</image:caption>
+    </image:image>
+  </url>
+  
+  <url>
+    <loc>https://gooofit.com/analytics</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://gooofit.com/calculator-images/analytics.jpg</image:loc>
+      <image:title>Health Analytics - Track Your Progress</image:title>
+      <image:caption>Advanced analytics and insights for your health journey</image:caption>
+    </image:image>
+  </url>
+</urlset>

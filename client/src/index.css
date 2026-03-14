@@ -2,77 +2,1820 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  html {
-    font-family: 'Inter', system-ui, sans-serif;
-  }
-  
-  body {
-    @apply bg-gray-50 text-gray-900;
-  }
+/* Custom CSS for the application */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@layer components {
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Button Styles */
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  @apply bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
   .btn-secondary {
-    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+  @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
-  .btn-success {
-    @apply bg-success-600 hover:bg-success-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-success-500 focus:ring-offset-2;
+.btn-danger {
+  @apply bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
-  .btn-danger {
-    @apply bg-danger-600 hover:bg-danger-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-danger-500 focus:ring-offset-2;
+.btn-success {
+  @apply bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
+/* Input Field Styles */
   .input-field {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors duration-200;
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-200;
   }
   
+/* Card Styles */
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+  @apply bg-white rounded-xl shadow-lg p-6 border border-gray-100;
+}
+
+.card-header {
+  @apply border-b border-gray-200 pb-4 mb-4;
+}
+
+.card-title {
+  @apply text-xl font-bold text-gray-900;
+}
+
+.card-subtitle {
+  @apply text-sm text-gray-600 mt-1;
+}
+
+/* Section Styles */
+.section {
+  @apply mb-8;
+}
+
+.section-title {
+  @apply text-2xl font-bold text-gray-900 mb-4 flex items-center space-x-2;
+}
+
+.section-subtitle {
+  @apply text-gray-600 mb-6;
+}
+
+/* Grid Layouts */
+.grid-2 {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+.grid-3 {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+}
+
+.grid-4 {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6;
+}
+
+/* Status Indicators */
+.status-badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.status-active {
+  @apply bg-green-100 text-green-800;
+}
+
+.status-inactive {
+  @apply bg-gray-100 text-gray-800;
+}
+
+.status-achieved {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.status-discarded {
+  @apply bg-red-100 text-red-800;
+}
+
+/* Blog Content Styles */
+.blog-content {
+  @apply text-gray-800 leading-relaxed;
+}
+
+.blog-content h2 {
+  @apply text-2xl font-bold text-gray-900 mt-8 mb-4 border-b border-gray-200 pb-2;
+}
+
+.blog-content h3 {
+  @apply text-xl font-semibold text-gray-900 mt-6 mb-3;
+}
+
+.blog-content h4 {
+  @apply text-lg font-semibold text-gray-900 mt-4 mb-2;
+}
+
+.blog-content p {
+  @apply mb-4 text-gray-700;
+}
+
+.blog-content ul {
+  @apply mb-4 pl-6;
+}
+
+.blog-content ol {
+  @apply mb-4 pl-6;
+}
+
+.blog-content li {
+  @apply mb-2 text-gray-700;
+}
+
+.blog-content strong {
+  @apply font-semibold text-gray-900;
+}
+
+.blog-content em {
+  @apply italic text-gray-700;
+}
+
+.blog-content blockquote {
+  @apply border-l-4 border-orange-500 pl-4 py-2 my-6 bg-orange-50 italic text-gray-700;
+}
+
+.blog-content code {
+  @apply bg-gray-100 px-2 py-1 rounded text-sm font-mono;
+}
+
+.blog-content pre {
+  @apply bg-gray-900 text-white p-4 rounded-lg overflow-x-auto my-4;
+}
+
+/* Info Box */
+.info-box {
+  @apply bg-blue-50 border-l-4 border-blue-500 p-4 my-6 rounded-r-lg;
+}
+
+.info-box h4 {
+  @apply text-blue-900 font-semibold mb-2;
+}
+
+.info-box p {
+  @apply text-blue-800 mb-0;
+}
+
+/* Data Tables */
+.table-container {
+  @apply overflow-x-auto my-6;
+}
+
+.data-table {
+  @apply w-full border-collapse bg-white rounded-lg overflow-hidden shadow-lg;
+}
+
+.data-table thead {
+  @apply bg-orange-500 text-white;
+}
+
+.data-table th {
+  @apply px-4 py-3 text-left font-semibold;
+}
+
+.data-table td {
+  @apply px-4 py-3 border-b border-gray-200;
+}
+
+.data-table tbody tr:hover {
+  @apply bg-gray-50;
+}
+
+/* Factors Grid */
+.factors-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-6 my-6;
+}
+
+.factor-card {
+  @apply bg-white p-6 rounded-lg shadow-md border border-gray-200;
+}
+
+.factor-card h4 {
+  @apply text-lg font-semibold text-gray-900 mb-3;
+}
+
+.factor-card p {
+  @apply text-gray-700 mb-0;
+}
+
+/* Macro Nutrients */
+.macro-nutrients {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-6 my-6;
+}
+
+.macro-card {
+  @apply bg-white p-6 rounded-lg shadow-md border border-gray-200;
+}
+
+.macro-card h4 {
+  @apply text-lg font-semibold text-gray-900 mb-3;
+}
+
+.macro-card ul {
+  @apply list-disc pl-4;
+}
+
+.macro-card li {
+  @apply text-gray-700 mb-1;
+}
+
+/* Vitamins and Minerals */
+.vitamins-minerals {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-6 my-6;
+}
+
+.nutrient-group {
+  @apply bg-white p-6 rounded-lg shadow-md border border-gray-200;
+}
+
+.nutrient-group h4 {
+  @apply text-lg font-semibold text-gray-900 mb-3;
+}
+
+.nutrient-group ul {
+  @apply list-disc pl-4;
+}
+
+.nutrient-group li {
+  @apply text-gray-700 mb-1;
+}
+
+/* Timeline */
+.timeline {
+  @apply space-y-4 my-6;
+}
+
+.timeline-item {
+  @apply bg-white p-4 rounded-lg shadow-md border border-gray-200;
+}
+
+.timeline-item h4 {
+  @apply text-lg font-semibold text-gray-900 mb-2;
+}
+
+.timeline-item p {
+  @apply text-gray-700 mb-0;
+}
+
+/* Call to Action */
+.call-to-action {
+  @apply bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 rounded-lg my-8 text-center;
+}
+
+.call-to-action h4 {
+  @apply text-xl font-bold mb-2;
+}
+
+.call-to-action p {
+  @apply mb-4 opacity-90;
+}
+
+.cta-button {
+  @apply bg-white text-orange-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-block;
+}
+
+/* Related Posts */
+.related-posts {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-6 my-6;
+}
+
+.related-post {
+  @apply bg-white p-4 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow block;
+}
+
+.related-post h4 {
+  @apply text-lg font-semibold text-gray-900 mb-2 hover:text-orange-600 transition-colors;
+}
+
+.related-post p {
+  @apply text-gray-700 mb-0;
+}
+
+/* Energy Systems */
+.energy-systems {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-6 my-6;
+}
+
+.system-card {
+  @apply bg-white p-6 rounded-lg shadow-md border border-gray-200;
+}
+
+.system-card h4 {
+  @apply text-lg font-semibold text-gray-900 mb-3;
+}
+
+.system-card p {
+  @apply text-gray-700 mb-0;
+}
+
+/* Intensity Zones */
+.intensity-zones {
+  @apply space-y-4 my-6;
+}
+
+.zone-item {
+  @apply bg-white p-4 rounded-lg shadow-md border border-gray-200;
+}
+
+.zone-item h4 {
+  @apply text-lg font-semibold text-gray-900 mb-2;
+}
+
+.zone-item p {
+  @apply text-gray-700 mb-0;
+}
+
+/* Exercise Detail */
+.exercise-detail {
+  @apply bg-white p-6 rounded-lg shadow-md border border-gray-200 my-6;
+}
+
+.exercise-detail p {
+  @apply mb-2;
+}
+
+.exercise-detail p:last-child {
+  @apply mb-0 mt-4;
+}
+
+/* Weekly Plan */
+.weekly-plan {
+  @apply grid grid-cols-1 md:grid-cols-7 gap-4 my-6;
+}
+
+.day-plan {
+  @apply bg-white p-4 rounded-lg shadow-md border border-gray-200 text-center;
+}
+
+.day-plan h4 {
+  @apply text-lg font-semibold text-gray-900 mb-2;
+}
+
+.day-plan p {
+  @apply text-gray-700 mb-0 text-sm;
+}
+
+/* Progression Methods */
+.progression-methods {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-6;
+}
+
+.method {
+  @apply bg-white p-4 rounded-lg shadow-md border border-gray-200 text-center;
+}
+
+.method h4 {
+  @apply text-lg font-semibold text-gray-900 mb-2;
+}
+
+.method p {
+  @apply text-gray-700 mb-0 text-sm;
+}
+
+/* Line clamp utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Prose styles for blog content */
+.prose {
+  @apply text-gray-800;
+}
+
+.prose h1 {
+  @apply text-3xl font-bold text-gray-900 mb-4;
+}
+
+.prose h2 {
+  @apply text-2xl font-bold text-gray-900 mt-8 mb-4;
+}
+
+.prose h3 {
+  @apply text-xl font-semibold text-gray-900 mt-6 mb-3;
+}
+
+.prose h4 {
+  @apply text-lg font-semibold text-gray-900 mt-4 mb-2;
+}
+
+.prose p {
+  @apply mb-4 text-gray-700;
+}
+
+.prose ul {
+  @apply mb-4 pl-6;
+}
+
+.prose ol {
+  @apply mb-4 pl-6;
+}
+
+.prose li {
+  @apply mb-2 text-gray-700;
+}
+
+.prose strong {
+  @apply font-semibold text-gray-900;
+}
+
+.prose em {
+  @apply italic text-gray-700;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-orange-500 pl-4 py-2 my-6 bg-orange-50 italic text-gray-700;
+}
+
+.prose code {
+  @apply bg-gray-100 px-2 py-1 rounded text-sm font-mono;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .factors-grid {
+    @apply grid-cols-1;
   }
   
-  .card-hover {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200;
+  .macro-nutrients {
+    @apply grid-cols-1;
   }
   
-  .bmi-meter {
-    @apply relative w-full h-8 bg-gradient-to-r from-blue-500 via-green-500 via-yellow-500 to-red-500 rounded-full overflow-hidden;
+  .vitamins-minerals {
+    @apply grid-cols-1;
   }
   
-  .bmi-indicator {
-    @apply absolute top-0 w-1 h-full bg-white shadow-lg transform -translate-x-1/2 transition-all duration-500 ease-out;
+  .energy-systems {
+    @apply grid-cols-1;
   }
   
-  .progress-bar {
-    @apply w-full bg-gray-200 rounded-full h-2.5;
+  .weekly-plan {
+    @apply grid-cols-1;
   }
   
-  .progress-fill {
-    @apply bg-gradient-to-r from-primary-500 to-success-500 h-2.5 rounded-full transition-all duration-500 ease-out;
+  .progression-methods {
+    @apply grid-cols-1;
+  }
+  
+  .related-posts {
+    @apply grid-cols-1;
+  }
+} 
+
+/* Blog Post Layout Improvements */
+.blog-post-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.blog-post-content {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 3rem;
+  align-items: start;
+}
+
+.blog-post-main {
+  max-width: 100%;
+}
+
+.blog-post-sidebar {
+  position: sticky;
+  top: 2rem;
+  height: fit-content;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .blog-post-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .blog-post-sidebar {
+    position: static;
   }
 }
 
-@layer utilities {
-  .text-gradient {
-    @apply bg-gradient-to-r from-primary-600 to-success-600 bg-clip-text text-transparent;
+@media (max-width: 768px) {
+  .blog-post-container {
+    padding: 0 1rem;
+  }
+}
+
+/* Enhanced spacing for better symmetry */
+.article-content {
+  line-height: 1.7;
+}
+
+.article-content h2 {
+  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
+  color: #1f2937;
+  font-size: 1.875rem;
+  font-weight: 700;
+}
+
+.article-content h3 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #374151;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.article-content p {
+  margin-bottom: 1.5rem;
+  color: #4b5563;
+}
+
+.article-content ul, .article-content ol {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.article-content li {
+  margin-bottom: 0.5rem;
+  color: #4b5563;
+}
+
+/* Enhanced info boxes */
+.info-box {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.info-box h3 {
+  color: #92400e;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.info-box ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.info-box li {
+  color: #78350f;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced data tables */
+.data-table {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.data-table h3 {
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.data-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.data-table th {
+  background: #f3f4f6;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  color: #4b5563;
+}
+
+.data-table tr:hover {
+  background: #f9fafb;
+}
+
+/* Enhanced myth-fact sections */
+.myth-fact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.myth, .fact {
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 2px solid;
+}
+
+.myth {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.fact {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.myth h4, .fact h4 {
+  margin-bottom: 1rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.myth h4 {
+  color: #dc2626;
+}
+
+.fact h4 {
+  color: #16a34a;
+}
+
+/* Enhanced weekly plan */
+.weekly-plan {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.day-plan {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.day-plan h4 {
+  color: #1f2937;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.day-plan p {
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Enhanced progressive overload cards */
+.progressive-overload {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.overload-card {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #f59e0b;
+  text-align: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.overload-card h4 {
+  color: #92400e;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.overload-card p {
+  color: #78350f;
+  margin: 0;
+}
+
+/* Enhanced sidebar spacing */
+.blog-post-sidebar .bg-gray-50 {
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.blog-post-sidebar h3 {
+  color: #1f2937;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+/* Enhanced share button states */
+.share-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.share-button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhanced responsive design */
+@media (max-width: 640px) {
+  .myth-fact {
+    grid-template-columns: 1fr;
   }
   
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
+  .weekly-plan {
+    grid-template-columns: 1fr;
   }
   
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+  .progressive-overload {
+    grid-template-columns: 1fr;
   }
   
-  .glass-effect {
-    @apply backdrop-blur-sm bg-white/80 border border-white/20;
+  .data-table {
+    overflow-x: auto;
+  }
+  
+  .data-table table {
+    min-width: 500px;
+  }
+}
+
+/* Enhanced typography */
+.prose {
+  color: #374151;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  color: #1f2937;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.prose p {
+  color: #4b5563;
+  line-height: 1.7;
+}
+
+.prose ul, .prose ol {
+  color: #4b5563;
+}
+
+.prose li {
+  margin-bottom: 0.5rem;
+}
+
+/* Enhanced spacing for better visual hierarchy */
+.prose > * + * {
+  margin-top: 1.5rem;
+}
+
+.prose > h2 + p,
+.prose > h3 + p {
+  margin-top: 1rem;
+}
+
+/* Enhanced link styling */
+.prose a {
+  color: #ea580c;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.prose a:hover {
+  border-bottom-color: #ea580c;
+}
+
+/* Enhanced blockquote styling */
+.prose blockquote {
+  border-left: 4px solid #f59e0b;
+  padding-left: 1.5rem;
+  margin: 2rem 0;
+  font-style: italic;
+  color: #6b7280;
+  background: #fef3c7;
+  padding: 1.5rem;
+  border-radius: 0 8px 8px 0;
+}
+
+/* Enhanced code styling */
+.prose code {
+  background: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: #dc2626;
+}
+
+/* Enhanced image styling */
+.prose img {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin: 2rem 0;
+}
+
+/* Enhanced list styling */
+.prose ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.prose ul li {
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.prose ul li::before {
+  content: "•";
+  color: #f59e0b;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+.prose ol {
+  counter-reset: list-counter;
+  padding-left: 0;
+}
+
+.prose ol li {
+  position: relative;
+  padding-left: 2rem;
+  counter-increment: list-counter;
+}
+
+.prose ol li::before {
+  content: counter(list-counter) ".";
+  color: #f59e0b;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+} 
+
+/* Enhanced bacteria comparison */
+.bacteria-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.beneficial, .harmful {
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 2px solid;
+}
+
+.beneficial {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.harmful {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.beneficial h4 {
+  color: #16a34a;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.harmful h4 {
+  color: #dc2626;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.beneficial ul, .harmful ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.beneficial li {
+  color: #166534;
+  margin-bottom: 0.5rem;
+}
+
+.harmful li {
+  color: #991b1b;
+  margin-bottom: 0.5rem;
+}
+
+/* Enhanced stress management sections */
+.stress-hormones, .stress-techniques, .environment-tips {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.stress-hormones h3, .stress-techniques h3, .environment-tips h3 {
+  color: #92400e;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.stress-hormones ul, .stress-techniques ul, .environment-tips ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.stress-hormones li, .stress-techniques li, .environment-tips li {
+  color: #78350f;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced gut health sections */
+.gut-health-strategies, .gut-symptoms {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.gut-health-strategies h3, .gut-symptoms h3 {
+  color: #0c4a6e;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.gut-health-strategies ul, .gut-symptoms ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.gut-health-strategies li, .gut-symptoms li {
+  color: #0c4a6e;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced IF guide */
+.if-guide, .meal-suggestions {
+  background: #fdf4ff;
+  border: 1px solid #c084fc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.if-guide h3, .meal-suggestions h3 {
+  color: #581c87;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.if-guide ol, .meal-suggestions ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.if-guide li, .meal-suggestions li {
+  color: #581c87;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced bacteria types */
+.bacteria-types {
+  background: #f0fdf4;
+  border: 1px solid #22c55e;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.bacteria-types h3 {
+  color: #166534;
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Responsive design for bacteria comparison */
+@media (max-width: 768px) {
+  .bacteria-comparison {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Enhanced pagination styling */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 3rem;
+  gap: 0.5rem;
+}
+
+.pagination-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #e5e7eb;
+  background: white;
+  color: #374151;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.pagination-button.active {
+  background: #ea580c;
+  color: white;
+  border-color: #ea580c;
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Enhanced blog card hover effects */
+.blog-card {
+  transition: all 0.3s ease;
+}
+
+.blog-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.blog-card img {
+  transition: transform 0.3s ease;
+}
+
+.blog-card:hover img {
+  transform: scale(1.05);
+}
+
+/* Enhanced line clamping */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Enhanced category badges */
+.category-badge {
+  background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Enhanced date styling */
+.blog-date {
+  color: #ea580c;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+/* Enhanced author styling */
+.blog-author {
+  color: #6b7280;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Enhanced read time styling */
+.read-time {
+  color: #6b7280;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+} 
+
+/* Enhanced mental benefits sections */
+.mental-benefits, .exercise-routine, .mood-specific-exercise {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.mental-benefits h3, .exercise-routine h3, .mood-specific-exercise h3 {
+  color: #0c4a6e;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.mental-benefits ul, .exercise-routine ul, .mood-specific-exercise ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.mental-benefits li, .exercise-routine li, .mood-specific-exercise li {
+  color: #0c4a6e;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced food-mood connection */
+.food-mood-connection, .mindful-techniques, .eating-environment, .emotional-eating {
+  background: #fdf4ff;
+  border: 1px solid #c084fc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.food-mood-connection h3, .mindful-techniques h3, .eating-environment h3, .emotional-eating h3 {
+  color: #581c87;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.food-mood-connection ul, .mindful-techniques ol, .eating-environment ul, .emotional-eating ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.food-mood-connection li, .mindful-techniques li, .eating-environment li, .emotional-eating li {
+  color: #581c87;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced stress impact sections */
+.stress-impact, .stress-reduction, .mental-resilience, .daily-practices {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.stress-impact h3, .stress-reduction h3, .mental-resilience h3, .daily-practices h3 {
+  color: #92400e;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.stress-impact ul, .stress-reduction ul, .mental-resilience ul, .daily-practices ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.stress-impact li, .stress-reduction li, .mental-resilience li, .daily-practices li {
+  color: #78350f;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced ordered list styling for mindful techniques */
+.mindful-techniques ol {
+  counter-reset: technique-counter;
+  padding-left: 0;
+}
+
+.mindful-techniques ol li {
+  position: relative;
+  padding-left: 2.5rem;
+  counter-increment: technique-counter;
+  margin-bottom: 1rem;
+}
+
+.mindful-techniques ol li::before {
+  content: counter(technique-counter);
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: #c084fc;
+  color: white;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Enhanced table styling for exercise benefits */
+.data-table table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 1rem;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.data-table th {
+  background: #0ea5e9;
+  color: white;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.data-table tr:hover {
+  background: #f0f9ff;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Enhanced responsive design for new sections */
+@media (max-width: 768px) {
+  .mental-benefits, .exercise-routine, .mood-specific-exercise,
+  .food-mood-connection, .mindful-techniques, .eating-environment,
+  .emotional-eating, .stress-impact, .stress-reduction,
+  .mental-resilience, .daily-practices {
+    padding: 1rem;
+    margin: 1.5rem 0;
+  }
+  
+  .mindful-techniques ol li {
+    padding-left: 2rem;
+  }
+  
+  .mindful-techniques ol li::before {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 0.75rem;
+  }
+  
+  .data-table {
+    overflow-x: auto;
+  }
+  
+  .data-table table {
+    min-width: 600px;
+  }
+}
+
+/* Enhanced typography for new content */
+.article-content h2 {
+  color: #1f2937;
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.3;
+}
+
+.article-content h3 {
+  color: #374151;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.article-content p {
+  color: #4b5563;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+/* Enhanced list styling for new sections */
+.mental-benefits ul li, .exercise-routine ul li, .mood-specific-exercise ul li,
+.food-mood-connection ul li, .eating-environment ul li, .emotional-eating ul li,
+.stress-impact ul li, .stress-reduction ul li, .mental-resilience ul li,
+.daily-practices ul li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.mental-benefits ul li::before, .exercise-routine ul li::before, .mood-specific-exercise ul li::before,
+.food-mood-connection ul li::before, .eating-environment ul li::before, .emotional-eating ul li::before,
+.stress-impact ul li::before, .stress-reduction ul li::before, .mental-resilience ul li::before,
+.daily-practices ul li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: inherit;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+/* Enhanced strong tag styling */
+.article-content strong {
+  color: inherit;
+  font-weight: 600;
+}
+
+/* Enhanced spacing for better readability */
+.article-content > * + * {
+  margin-top: 1.5rem;
+}
+
+.article-content > h2 + p,
+.article-content > h3 + p {
+  margin-top: 1rem;
+} 
+
+/* Enhanced sleep-related sections */
+.sleep-environment, .sleep-hygiene, .sleep-stages, .recovery-sleep {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.sleep-environment h3, .sleep-hygiene h3, .sleep-stages h3, .recovery-sleep h3 {
+  color: #0c4a6e;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.sleep-environment ul, .sleep-hygiene ul, .sleep-stages ul, .recovery-sleep ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.sleep-environment li, .sleep-hygiene li, .sleep-stages li, .recovery-sleep li {
+  color: #0c4a6e;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced vitamin D and sunlight sections */
+.vitamin-d-benefits, .sunlight-guidelines, .mental-health-benefits, .circadian-rhythm, .safe-sunlight {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.vitamin-d-benefits h3, .sunlight-guidelines h3, .mental-health-benefits h3, .circadian-rhythm h3, .safe-sunlight h3 {
+  color: #92400e;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.vitamin-d-benefits ul, .sunlight-guidelines ul, .mental-health-benefits ul, .circadian-rhythm ul, .safe-sunlight ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.vitamin-d-benefits li, .sunlight-guidelines li, .mental-health-benefits li, .circadian-rhythm li, .safe-sunlight li {
+  color: #78350f;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced digital wellness sections */
+.mental-health-impact, .digital-detox, .focus-improvement, .weight-loss-connection, .digital-balance {
+  background: #fdf4ff;
+  border: 1px solid #c084fc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.mental-health-impact h3, .digital-detox h3, .focus-improvement h3, .weight-loss-connection h3, .digital-balance h3 {
+  color: #581c87;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.mental-health-impact ul, .digital-detox ul, .focus-improvement ul, .weight-loss-connection ul, .digital-balance ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.mental-health-impact li, .digital-detox li, .focus-improvement li, .weight-loss-connection li, .digital-balance li {
+  color: #581c87;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced responsive design for new sections */
+@media (max-width: 768px) {
+  .sleep-environment, .sleep-hygiene, .sleep-stages, .recovery-sleep,
+  .vitamin-d-benefits, .sunlight-guidelines, .mental-health-benefits, .circadian-rhythm, .safe-sunlight,
+  .mental-health-impact, .digital-detox, .focus-improvement, .weight-loss-connection, .digital-balance {
+    padding: 1rem;
+    margin: 1.5rem 0;
+  }
+} 
+
+/* Enhanced fitness and joy sections */
+.joyful-movement, .mind-body-benefits, .joyful-routine, .movement-self-care, .movement-barriers {
+  background: #ecfdf5;
+  border: 1px solid #10b981;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.joyful-movement h3, .mind-body-benefits h3, .joyful-routine h3, .movement-self-care h3, .movement-barriers h3 {
+  color: #065f46;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.joyful-movement ul, .mind-body-benefits ul, .joyful-routine ul, .movement-self-care ul, .movement-barriers ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.joyful-movement li, .mind-body-benefits li, .joyful-routine li, .movement-self-care li, .movement-barriers li {
+  color: #047857;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced nutrition and happiness sections */
+.diet-hacks, .mood-boosting-foods, .meal-timing, .joyful-eating, .sustainable-eating {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.diet-hacks h3, .mood-boosting-foods h3, .meal-timing h3, .joyful-eating h3, .sustainable-eating h3 {
+  color: #92400e;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.diet-hacks ul, .mood-boosting-foods ul, .meal-timing ul, .joyful-eating ul, .sustainable-eating ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.diet-hacks li, .mood-boosting-foods li, .meal-timing li, .joyful-eating li, .sustainable-eating li {
+  color: #78350f;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced meditation and wellness sections */
+.meditation-basics, .meditation-techniques, .stress-relief-meditation, .meditation-routine, .meditation-health, .meditation-challenges {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.meditation-basics h3, .meditation-techniques h3, .stress-relief-meditation h3, .meditation-routine h3, .meditation-health h3, .meditation-challenges h3 {
+  color: #0c4a6e;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.meditation-basics ul, .meditation-techniques ul, .stress-relief-meditation ul, .meditation-routine ul, .meditation-health ul, .meditation-challenges ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.meditation-basics li, .meditation-techniques li, .stress-relief-meditation li, .meditation-routine li, .meditation-health li, .meditation-challenges li {
+  color: #0c4a6e;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced responsive design for new sections */
+@media (max-width: 768px) {
+  .joyful-movement, .mind-body-benefits, .joyful-routine, .movement-self-care, .movement-barriers,
+  .diet-hacks, .mood-boosting-foods, .meal-timing, .joyful-eating, .sustainable-eating,
+  .meditation-basics, .meditation-techniques, .stress-relief-meditation, .meditation-routine, .meditation-health, .meditation-challenges {
+    padding: 1rem;
+    margin: 1.5rem 0;
+  }
+} 
+
+/* Enhanced running and cardio sections */
+.running-basics, .mental-wellness-running, .joyful-running, .running-self-care, .running-challenges {
+  background: #f0fdf4;
+  border: 1px solid #22c55e;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.running-basics h3, .mental-wellness-running h3, .joyful-running h3, .running-self-care h3, .running-challenges h3 {
+  color: #166534;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.running-basics ul, .mental-wellness-running ul, .joyful-running ul, .running-self-care ul, .running-challenges ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.running-basics li, .mental-wellness-running li, .joyful-running li, .running-self-care li, .running-challenges li {
+  color: #15803d;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced holistic nutrition sections */
+.balanced-diet, .soul-nourishment, .mind-body-soul, .practical-implementation {
+  background: #fef7cd;
+  border: 1px solid #eab308;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.balanced-diet h3, .soul-nourishment h3, .mind-body-soul h3, .practical-implementation h3 {
+  color: #a16207;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.balanced-diet ul, .soul-nourishment ul, .mind-body-soul ul, .practical-implementation ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.balanced-diet li, .soul-nourishment li, .mind-body-soul li, .practical-implementation li {
+  color: #854d0e;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced mind-body wellness sections */
+.mental-calmness, .physical-fitness, .mind-body-integration, .daily-wellness, .maintaining-balance {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.mental-calmness h3, .physical-fitness h3, .mind-body-integration h3, .daily-wellness h3, .maintaining-balance h3 {
+  color: #0c4a6e;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.mental-calmness ul, .physical-fitness ul, .mind-body-integration ul, .daily-wellness ul, .maintaining-balance ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.mental-calmness li, .physical-fitness li, .mind-body-integration li, .daily-wellness li, .maintaining-balance li {
+  color: #0c4a6e;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced responsive design for new sections */
+@media (max-width: 768px) {
+  .running-basics, .mental-wellness-running, .joyful-running, .running-self-care, .running-challenges,
+  .balanced-diet, .soul-nourishment, .mind-body-soul, .practical-implementation,
+  .mental-calmness, .physical-fitness, .mind-body-integration, .daily-wellness, .maintaining-balance {
+    padding: 1rem;
+    margin: 1.5rem 0;
+  }
+} 
+
+/* Enhanced nutrition and happiness sections */
+.strength-nutrition, .happiness-eating, .mind-food-medicine, .practical-healthy-eating, .sustainable-healthy-eating {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.strength-nutrition h3, .happiness-eating h3, .mind-food-medicine h3, .practical-healthy-eating h3, .sustainable-healthy-eating h3 {
+  color: #92400e;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.strength-nutrition ul, .happiness-eating ul, .mind-food-medicine ul, .practical-healthy-eating ul, .sustainable-healthy-eating ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.strength-nutrition li, .happiness-eating li, .mind-food-medicine li, .practical-healthy-eating li, .sustainable-healthy-eating li {
+  color: #a16207;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced movement and fitness sections */
+.daily-movement-routine, .movement-types, .movement-stress-management, .daily-life-integration, .movement-barriers {
+  background: #dbeafe;
+  border: 1px solid #3b82f6;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.daily-movement-routine h3, .movement-types h3, .movement-stress-management h3, .daily-life-integration h3, .movement-barriers h3 {
+  color: #1e40af;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.daily-movement-routine ul, .movement-types ul, .movement-stress-management ul, .daily-life-integration ul, .movement-barriers ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.daily-movement-routine li, .movement-types li, .movement-stress-management li, .daily-life-integration li, .movement-barriers li {
+  color: #1e40af;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced smart eating sections */
+.mind-fueling, .well-being-nutrition, .smart-eating-strategies, .life-quality-enhancement, .sustainable-smart-eating {
+  background: #f3e8ff;
+  border: 1px solid #8b5cf6;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.mind-fueling h3, .well-being-nutrition h3, .smart-eating-strategies h3, .life-quality-enhancement h3, .sustainable-smart-eating h3 {
+  color: #6b21a8;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.mind-fueling ul, .well-being-nutrition ul, .smart-eating-strategies ul, .life-quality-enhancement ul, .sustainable-smart-eating ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.mind-fueling li, .well-being-nutrition li, .smart-eating-strategies li, .life-quality-enhancement li, .sustainable-smart-eating li {
+  color: #7c3aed;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced responsive design for all new sections */
+@media (max-width: 768px) {
+  .strength-nutrition, .happiness-eating, .mind-food-medicine, .practical-healthy-eating, .sustainable-healthy-eating,
+  .daily-movement-routine, .movement-types, .movement-stress-management, .daily-life-integration, .movement-barriers,
+  .mind-fueling, .well-being-nutrition, .smart-eating-strategies, .life-quality-enhancement, .sustainable-smart-eating {
+    padding: 1rem;
+    margin: 1.5rem 0;
+  }
+} 
+
+/* Enhanced strength training and mental health sections */
+.strength-training-mind, .emotional-well-being, .mindful-weightlifting, .mental-health-goals, .sustainable-mental-health {
+  background: #fef2f2;
+  border: 1px solid #ef4444;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.strength-training-mind h3, .emotional-well-being h3, .mindful-weightlifting h3, .mental-health-goals h3, .sustainable-mental-health h3 {
+  color: #991b1b;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.strength-training-mind ul, .emotional-well-being ul, .mindful-weightlifting ul, .mental-health-goals ul, .sustainable-mental-health ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.strength-training-mind li, .emotional-well-being li, .mindful-weightlifting li, .mental-health-goals li, .sustainable-mental-health li {
+  color: #dc2626;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced clean eating and wellness sections */
+.clean-eating-principles, .brain-boosting-foods, .focus-concentration, .cognitive-function, .clean-eating-implementation {
+  background: #f0fdf4;
+  border: 1px solid #22c55e;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.clean-eating-principles h3, .brain-boosting-foods h3, .focus-concentration h3, .cognitive-function h3, .clean-eating-implementation h3 {
+  color: #166534;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.clean-eating-principles ul, .brain-boosting-foods ul, .focus-concentration ul, .cognitive-function ul, .clean-eating-implementation ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.clean-eating-principles li, .brain-boosting-foods li, .focus-concentration li, .cognitive-function li, .clean-eating-implementation li {
+  color: #16a34a;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced health harmony sections */
+.active-body-creation, .restful-mind-cultivation, .activity-rest-harmony, .life-stages-harmony, .sustainable-harmony {
+  background: #fef7cd;
+  border: 1px solid #eab308;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.active-body-creation h3, .restful-mind-cultivation h3, .activity-rest-harmony h3, .life-stages-harmony h3, .sustainable-harmony h3 {
+  color: #92400e;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.active-body-creation ul, .restful-mind-cultivation ul, .activity-rest-harmony ul, .life-stages-harmony ul, .sustainable-harmony ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.active-body-creation li, .restful-mind-cultivation li, .activity-rest-harmony li, .life-stages-harmony li, .sustainable-harmony li {
+  color: #a16207;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced responsive design for all new sections */
+@media (max-width: 768px) {
+  .strength-training-mind, .emotional-well-being, .mindful-weightlifting, .mental-health-goals, .sustainable-mental-health,
+  .clean-eating-principles, .brain-boosting-foods, .focus-concentration, .cognitive-function, .clean-eating-implementation,
+  .active-body-creation, .restful-mind-cultivation, .activity-rest-harmony, .life-stages-harmony, .sustainable-harmony {
+    padding: 1rem;
+    margin: 1.5rem 0;
   }
 } 

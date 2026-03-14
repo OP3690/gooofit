@@ -16,12 +16,19 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     match: [/^\S+@\S+\.\S+$/, 'Please use a valid email address']
   },
-  mobile: {
+  mobileNumber: {
     type: String,
-    required: [true, 'Mobile number is required'],
+    required: false,
     unique: true,
+    sparse: true,
     trim: true,
-    match: [/^[0-9]{10,15}$/, 'Please use a valid mobile number']
+    match: [/^\+[0-9]{1,4}[0-9]{10,15}$/, 'Please use a valid international mobile number']
+  },
+  country: {
+    type: String,
+    required: [true, 'Country is required'],
+    trim: true,
+    minlength: [2, 'Country code must be at least 2 characters']
   },
   password: {
     type: String,
@@ -31,42 +38,53 @@ const userSchema = new mongoose.Schema({
   gender: {
     type: String,
     required: [true, 'Gender is required'],
-    enum: ['Male', 'Female', 'Other'],
-    default: 'Other'
+    enum: ['male', 'female', 'other'],
+    default: 'other'
   },
   age: {
     type: Number,
     required: [true, 'Age is required'],
-    min: [1, 'Age must be a positive number'],
+    min: [13, 'Age must be at least 13'],
     max: [120, 'Age cannot exceed 120']
   },
   height: {
     type: Number,
-    required: [true, 'Height is required'],
-    min: [50, 'Height must be at least 50 cm'],
-    max: [300, 'Height cannot exceed 300 cm']
+    required: false,
+    min: [100, 'Height must be at least 100 cm'],
+    max: [250, 'Height cannot exceed 250 cm']
   },
   currentWeight: {
     type: Number,
-    required: [true, 'Current weight is required'],
+    required: false,
     min: [20, 'Weight must be at least 20 kg'],
-    max: [500, 'Weight cannot exceed 500 kg']
+    max: [300, 'Weight cannot exceed 300 kg']
+  },
+  goalWeight: {
+    type: Number,
+    required: false,
+    min: [20, 'Goal weight must be at least 20 kg'],
+    max: [300, 'Goal weight cannot exceed 300 kg']
   },
   targetWeight: {
     type: Number,
     required: false,
     min: [20, 'Target weight must be at least 20 kg'],
-    max: [500, 'Target weight cannot exceed 500 kg']
+    max: [300, 'Target weight cannot exceed 300 kg']
   },
   targetDate: {
     type: Date,
+    required: false
+  },
+  daysToTarget: {
+    type: Number,
     required: false,
-    validate: {
-      validator: function(value) {
-        return !value || value > new Date();
-      },
-      message: 'Target date must be a future date'
-    }
+    min: [1, 'Days to target must be at least 1']
+  },
+  activityLevel: {
+    type: String,
+    required: false,
+    enum: ['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active'],
+    default: 'sedentary'
   },
   goalStatus: {
     type: String,
@@ -93,6 +111,15 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  quickEditFoods: {
+    type: [
+      {
+        name: { type: String, required: true },
+        order: { type: Number, default: 0 }
+      }
+    ],
+    default: []
+  },
   goalCreatedAt: { type: Date },
   goalInitialWeight: { type: Number },
 }, {
@@ -116,7 +143,7 @@ userSchema.pre('save', function(next) {
   if (this.pastGoals && Array.isArray(this.pastGoals)) {
     this.pastGoals.forEach(goal => {
       if (!goal.goalId) {
-        goal.goalId = uuidv4();
+        goal.goalId = new mongoose.Types.ObjectId();
       }
     });
   }
@@ -136,11 +163,11 @@ userSchema.virtual('currentBMI').get(function() {
   return null;
 });
 
-// Virtual for target BMI calculation
-userSchema.virtual('targetBMI').get(function() {
-  if (this.height && this.targetWeight) {
+// Virtual for goal BMI calculation
+userSchema.virtual('goalBMI').get(function() {
+  if (this.height && this.goalWeight) {
     const heightInMeters = this.height / 100;
-    return (this.targetWeight / (heightInMeters * heightInMeters)).toFixed(1);
+    return (this.goalWeight / (heightInMeters * heightInMeters)).toFixed(1);
   }
   return null;
 });

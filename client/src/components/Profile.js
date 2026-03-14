@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { motion } from 'framer-motion';
 import { User, Save, Edit, Target, Scale } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useUser } from '../context/UserContext';
-import { userAPI, calculateBMI, getBMICategory, getBMIPosition, isValidObjectId } from '../services/api';
+import { userAPI, calculateBMI, getBMICategory, getBMIPosition } from '../services/api';
 import { weightEntryAPI } from '../services/api';
 
 const Profile = () => {
   const { currentUser, setCurrentUser } = useUser();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
+  
   const [userProfile, setUserProfile] = useState(null);
   const [bmiAnalytics, setBmiAnalytics] = useState(null);
   const [weightEntries, setWeightEntries] = useState([]);
@@ -18,116 +19,177 @@ const Profile = () => {
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [pastGoalsPage, setPastGoalsPage] = useState(1);
   const PAST_GOALS_PER_PAGE = 3;
+  const loadingRef = useRef(false);
+
+  // Reset modalLoading when modals are closed
+  useEffect(() => {
+    if (!isCreatingGoal && !isEditingGoal) {
+      setModalLoading(false);
+    }
+  }, [isCreatingGoal, isEditingGoal]);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      height: '',
+      currentWeight: '',
+      targetWeight: '',
+      targetDate: ''
+    }
+  });
 
+  // Reset form when create goal modal opens (after useForm is initialized)
   useEffect(() => {
-    if (currentUser && currentUser.id !== 'demo') {
-      loadUserProfile();
-      // Fetch weight entries for progress bar
-      (async () => {
-        try {
-          const today = new Date();
-          const startDate = userProfile?.createdAt ? new Date(userProfile.createdAt) : new Date();
-          const entries = await weightEntryAPI.getUserEntries(currentUser.id, {
-            startDate: startDate.toISOString().slice(0, 10),
-            endDate: today.toISOString().slice(0, 10)
-          });
-          setWeightEntries(entries.entries || []);
-        } catch (e) {
-          setWeightEntries([]);
+    if (isCreatingGoal && userProfile) {
+      const latestWeight = getCurrentWeight() || 0;
+      
+      reset({
+        height: userProfile?.height || '',
+        currentWeight: latestWeight || '',
+        targetWeight: '',
+        targetDate: ''
+      });
+    }
+  }, [isCreatingGoal, userProfile?.height, weightEntries, reset]); // Use weightEntries instead of userProfile?.currentWeight
+
+  // ENABLED: For goal management functions
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (loadingRef.current) return;
+      
+      try {
+        loadingRef.current = true;
+        setLoading(true);
+        
+        if (currentUser && currentUser.id !== 'demo') {
+          const profile = await userAPI.getUser(currentUser.id);
+          setUserProfile(profile);
+          
+          // Load weight entries for the current goal
+          if (profile && profile.goalId) {
+            try {
+              const entriesResponse = await weightEntryAPI.getUserEntries(currentUser.id, {
+                goalId: profile.goalId
+              });
+              if (entriesResponse && entriesResponse.entries) {
+                setWeightEntries(entriesResponse.entries);
+                calculateBMIAnalytics(profile, entriesResponse.entries);
+              } else {
+                setWeightEntries([]);
+                calculateBMIAnalytics(profile, []);
+              }
+            } catch (entriesError) {
+              console.error('Error loading weight entries:', entriesError);
+              setWeightEntries([]);
+              calculateBMIAnalytics(profile, []);
+            }
+          } else {
+            setWeightEntries([]);
+            calculateBMIAnalytics(profile, []);
+          }
+        } else if (currentUser && currentUser.id === 'demo') {
+          const demoProfile = {
+            id: 'demo',
+            name: 'Demo User',
+            email: 'demo@example.com',
+            mobileNumber: '+1234567890',
+            gender: 'Other',
+            age: 25,
+            height: 170,
+            currentWeight: 70,
+            targetWeight: 65,
+            goalStatus: 'active',
+            goalCreatedAt: new Date().toISOString(),
+            pastGoals: [
+              {
+                goalId: 'demo-goal-1',
+                targetWeight: 68,
+                currentWeight: 75,
+                status: 'achieved',
+                startedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+                targetDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString()
+              },
+              {
+                goalId: 'demo-goal-2',
+                targetWeight: 70,
+                currentWeight: 78,
+                status: 'discarded',
+                startedAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
+                targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
+              }
+            ]
+          };
+          setUserProfile(demoProfile);
+          calculateBMIAnalytics(demoProfile);
         }
-      })();
-    } else if (currentUser && currentUser.id === 'demo') {
-      const demoProfile = {
-        id: 'demo',
-        name: 'Demo User',
-        email: 'demo@example.com',
-        mobile: '+1234567890',
-        gender: 'Other',
-        age: 30,
-        height: 170,
-        currentWeight: 75,
-        targetWeight: 70,
-        targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        goalStatus: 'active',
-        goalCreatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        pastGoals: [
-          {
-            goalId: 'demo-goal-1',
-            currentWeight: 80,
-            targetWeight: 75,
-            targetDate: new Date(Date.now() - 100 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            startedAt: new Date(Date.now() - 200 * 24 * 60 * 60 * 1000).toISOString(),
-            endedAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-            status: 'achieved',
-          },
-        ],
-      };
-      setUserProfile(demoProfile);
-      calculateBMIAnalytics(demoProfile);
-      // Generate demo weight entries for the active goal period
-      const days = 30;
-      const entries = [];
-      const startWeight = 76;
-      for (let i = days - 1; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const baseWeight = startWeight - (days - i) * 0.1;
-        const fluctuation = (Math.random() - 0.5) * 0.5;
-        const weight = Math.round((baseWeight + fluctuation) * 10) / 10;
-        entries.push({
-          date: date.toISOString(),
-          weight,
-          bmi: calculateBMI(weight, 170),
-          notes: i % 7 === 0 ? 'Weekly check-in' : ''
-        });
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        // Don't show toast error for data loading
+      } finally {
+        loadingRef.current = false;
+        setLoading(false);
       }
-      setWeightEntries(entries);
-      setIsCreatingGoal(false);
-    }
-  }, [currentUser, userProfile?.createdAt]);
+    };
 
-  useEffect(() => {
-    if (
-      userProfile &&
-      userProfile.goalStatus === 'active' &&
-      userProfile.targetDate &&
-      new Date(userProfile.targetDate) < new Date()
-    ) {
-      (async () => {
-        try {
-          await userAPI.discardGoal(userProfile.id, { status: 'expired' });
-          await loadUserProfile();
-        } catch (e) {}
-      })();
+    if (currentUser) {
+      loadProfile();
     }
-  }, [userProfile]);
+  }, [currentUser?.id]); // Only depend on currentUser.id, not the entire currentUser object
 
-  const loadUserProfile = async () => {
-    try {
-      setLoading(true);
-      const profile = await userAPI.getUser(currentUser.id);
-      setUserProfile(profile);
-      calculateBMIAnalytics(profile);
-    } catch (error) {
-      console.error('Error loading profile:', error);
-      toast.error('Failed to load profile data');
-    } finally {
-      setLoading(false);
+  // DISABLED: Goal expiration check - causing infinite loops
+  // useEffect(() => {
+  //   if (
+  //     userProfile &&
+  //     userProfile.goalStatus === 'active' &&
+  //     userProfile.targetDate &&
+  //     new Date(userProfile.targetDate) < new Date()
+  //   ) {
+  //     (async () => {
+  //       try {
+  //         await userAPI.discardGoal(userProfile.id, { status: 'expired' });
+  //         // Clear cache and reload profile
+  //         clearCacheForUser(userProfile.id);
+  //         const updatedProfile = await userAPI.getUser(userProfile.id);
+  //         setUserProfile(updatedProfile);
+  //         calculateBMIAnalytics(updatedProfile);
+  //       } catch (e) {
+  //         console.error('Goal expiration check failed:', e);
+  //       }
+  //     })();
+  //   }
+  // }, [userProfile?.goalStatus, userProfile?.targetDate]);
+
+  // Get the latest weight from entries, fallback to profile currentWeight
+  const getCurrentWeight = () => {
+    if (!weightEntries || weightEntries.length === 0) {
+      return userProfile?.currentWeight || 0;
     }
+    
+    // Sort entries by date (newest first) and get the first one
+    const sortedEntries = [...weightEntries].sort((a, b) => new Date(b.date) - new Date(a.date));
+    return sortedEntries[0]?.weight || userProfile?.currentWeight || 0;
   };
 
-  const calculateBMIAnalytics = (profile) => {
+  const calculateBMIAnalytics = (profile, weightEntries = []) => {
     if (!profile) return;
 
+    // Get the latest weight from entries, fallback to profile currentWeight
+    const getLatestWeightFromEntries = () => {
+      if (!weightEntries || weightEntries.length === 0) {
+        return Number(profile.currentWeight);
+      }
+      
+      // Sort entries by date (newest first) and get the first one
+      const sortedEntries = [...weightEntries].sort((a, b) => new Date(b.date) - new Date(a.date));
+      return Number(sortedEntries[0]?.weight) || Number(profile.currentWeight);
+    };
+
     // Defensive checks
-    const currentWeight = Number(profile.currentWeight);
+    const currentWeight = getLatestWeightFromEntries();
     const targetWeight = Number(profile.targetWeight);
     const height = Number(profile.height);
 
@@ -159,32 +221,39 @@ const Profile = () => {
   };
 
   const onSubmit = async (data) => {
+    // Only set loading to true when form is actually submitted
     setLoading(true);
     try {
       const payload = {
         // Always include required user fields
-        name: userProfile.name,
-        gender: userProfile.gender,
-        age: userProfile.age,
-        email: userProfile.email,
-        mobile: userProfile.mobile,
+        name: data.name,
+        gender: data.gender,
+        age: parseFloat(data.age),
+        email: data.email,
+        mobileNumber: data.mobile, // Map mobile back to mobileNumber for API
         height: parseFloat(data.height),
         currentWeight: parseFloat(data.currentWeight),
-        targetWeight: parseFloat(data.targetWeight),
-        targetDate: new Date(data.targetDate).toISOString(),
-        goalStatus: 'active',
-        goalCreatedAt: new Date().toISOString()
+        // Only include goal fields if they are provided
+        ...(data.targetWeight && { targetWeight: parseFloat(data.targetWeight) }),
+        ...(data.targetDate && { targetDate: new Date(data.targetDate).toISOString() }),
+        ...(data.targetWeight && data.targetDate && { 
+          goalStatus: 'active',
+          goalCreatedAt: new Date().toISOString()
+        })
         // Don't set goalId here - let the backend generate it
       };
 
       const response = await userAPI.updateUser(currentUser.id, payload);
       toast.success('Profile updated successfully!');
       
+      // Update the user profile with the response data
+      setUserProfile(response);
+      calculateBMIAnalytics(response, weightEntries);
+      
       // After successful update, update user context with new goalId
-      if (response && response.user && response.user.goalId) {
-        setUserProfile(response.user);
+      if (response && response.goalId) {
         if (setCurrentUser) {
-          setCurrentUser(prev => ({ ...prev, goalId: response.user.goalId }));
+          setCurrentUser(prev => ({ ...prev, goalId: response.goalId }));
         }
       }
       
@@ -201,84 +270,161 @@ const Profile = () => {
     if (userProfile) {
       reset({
         ...userProfile,
-        targetDate: userProfile.targetDate.split('T')[0]
+        // Map mobileNumber to mobile for form compatibility
+        mobile: userProfile.mobileNumber,
+        targetDate: userProfile.targetDate ? userProfile.targetDate.split('T')[0] : ''
       });
     }
     setIsEditing(true);
+    // Reset loading state when entering edit mode
+    setLoading(false);
   };
 
   const handleDiscardGoal = async () => {
     try {
-      await userAPI.discardGoal(userProfile.id);
+      // Check if user has valid authentication
+      if (!currentUser?.token && userProfile.id !== 'demo') {
+        toast.error('Authentication required. Please log in again.');
+        // Redirect to login
+        window.location.href = '/?login=true';
+        return;
+      }
+      
+      const response = await userAPI.discardGoal(userProfile.id);
+      
+      // Update the local state immediately with the response
+      setUserProfile(response);
+      calculateBMIAnalytics(response);
+      
       toast.success('Goal discarded');
-      await loadUserProfile();
+      
     } catch (err) {
-      toast.error('Failed to discard goal');
+      console.error('[PROFILE] Error discarding goal:', err);
+      
+      // Handle authentication errors specifically
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        toast.error('Session expired. Please log in again.');
+        // Clear invalid user data and redirect to login
+        localStorage.removeItem('currentUser');
+        window.location.href = '/?login=true';
+      } else {
+        toast.error('Failed to discard goal');
+      }
     }
   };
 
   const handleAchieveGoal = async () => {
     try {
-      await userAPI.achieveGoal(userProfile.id);
+      // Check if user has valid authentication
+      if (!currentUser?.token && userProfile.id !== 'demo') {
+        toast.error('Authentication required. Please log in again.');
+        // Redirect to login
+        window.location.href = '/?login=true';
+        return;
+      }
+      
+      const response = await userAPI.achieveGoal(userProfile.id);
+      
+      // Update the local state immediately with the response
+      setUserProfile(response);
+      calculateBMIAnalytics(response);
+      
       toast.success('Goal marked as achieved!');
-      await loadUserProfile();
+      
     } catch (err) {
-      toast.error('Failed to mark goal as achieved');
+      console.error('[PROFILE] Error achieving goal:', err);
+      
+      // Handle authentication errors specifically
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        toast.error('Session expired. Please log in again.');
+        // Clear invalid user data and redirect to login
+        localStorage.removeItem('currentUser');
+        window.location.href = '/?login=true';
+      } else {
+        toast.error('Failed to mark goal as achieved');
+      }
     }
-  };
-
-  const handleCreateGoal = () => {
-    reset({
-      height: userProfile.height,
-      currentWeight: userProfile.currentWeight,
-      targetWeight: '',
-      targetDate: ''
-    });
-    setIsCreatingGoal(true);
   };
 
   const onSubmitGoal = async (data) => {
     try {
-      setLoading(true);
-      const payload = {
-        // Always include required user fields
-        name: userProfile.name,
-        gender: userProfile.gender,
-        age: userProfile.age,
-        email: userProfile.email,
-        mobile: userProfile.mobile,
+      console.log('[PROFILE] Starting goal creation with data:', data);
+      setModalLoading(true);
+      
+      // First, set the goal status to active
+      console.log('[PROFILE] Setting goal status to active...');
+      await userAPI.updateUser(currentUser.id, { goalStatus: 'active' });
+      
+      // Then, set the goal fields one by one to avoid validation issues
+      const goalPayload = {
         height: parseFloat(data.height),
         currentWeight: parseFloat(data.currentWeight),
         targetWeight: parseFloat(data.targetWeight),
         targetDate: new Date(data.targetDate).toISOString(),
-        goalStatus: 'active',
         goalCreatedAt: new Date().toISOString()
-        // Don't set goalId here - let the backend generate it
       };
-      const response = await userAPI.updateUser(currentUser.id, payload);
+      
+      console.log('[PROFILE] Updating user with goal payload:', goalPayload);
+      const response = await userAPI.updateUser(currentUser.id, goalPayload);
+      console.log('[PROFILE] Goal creation response:', response);
+      
+      // Update the local state immediately with the response
       setUserProfile(response);
       calculateBMIAnalytics(response);
-      toast.success('Goal created successfully!');
+      
+      // Close the modal and show success message
       setIsCreatingGoal(false);
-      await loadUserProfile();
+      toast.success('Goal created successfully!');
+      
+      // Force a fresh reload of the profile to ensure all data is up to date
+      setTimeout(async () => {
+        try {
+          setLoading(false); // Reset loading state to allow fresh load
+          const freshProfile = await userAPI.getUser(currentUser.id);
+          setUserProfile(freshProfile);
+          calculateBMIAnalytics(freshProfile);
+        } catch (error) {
+          console.error('Error refreshing profile after goal creation:', error);
+        }
+      }, 100);
+      
     } catch (error) {
+      console.error('Goal creation error:', error);
       toast.error('Failed to create goal');
     } finally {
-      setLoading(false);
+      console.log('[PROFILE] Goal creation completed, setting modal loading to false');
+      setModalLoading(false);
     }
   };
 
   const handleReopenGoal = async (goal) => {
     try {
       // Copy goal data to active fields and set goalStatus to 'active'
-      const updated = await userAPI.updateUser(userProfile.id, {
+      const response = await userAPI.updateUser(userProfile.id, {
         currentWeight: goal.currentWeight,
         targetWeight: goal.targetWeight,
         targetDate: goal.targetDate,
         goalStatus: 'active'
       });
+      
+      // Update the local state immediately with the response
+      setUserProfile(response);
+      calculateBMIAnalytics(response);
+      
       toast.success('Goal reopened!');
-      await loadUserProfile();
+      
+      // Force a fresh reload of the profile to ensure all data is up to date
+      setTimeout(async () => {
+        try {
+          setLoading(false); // Reset loading state to allow fresh load
+          const freshProfile = await userAPI.getUser(currentUser.id);
+          setUserProfile(freshProfile);
+          calculateBMIAnalytics(freshProfile);
+        } catch (error) {
+          console.error('Error refreshing profile after reopening goal:', error);
+        }
+      }, 100);
+      
     } catch (err) {
       toast.error('Failed to reopen goal');
     }
@@ -286,36 +432,61 @@ const Profile = () => {
 
   const onSubmitEditGoal = async (data) => {
     try {
-      setLoading(true);
-      const payload = {
-        // Always include required user fields
-        name: userProfile.name,
-        gender: userProfile.gender,
-        age: userProfile.age,
-        email: userProfile.email,
-        mobile: userProfile.mobile,
+      console.log('[PROFILE] Editing goal for user:', currentUser.id);
+      console.log('[PROFILE] Current user token:', currentUser?.token ? 'Present' : 'Missing');
+      console.log('[PROFILE] Current user:', currentUser);
+      
+      // Check if user has valid authentication
+      if (!currentUser?.token && currentUser.id !== 'demo') {
+        toast.error('Authentication required. Please log in again.');
+        // Redirect to login
+        window.location.href = '/?login=true';
+        return;
+      }
+      
+      setModalLoading(true);
+      
+      // Update the goal fields (goalStatus will remain as is)
+      const goalPayload = {
         height: parseFloat(data.height),
         currentWeight: parseFloat(data.currentWeight),
         targetWeight: parseFloat(data.targetWeight),
         targetDate: new Date(data.targetDate).toISOString(),
-        goalStatus: 'active',
         goalCreatedAt: new Date().toISOString()
-        // Don't set goalId here - let the backend generate it
       };
-      const response = await userAPI.updateUser(currentUser.id, payload);
+      
+      const response = await userAPI.updateUser(currentUser.id, goalPayload);
+      
+      // Update the local state immediately with the response
       setUserProfile(response);
       calculateBMIAnalytics(response);
-      toast.success('Goal updated successfully!');
+      
+      // Close the modal and show success message
       setIsEditingGoal(false);
-      await loadUserProfile();
+      toast.success('Goal updated successfully!');
+      
     } catch (error) {
+      console.error('Goal update error:', error);
+      console.error('[PROFILE] Error details:', error.response?.data);
+      
+      // Handle authentication errors specifically
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        toast.error('Session expired. Please log in again.');
+        // Clear invalid user data and redirect to login
+        localStorage.removeItem('currentUser');
+        window.location.href = '/?login=true';
+      } else {
       toast.error('Failed to update goal');
+      }
     } finally {
-      setLoading(false);
+      setModalLoading(false);
     }
   };
 
+  // console.log('[PROFILE] Render check - loading:', loading, 'userProfile:', !!userProfile, 'isCreatingGoal:', isCreatingGoal, 'isEditingGoal:', isEditingGoal);
+  
   if (loading && !userProfile) {
+    console.log('[PROFILE] Showing loading spinner');
     return (
       <div className="flex items-center justify-center min-h-96">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -328,6 +499,7 @@ const Profile = () => {
       <div className="text-center py-12">
         <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
         <p className="text-gray-600">No profile data available.</p>
+
       </div>
     );
   }
@@ -337,82 +509,136 @@ const Profile = () => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto mt-12">
-      <div className="flex flex-col lg:flex-row gap-8 items-start">
-        {/* Personal Info Card (col-span-2) */}
-        <div className="flex-1 flex flex-col min-h-[480px]">
-          <div className="bg-white rounded-xl shadow p-8 pt-12 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-2">
-                <User className="w-6 h-6 text-primary-600" />
-                <h2 className="text-2xl font-bold text-gray-900">Personal Information</h2>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Authentication Status Alert */}
+      {currentUser && currentUser.id !== 'demo' && !currentUser.token && (
+        <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3 flex-1">
+              <h3 className="text-sm font-medium text-yellow-800">
+                Authentication Required
+              </h3>
+              <div className="mt-2 text-sm text-yellow-700">
+                <p>
+                  Your session has expired. You can either log in again or try the demo mode.
+                </p>
+                <div className="mt-3 flex space-x-3">
+                  <button 
+                    onClick={() => window.location.href = '/?login=true'}
+                    className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded-md text-xs font-medium transition-colors"
+                  >
+                    Log in now
+                  </button>
+                  <button 
+                    onClick={() => {
+                      localStorage.removeItem('currentUser');
+                      window.location.href = '/';
+                    }}
+                    className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded-md text-xs font-medium transition-colors"
+                  >
+                    Go to Homepage
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column - Personal Info and Goals */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Personal Information Card */}
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-white/20 p-2 rounded-lg">
+                    <User className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="text-xl font-bold text-white">Personal Information</h2>
               </div>
               {!isEditing && (
-                <button onClick={handleEdit} className="btn-secondary flex items-center space-x-2"><Edit className="w-4 h-4" /><span>Edit</span></button>
+                  <button onClick={handleEdit} className="bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2">
+                    <Edit className="w-4 h-4" />
+                    <span>Edit</span>
+                  </button>
               )}
             </div>
+            </div>
+            <div className="p-6">
             {isEditing ? (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Name */}
-                  <div className="flex flex-col space-y-2">
-                    <label className="block text-xs font-medium text-gray-500">Name *</label>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">Name *</label>
                     <input
                       type="text"
                       {...register('name', { required: 'Name is required', minLength: { value: 2, message: 'Name must be at least 2 characters' } })}
                       className="input-field"
+                        defaultValue={userProfile.name}
                     />
                     {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
                   </div>
                   {/* Email */}
-                  <div className="flex flex-col space-y-2">
-                    <label className="block text-xs font-medium text-gray-500">Email *</label>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">Email *</label>
                     <input
                       type="email"
                       {...register('email', { required: 'Email is required', pattern: { value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, message: 'Invalid email address' } })}
                       className="input-field"
+                        defaultValue={userProfile.email}
                     />
                     {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
                   </div>
                   {/* Mobile */}
-                  <div className="flex flex-col space-y-2">
-                    <label className="block text-xs font-medium text-gray-500">Mobile *</label>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">Mobile *</label>
                     <input
                       type="tel"
                       {...register('mobile', { required: 'Mobile number is required', pattern: { value: /^\+?[\d\s-()]+$/, message: 'Invalid mobile number' } })}
                       className="input-field"
+                        defaultValue={userProfile.mobileNumber}
                     />
                     {errors.mobile && <p className="text-sm text-red-600">{errors.mobile.message}</p>}
                   </div>
                   {/* Gender */}
-                  <div className="flex flex-col space-y-2">
-                    <label className="block text-xs font-medium text-gray-500">Gender *</label>
-                    <select {...register('gender', { required: 'Gender is required' })} className="input-field">
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">Gender *</label>
+                      <select {...register('gender', { required: 'Gender is required' })} className="input-field" defaultValue={userProfile.gender}>
                       <option value="">Select gender</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Other">Other</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
                     </select>
                     {errors.gender && <p className="text-sm text-red-600">{errors.gender.message}</p>}
                   </div>
                   {/* Age */}
-                  <div className="flex flex-col space-y-2">
-                    <label className="block text-xs font-medium text-gray-500">Age *</label>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">Age *</label>
                     <input
                       type="number"
                       {...register('age', { required: 'Age is required', min: { value: 13, message: 'Age must be at least 13' }, max: { value: 120, message: 'Age cannot exceed 120' } })}
                       className="input-field"
+                        defaultValue={userProfile.age}
                     />
                     {errors.age && <p className="text-sm text-red-600">{errors.age.message}</p>}
                   </div>
                   {/* Height */}
-                  <div className="flex flex-col space-y-2">
-                    <label className="block text-xs font-medium text-gray-500">Height (cm) *</label>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">Height (cm) *</label>
                     <input
                       type="number"
                       step="0.1"
                       {...register('height', { required: 'Height is required', min: { value: 100, message: 'Height must be at least 100 cm' }, max: { value: 250, message: 'Height cannot exceed 250 cm' } })}
                       className="input-field"
+                        defaultValue={userProfile?.height || ''}
                     />
                     {errors.height && <p className="text-sm text-red-600">{errors.height.message}</p>}
                   </div>
@@ -440,237 +666,358 @@ const Profile = () => {
                 </div>
               </form>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                <div><span className="text-xs text-gray-500">Name</span><div className="font-semibold text-gray-900">{userProfile.name || '-'}</div></div>
-                <div><span className="text-xs text-gray-500">Email</span><div className="font-semibold text-gray-900">{userProfile.email || '-'}</div></div>
-                <div><span className="text-xs text-gray-500">Mobile</span><div className="font-semibold text-gray-900">{userProfile.mobile || '-'}</div></div>
-                <div><span className="text-xs text-gray-500">Gender</span><div className="font-semibold text-gray-900">{userProfile.gender || '-'}</div></div>
-                <div><span className="text-xs text-gray-500">Age</span><div className="font-semibold text-gray-900">{userProfile.age || '-'}</div></div>
-                <div><span className="text-xs text-gray-500">Height (cm)</span><div className="font-semibold text-gray-900">{userProfile.height || '-'}</div></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-1">
+                    <span className="text-sm text-gray-500">Name</span>
+                    <div className="font-semibold text-gray-900">{userProfile.name || '-'}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-sm text-gray-500">Email</span>
+                    <div className="font-semibold text-gray-900">{userProfile.email || '-'}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-sm text-gray-500">Mobile</span>
+                    <div className="font-semibold text-gray-900">{userProfile.mobileNumber || '-'}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-sm text-gray-500">Gender</span>
+                    <div className="font-semibold text-gray-900 capitalize">{userProfile.gender || '-'}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-sm text-gray-500">Age</span>
+                    <div className="font-semibold text-gray-900">{userProfile.age || '-'}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-sm text-gray-500">Height (cm)</span>
+                    <div className="font-semibold text-gray-900">{userProfile?.height || '-'}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-sm text-gray-500">Current Weight (kg)</span>
+                    <div className="font-semibold text-gray-900">{getCurrentWeight() || '-'}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-sm text-gray-500">Target Weight (kg)</span>
+                    <div className="font-semibold text-gray-900">{userProfile.targetWeight || '-'}</div>
+                  </div>
               </div>
             )}
+            </div>
           </div>
           
-          {/* Main Section (Active Goal, Past Goals) */}
-          <div className="flex flex-col space-y-8 flex-1">
-            {/* Active Goal Card or Create Goal Nudge */}
-            {userProfile.goalStatus === 'active' && userProfile.currentWeight && userProfile.targetWeight && userProfile.targetDate ? (
-              <div className="bg-white rounded-xl shadow p-6 flex flex-col md:flex-row md:items-center md:justify-between border border-gray-200">
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center"><Target className="w-5 h-5 text-primary-600 mr-2" />Active Weight Goal</h3>
-                  <div className="flex flex-col md:flex-row md:items-center md:space-x-6 text-sm text-gray-700 mb-2">
-                    <div>Start: <span className="font-semibold">{userProfile.goalCreatedAt ? new Date(userProfile.goalCreatedAt).toLocaleDateString() : (userProfile.createdAt ? new Date(userProfile.createdAt).toLocaleDateString() : '-')}</span></div>
-                    <div>Target: <span className="font-semibold">{userProfile.targetWeight} kg</span></div>
-                    <div>By: <span className="font-semibold">{userProfile.targetDate ? new Date(userProfile.targetDate).toLocaleDateString() : '-'}</span></div>
+          {/* Current Goal Status */}
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+              <div className="flex items-center space-x-3">
+                <div className="bg-white/20 p-2 rounded-lg">
+                  <Target className="w-5 h-5 text-white" />
                   </div>
-                  {/* Progress Bar with color logic */}
-                  {(() => {
-                    // Use the oldest weight entry as initial weight
-                    const sortedEntries = weightEntries.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
-                    const initialWeight = sortedEntries.length > 0 ? sortedEntries[0].weight : userProfile.currentWeight;
-                    const current = Number(userProfile.currentWeight);
-                    const target = Number(userProfile.targetWeight);
-                    const lost = initialWeight - current;
-                    const total = initialWeight - target;
-                    let percent = total !== 0 ? (lost / total) * 100 : 0;
-                    if (percent < 0) percent = 0;
-                    if (percent > 100) percent = 100;
-                    let barColor = 'bg-red-200';
-                    if (current > initialWeight) barColor = 'bg-red-500';
-                    else if (percent < 25) barColor = 'bg-red-200';
-                    else if (percent < 50) barColor = 'bg-yellow-200';
-                    else if (percent < 75) barColor = 'bg-green-200';
-                    else barColor = 'bg-green-500';
-                    // Days to go calculation
-                    const today = new Date();
-                    const targetDate = new Date(userProfile.targetDate);
-                    const daysToGo = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
-                    return (
-                      <>
-                        <div className="w-full bg-gray-100 rounded-full h-3 mb-2 relative">
-                          <div
-                            className={`${barColor} h-3 rounded-full transition-all`}
-                            style={{ width: `${percent}%` }}
-                          ></div>
-                          <span className="absolute right-2 top-0 text-xs text-gray-700 font-semibold">{percent.toFixed(0)}%</span>
+                <h2 className="text-xl font-bold text-white">Current Goal Status</h2>
                         </div>
-                        <div className="grid grid-cols-3 w-full text-xs text-gray-500 mt-1 mb-2">
-                          <div className="text-left">
-                            Progress: {current - target} kg to go
                           </div>
-                          <div className="text-center">
-                            {/* Days to Go aligned under Target */}
-                            Days to Go: <span className="font-semibold">{daysToGo >= 0 ? daysToGo : 0}</span>
+            <div className="p-6">
+              {/* console.log('[PROFILE] Goal status check - goalStatus:', userProfile.goalStatus, 'targetWeight:', userProfile.targetWeight, 'targetDate:', userProfile.targetDate) */}
+              {userProfile.goalStatus === 'active' ? (
+                <div className="space-y-4">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <span className="font-semibold text-green-800">Active Goal</span>
                           </div>
-                          <div className="text-right">
-                            Lost: <span className="font-semibold">{(initialWeight - current > 0 ? '-' : '') + Math.abs((initialWeight - current).toFixed(1))} kg</span>
+                    <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <span className="text-sm text-gray-500">Target Weight</span>
+                        <div className="font-bold text-lg text-gray-900">{userProfile.targetWeight} kg</div>
                           </div>
+                      <div>
+                        <span className="text-sm text-gray-500">Current Weight</span>
+                        <div className="font-bold text-lg text-gray-900">{getCurrentWeight()} kg</div>
                         </div>
-                        {sortedEntries.length === 0 && <div className="text-center text-xs text-red-500">No weight entries found for this goal period.</div>}
-                      </>
-                    );
-                  })()}
+                      <div>
+                        <span className="text-sm text-gray-500">Progress</span>
+                        <div className="font-bold text-lg text-gray-900">
+                          {getCurrentWeight() && userProfile.targetWeight && userProfile.goalInitialWeight
+                            ? `${Math.round(((userProfile.goalInitialWeight - getCurrentWeight()) / (userProfile.goalInitialWeight - userProfile.targetWeight)) * 100)}%`
+                            : '0%'}
                 </div>
-                <div className="flex flex-col md:flex-row md:space-x-2 items-end md:items-center mt-4 md:mt-0">
-                  <button onClick={handleDiscardGoal} className="px-3 py-1 rounded bg-red-100 text-red-700 text-xs font-semibold hover:bg-red-200 transition mb-1 md:mb-0">Discard</button>
-                  <button onClick={handleAchieveGoal} className="px-3 py-1 rounded bg-green-100 text-green-700 text-xs font-semibold hover:bg-green-200 transition mb-1 md:mb-0">Achieve</button>
-                  <button onClick={() => {
-                    reset({
-                      height: userProfile.height,
-                      currentWeight: userProfile.currentWeight,
-                      targetWeight: userProfile.targetWeight,
-                      targetDate: userProfile.targetDate ? userProfile.targetDate.split('T')[0] : ''
-                    });
-                    setIsEditingGoal(true);
-                  }} className="px-3 py-1 rounded bg-blue-100 text-blue-700 text-xs font-semibold hover:bg-blue-200 transition">Modify</button>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex space-x-3">
+                  <button 
+                    onClick={() => {
+                      console.log('[PROFILE] Modify goal button clicked!');
+                      reset({
+                            height: userProfile?.height || 0,
+                            currentWeight: getCurrentWeight() || 0,
+                            targetWeight: userProfile?.targetWeight || 0,
+                            targetDate: userProfile?.targetDate ? userProfile.targetDate.split('T')[0] : ''
+                      });
+                      setIsEditingGoal(true);
+                        }} 
+                    className="btn-secondary"
+                  >
+                        Modify Goal
+                      </button>
+                      <button 
+                        onClick={() => {
+                          console.log('[PROFILE] Discard goal button clicked!');
+                          handleDiscardGoal();
+                        }} 
+                        className="btn-danger"
+                      >
+                        Discard Goal
+                      </button>
+                      <button 
+                        onClick={() => {
+                          console.log('[PROFILE] Achieve goal button clicked!');
+                          handleAchieveGoal();
+                        }} 
+                        className="btn-success"
+                      >
+                        Achieve Goal
+                      </button>
+                    </div>
                 </div>
               </div>
             ) : (
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-8 flex flex-col items-center justify-center">
-                <h3 className="text-xl font-bold mb-2">No Active Goal</h3>
-                <p className="text-gray-600 mb-4">Set a weight goal to unlock analytics, progress, and milestones.</p>
-                <button onClick={handleCreateGoal} className="btn-primary">Create Goal</button>
+                <div className="text-center py-8">
+                  <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Active Goal</h3>
+                  <p className="text-gray-600 mb-6">Set a weight goal to unlock analytics, progress, and milestones.</p>
+                  <button onClick={() => setIsCreatingGoal(true)} className="btn-primary">
+                    Create Goal
+                  </button>
               </div>
             )}
-            {/* Past Goals Section */}
+            </div>
+          </div>
+
+          {/* Past Goals */}
             {userProfile.pastGoals && userProfile.pastGoals.length > 0 && (
-              <div className="overflow-y-auto max-h-[340px] pr-2 flex flex-col">
-                <div className="flex items-center space-x-2 mb-2">
-                  <Target className="w-5 h-5 text-primary-600" />
-                  <h3 className="text-lg font-semibold text-gray-900">Past Goals</h3>
+            <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-white/20 p-2 rounded-lg">
+                    <Target className="w-5 h-5 text-white" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
-                  {userProfile.pastGoals.slice().reverse().slice((pastGoalsPage-1)*PAST_GOALS_PER_PAGE, pastGoalsPage*PAST_GOALS_PER_PAGE).map((goal, idx) => (
-                    <div key={idx} className="bg-white rounded-lg shadow p-4 border border-gray-200 flex flex-col space-y-2">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className={`inline-block w-2 h-2 rounded-full ${goal.status === 'achieved' ? 'bg-green-500' : goal.status === 'discarded' ? 'bg-red-500' : goal.status === 'expired' ? 'bg-gray-400' : 'bg-gray-400'}`}></span>
-                        <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{goal.status.charAt(0).toUpperCase() + goal.status.slice(1)}</span>
+                  <h2 className="text-xl font-bold text-white">Past Goals</h2>
                       </div>
-                      <div className="text-sm text-gray-700">Start: <span className="font-semibold">{goal.startedAt ? new Date(goal.startedAt).toLocaleDateString() : '-'}</span></div>
-                      <div className="text-sm text-gray-700">Target: <span className="font-semibold">{goal.targetWeight} kg</span></div>
-                      <div className="text-sm text-gray-700">By: <span className="font-semibold">{goal.targetDate ? new Date(goal.targetDate).toLocaleDateString() : '-'}</span></div>
-                      <div className="text-sm text-gray-700">Ended: <span className="font-semibold">{goal.endedAt ? new Date(goal.endedAt).toLocaleDateString() : '-'}</span></div>
-                      {(goal.status === 'achieved' || goal.status === 'expired') && (
-                        <button onClick={() => handleReopenGoal(goal)} className="mt-2 px-3 py-1 rounded bg-blue-100 text-blue-700 text-xs font-semibold hover:bg-blue-200 transition">Reopen Goal</button>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {userProfile.pastGoals
+                    .sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt)) // Sort in descending order
+                    .slice((pastGoalsPage - 1) * PAST_GOALS_PER_PAGE, pastGoalsPage * PAST_GOALS_PER_PAGE)
+                    .map((goal, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className={`status-badge ${
+                          goal.status === 'achieved' ? 'status-achieved' : 'status-discarded'
+                        }`}>
+                          {goal.status === 'achieved' ? 'ACHIEVED' : 'DISCARDED'}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(goal.startedAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        <div>
+                          <span className="text-xs text-gray-500">Target Weight</span>
+                          <div className="font-semibold text-lg">{goal.targetWeight} kg</div>
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-500">Starting Weight</span>
+                          <div className="font-semibold">{goal.currentWeight} kg</div>
+                        </div>
+                        {goal.targetDate && (
+                          <div>
+                            <span className="text-xs text-gray-500">Target Date</span>
+                            <div className="font-semibold">{new Date(goal.targetDate).toLocaleDateString()}</div>
+                          </div>
+                        )}
+                      </div>
+                      {goal.status === 'discarded' && (
+                        <button
+                          onClick={() => handleReopenGoal(goal)}
+                          className="w-full mt-3 btn-secondary text-sm hover:bg-gray-600 hover:text-white transition-colors duration-200"
+                        >
+                          Reopen Goal
+                        </button>
                       )}
                     </div>
                   ))}
                 </div>
-                {/* Pagination Controls */}
-                <div className="flex justify-end items-center mt-2 space-x-2">
+                {userProfile.pastGoals.length > PAST_GOALS_PER_PAGE && (
+                  <div className="flex items-center justify-center space-x-2 mt-6">
                   <button
-                    className="px-3 py-1 rounded bg-gray-200 text-gray-700 text-xs font-semibold disabled:opacity-50"
-                    onClick={() => setPastGoalsPage(p => Math.max(1, p - 1))}
+                      onClick={() => setPastGoalsPage(Math.max(1, pastGoalsPage - 1))}
                     disabled={pastGoalsPage === 1}
+                      className="btn-secondary px-3 py-1 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Previous
                   </button>
-                  <span className="text-xs text-gray-600">
+                    <span className="text-sm text-gray-600">
                     Page {pastGoalsPage} of {Math.ceil(userProfile.pastGoals.length / PAST_GOALS_PER_PAGE)}
                   </span>
                   <button
-                    className="px-3 py-1 rounded bg-gray-200 text-gray-700 text-xs font-semibold disabled:opacity-50"
-                    onClick={() => setPastGoalsPage(p => Math.min(Math.ceil(userProfile.pastGoals.length / PAST_GOALS_PER_PAGE), p + 1))}
+                      onClick={() => setPastGoalsPage(Math.min(Math.ceil(userProfile.pastGoals.length / PAST_GOALS_PER_PAGE), pastGoalsPage + 1))}
                     disabled={pastGoalsPage === Math.ceil(userProfile.pastGoals.length / PAST_GOALS_PER_PAGE)}
+                      className="btn-secondary px-3 py-1 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Next
                   </button>
+                  </div>
+                )}
                 </div>
               </div>
             )}
           </div>
+
+        {/* Right Column - BMI Analytics */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-green-500 to-green-600 px-6 py-4">
+              <div className="flex items-center space-x-3">
+                <div className="bg-white/20 p-2 rounded-lg">
+                  <Scale className="w-5 h-5 text-white" />
         </div>
-        {/* BMI Analytics Sidebar (col-span-1) */}
-        <div className="w-full lg:w-[340px] flex-shrink-0">
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="card flex flex-col min-h-[480px] max-h-[600px] p-8 justify-between sticky top-0"
-            style={{ minWidth: '320px', maxWidth: '340px' }}
-          >
-            <div className="flex-1 flex flex-col justify-between">
-              <div className="flex items-center space-x-2 mb-6">
-                <Scale className="w-5 h-5 text-primary-600" />
-                <h3 className="text-2xl font-semibold text-gray-900">BMI Analytics</h3>
+                <h2 className="text-xl font-bold text-white">BMI Analytics</h2>
               </div>
+            </div>
+            <div className="p-6">
               {bmiAnalytics ? (
-                <div className="grid grid-cols-1 gap-4 mb-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* Current BMI */}
-                    <div className="text-center p-4 bg-blue-50 rounded-lg flex flex-col items-center justify-center">
-                      <p className="text-3xl font-bold text-blue-600">{!isNaN(Number(bmiAnalytics.currentBMI)) ? Number(bmiAnalytics.currentBMI).toFixed(2) : '-'}</p>
-                      <p className="text-sm text-gray-600">Current BMI</p>
-                      <p className={`text-xs font-semibold mt-1 ${bmiAnalytics.currentCategory?.color || ''}`}>{bmiAnalytics.currentCategory?.category || '-'}</p>
+                <div className="space-y-6">
+                  {/* Current BMI Display */}
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-gray-900 mb-2">{bmiAnalytics.currentBMI}</div>
+                    <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
+                      bmiAnalytics.currentBMI < 16 ? 'bg-red-100 text-red-800' :
+                      bmiAnalytics.currentBMI < 18.5 ? 'bg-blue-100 text-blue-800' :
+                      bmiAnalytics.currentBMI < 25 ? 'bg-green-100 text-green-800' :
+                      bmiAnalytics.currentBMI < 30 ? 'bg-yellow-100 text-yellow-800' :
+                      bmiAnalytics.currentBMI < 35 ? 'bg-orange-100 text-orange-800' :
+                      bmiAnalytics.currentBMI < 40 ? 'bg-red-100 text-red-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {bmiAnalytics.currentBMI < 16 ? 'Extreme Underweight' :
+                       bmiAnalytics.currentBMI < 18.5 ? 'Underweight' :
+                       bmiAnalytics.currentBMI < 25 ? 'Normal' :
+                       bmiAnalytics.currentBMI < 30 ? 'Overweight' :
+                       bmiAnalytics.currentBMI < 35 ? 'Obese Class-1' :
+                       bmiAnalytics.currentBMI < 40 ? 'Obese Class-2' :
+                       'Obese Class-3'}
                     </div>
-                    {/* Target BMI */}
-                    <div className="text-center p-4 bg-green-50 rounded-lg flex flex-col items-center justify-center">
-                      <p className="text-3xl font-bold text-green-600">{!isNaN(Number(bmiAnalytics.targetBMI)) ? Number(bmiAnalytics.targetBMI).toFixed(2) : '-'}</p>
-                      <p className="text-sm text-gray-600">Target BMI</p>
-                      <p className={`text-xs font-semibold mt-1 ${bmiAnalytics.targetCategory?.color || ''}`}>{bmiAnalytics.targetCategory?.category || '-'}</p>
+                    <p className="text-sm text-gray-600 mt-2">Current BMI</p>
                     </div>
+
+                  {/* BMI Progress Bar */}
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">BMI Range</span>
+                      <span className="font-medium">{bmiAnalytics.currentBMI} / 24.9 (Normal)</span>
                   </div>
-                  {/* BMI Difference */}
-                  <div className="text-center p-4 bg-purple-50 rounded-lg flex flex-col items-center justify-center">
-                    <p className="text-2xl font-bold text-purple-600">
-                      {!isNaN(Number(bmiAnalytics.currentBMI)) && !isNaN(Number(bmiAnalytics.targetBMI))
-                        ? Math.abs(Number(bmiAnalytics.currentBMI) - Number(bmiAnalytics.targetBMI)).toFixed(1)
-                        : '-'}
-                    </p>
-                    <p className="text-sm text-gray-600">BMI points to go</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {!isNaN(Number(bmiAnalytics.currentBMI)) && !isNaN(Number(bmiAnalytics.targetBMI))
-                        ? (Number(bmiAnalytics.currentBMI) > Number(bmiAnalytics.targetBMI)
-                            ? 'Need to lose weight'
-                            : (Number(bmiAnalytics.currentBMI) < Number(bmiAnalytics.targetBMI)
-                                ? 'Need to gain weight'
-                                : 'At target BMI'))
-                        : 'Enter valid weight and height to see BMI points to go'}
-                    </p>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div 
+                        className={`h-3 rounded-full transition-all duration-300 ${
+                          bmiAnalytics.currentBMI < 16 ? 'bg-red-500' :
+                          bmiAnalytics.currentBMI < 18.5 ? 'bg-blue-500' :
+                          bmiAnalytics.currentBMI < 25 ? 'bg-green-500' :
+                          bmiAnalytics.currentBMI < 30 ? 'bg-yellow-500' :
+                          bmiAnalytics.currentBMI < 35 ? 'bg-orange-500' :
+                          'bg-red-500'
+                        }`}
+                        style={{ width: `${Math.min((bmiAnalytics.currentBMI / 40) * 100, 100)}%` }}
+                      ></div>
+                  </div>
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>16.0</span>
+                      <span>18.5</span>
+                      <span>25.0</span>
+                      <span>30.0</span>
+                      <span>35.0</span>
+                      <span>40.0</span>
+                </div>
+                </div>
+
+                  {/* Health Insights */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 className="font-semibold text-blue-900 mb-2">Health Insights</h4>
+                    <div className="text-sm text-blue-800 space-y-1">
+                      {bmiAnalytics.currentBMI < 16 && (
+                        <p>• Consider gaining weight for better health</p>
+                      )}
+                      {bmiAnalytics.currentBMI >= 16 && bmiAnalytics.currentBMI < 18.5 && (
+                        <p>• Consider gaining weight for better health</p>
+                      )}
+                      {bmiAnalytics.currentBMI >= 18.5 && bmiAnalytics.currentBMI < 25 && (
+                        <p>• You're in the healthy weight range!</p>
+                      )}
+                      {bmiAnalytics.currentBMI >= 25 && bmiAnalytics.currentBMI < 30 && (
+                        <p>• Consider weight loss for better health</p>
+                      )}
+                      {bmiAnalytics.currentBMI >= 30 && (
+                        <p>• Consult a healthcare provider for weight management</p>
+              )}
+            </div>
+                </div>
+                  
+                  {/* BMI Scale */}
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-gray-900">BMI Categories</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className={`flex justify-between items-center p-2 rounded ${
+                        bmiAnalytics.currentBMI < 16 ? 'bg-red-100 border border-red-200' : ''
+                      }`}>
+                        <span className="text-gray-600">Extreme Underweight</span>
+                        <span className="font-medium">&lt; 16.0</span>
+                </div>
+                      <div className={`flex justify-between items-center p-2 rounded ${
+                        bmiAnalytics.currentBMI >= 16 && bmiAnalytics.currentBMI < 18.5 ? 'bg-blue-100 border border-blue-200' : ''
+                      }`}>
+                        <span className="text-gray-600">Underweight</span>
+                        <span className="font-medium">16.0 - 18.4</span>
+                </div>
+                      <div className={`flex justify-between items-center p-2 rounded ${
+                        bmiAnalytics.currentBMI >= 18.5 && bmiAnalytics.currentBMI < 25 ? 'bg-green-100 border border-green-200' : ''
+                      }`}>
+                        <span className="text-gray-600">Normal</span>
+                        <span className="font-medium">18.5 - 24.9</span>
+                </div>
+                      <div className={`flex justify-between items-center p-2 rounded ${
+                        bmiAnalytics.currentBMI >= 25 && bmiAnalytics.currentBMI < 30 ? 'bg-yellow-100 border border-yellow-200' : ''
+                      }`}>
+                        <span className="text-gray-600">Overweight</span>
+                        <span className="font-medium">25.0 - 29.9</span>
+                </div>
+                      <div className={`flex justify-between items-center p-2 rounded ${
+                        bmiAnalytics.currentBMI >= 30 && bmiAnalytics.currentBMI < 35 ? 'bg-orange-100 border border-orange-200' : ''
+                      }`}>
+                        <span className="text-gray-600">Obese Class-1</span>
+                        <span className="font-medium">30.0 - 34.9</span>
+                </div>
+                      <div className={`flex justify-between items-center p-2 rounded ${
+                        bmiAnalytics.currentBMI >= 35 && bmiAnalytics.currentBMI < 40 ? 'bg-red-100 border border-red-200' : ''
+                      }`}>
+                        <span className="text-gray-600">Obese Class-2</span>
+                        <span className="font-medium">35.0 - 39.9</span>
+                </div>
+                      <div className={`flex justify-between items-center p-2 rounded ${
+                        bmiAnalytics.currentBMI >= 40 ? 'bg-red-100 border border-red-200' : ''
+                      }`}>
+                        <span className="text-gray-600">Obese Class-3</span>
+                        <span className="font-medium">≥ 40.0</span>
+              </div>
+            </div>
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <Scale className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">BMI data not available. Enter valid weight and height to see BMI analytics.</p>
+                  <Scale className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">BMI Data Not Available</h3>
+                  <p className="text-gray-600">Enter valid weight and height to see BMI analytics.</p>
                 </div>
               )}
             </div>
-            <div className="border-t border-gray-200 my-4" />
-            {/* BMI Scale - always at the bottom */}
-            <div className="mt-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">BMI Scale</h4>
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-blue-600">Extreme Underweight</span>
-                  <span>&lt; 16.0</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-blue-500">Underweight</span>
-                  <span>16.0 – 18.4</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-green-600">Normal</span>
-                  <span>18.5 – 24.9</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-yellow-600">Overweight</span>
-                  <span>25.0 – 29.9</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-orange-600">Obese Class-1</span>
-                  <span>30.0 – 34.9</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-red-600">Obese Class-2</span>
-                  <span>35.0 – 39.9</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-red-700">Obese Class-3</span>
-                  <span>&ge; 40.0</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+          </div>
         </div>
       </div>
       {isCreatingGoal && (
@@ -717,8 +1064,14 @@ const Profile = () => {
               {errors.targetDate && <p className="text-sm text-red-600">{errors.targetDate.message}</p>}
             </div>
             <div className="flex items-center justify-end space-x-4 pt-4">
-              <button type="button" onClick={() => setIsCreatingGoal(false)} className="btn-secondary">Cancel</button>
-              <button type="submit" disabled={loading} className="btn-primary">{loading ? 'Saving...' : 'Create Goal'}</button>
+              <button type="button" onClick={() => {
+                console.log('[PROFILE] Create goal modal cancelled, resetting modalLoading to false');
+                setModalLoading(false);
+                setIsCreatingGoal(false);
+              }} className="btn-secondary">Cancel</button>
+              <button type="submit" disabled={modalLoading} className="btn-primary">
+                {modalLoading ? 'Saving...' : 'Create Goal'}
+              </button>
             </div>
           </form>
         </div>
@@ -767,8 +1120,12 @@ const Profile = () => {
               {errors.targetDate && <p className="text-sm text-red-600">{errors.targetDate.message}</p>}
             </div>
             <div className="flex items-center justify-end space-x-4 pt-4">
-              <button type="button" onClick={() => setIsEditingGoal(false)} className="btn-secondary">Cancel</button>
-              <button type="submit" disabled={loading} className="btn-primary">{loading ? 'Saving...' : 'Update Goal'}</button>
+              <button type="button" onClick={() => {
+                console.log('[PROFILE] Edit goal modal cancelled, resetting modalLoading to false');
+                setModalLoading(false);
+                setIsEditingGoal(false);
+              }} className="btn-secondary">Cancel</button>
+              <button type="submit" disabled={modalLoading} className="btn-primary">{modalLoading ? 'Saving...' : 'Update Goal'}</button>
             </div>
           </form>
         </div>

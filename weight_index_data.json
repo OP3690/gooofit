@@ -1,0 +1,162 @@
+[
+  {
+    "Sl.No":1,
+    "Food Name":"Glucose",
+    "Glycemic Index":103
+  },
+  {
+    "Sl.No":2,
+    "Food Name":"White bread",
+    "Glycemic Index":75
+  },
+  {
+    "Sl.No":3,
+    "Food Name":"Wheat bread",
+    "Glycemic Index":74
+  },
+  {
+    "Sl.No":4,
+    "Food Name":"Rice (white)",
+    "Glycemic Index":73
+  },
+  {
+    "Sl.No":5,
+    "Food Name":"Rice (brown)",
+    "Glycemic Index":68
+  },
+  {
+    "Sl.No":6,
+    "Food Name":"Potato (boiled)",
+    "Glycemic Index":87
+  },
+  {
+    "Sl.No":7,
+    "Food Name":"Sweet potato",
+    "Glycemic Index":70
+  },
+  {
+    "Sl.No":8,
+    "Food Name":"Cornflakes",
+    "Glycemic Index":81
+  },
+  {
+    "Sl.No":9,
+    "Food Name":"Oats",
+    "Glycemic Index":58
+  },
+  {
+    "Sl.No":10,
+    "Food Name":"Barley",
+    "Glycemic Index":28
+  },
+  {
+    "Sl.No":11,
+    "Food Name":"Quinoa",
+    "Glycemic Index":53
+  },
+  {
+    "Sl.No":12,
+    "Food Name":"Apple",
+    "Glycemic Index":36
+  },
+  {
+    "Sl.No":13,
+    "Food Name":"Banana",
+    "Glycemic Index":51
+  },
+  {
+    "Sl.No":14,
+    "Food Name":"Orange",
+    "Glycemic Index":42
+  },
+  {
+    "Sl.No":15,
+    "Food Name":"Grapes",
+    "Glycemic Index":46
+  },
+  {
+    "Sl.No":16,
+    "Food Name":"Mango",
+    "Glycemic Index":51
+  },
+  {
+    "Sl.No":17,
+    "Food Name":"Watermelon",
+    "Glycemic Index":76
+  },
+  {
+    "Sl.No":18,
+    "Food Name":"Milk",
+    "Glycemic Index":39
+  },
+  {
+    "Sl.No":19,
+    "Food Name":"Yogurt",
+    "Glycemic Index":41
+  },
+  {
+    "Sl.No":20,
+    "Food Name":"Ice cream",
+    "Glycemic Index":51
+  },
+  {
+    "Sl.No":21,
+    "Food Name":"Honey",
+    "Glycemic Index":61
+  },
+  {
+    "Sl.No":22,
+    "Food Name":"Sugar (sucrose)",
+    "Glycemic Index":68
+  },
+  {
+    "Sl.No":23,
+    "Food Name":"Carrots (boiled)",
+    "Glycemic Index":39
+  },
+  {
+    "Sl.No":24,
+    "Food Name":"Peas (green)",
+    "Glycemic Index":40
+  },
+  {
+    "Sl.No":25,
+    "Food Name":"Beans (kidney)",
+    "Glycemic Index":24
+  },
+  {
+    "Sl.No":26,
+    "Food Name":"Lentils",
+    "Glycemic Index":32
+  },
+  {
+    "Sl.No":27,
+    "Food Name":"Chickpeas",
+    "Glycemic Index":28
+  },
+  {
+    "Sl.No":28,
+    "Food Name":"Soya beans",
+    "Glycemic Index":16
+  },
+  {
+    "Sl.No":29,
+    "Food Name":"Nuts (mixed)",
+    "Glycemic Index":15
+  },
+  {
+    "Sl.No":30,
+    "Food Name":"Chocolate",
+    "Glycemic Index":40
+  },
+  {
+    "Sl.No":31,
+    "Food Name":"Coca-Cola",
+    "Glycemic Index":58
+  },
+  {
+    "Sl.No":32,
+    "Food Name":"Orange juice",
+    "Glycemic Index":50
+  }
+]

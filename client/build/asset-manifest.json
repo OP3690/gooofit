@@ -1,13 +1,40 @@
 {
   "files": {
-    "main.css": "/static/css/main.1161029f.css",
-    "main.js": "/static/js/main.ae8cf324.js",
+    "main.css": "/static/css/main.9f97257b.css",
+    "main.js": "/static/js/main.dfcfc9a8.js",
+    "static/media/blog13.jpg": "/static/media/blog13.99309eb9cce90423a641.jpg",
+    "static/media/austin-distel-wD1LRb9OeEo-unsplash.jpg": "/static/media/austin-distel-wD1LRb9OeEo-unsplash.b4c256506e843c32c679.jpg",
+    "static/media/blog17.jpg": "/static/media/blog17.422074ea49d6aa0099e5.jpg",
+    "static/media/blog7.jpg": "/static/media/blog7.5b1a5a3c3f18fb56a066.jpg",
+    "static/media/blog8.jpg": "/static/media/blog8.58cc4abbff3eedce6060.jpg",
+    "static/media/blog11.jpg": "/static/media/blog11.203929de1377434324cd.jpg",
+    "static/media/tommao-wang-1Ylvck6fl3k-unsplash.jpg": "/static/media/tommao-wang-1Ylvck6fl3k-unsplash.86c8a04833975bb1341d.jpg",
+    "static/media/blog9.jpg": "/static/media/blog9.125f250da1a7f3dfd745.jpg",
+    "static/media/blog5.jpg": "/static/media/blog5.7340319ecdd8cc8acc24.jpg",
+    "static/media/blog14.jpg": "/static/media/blog14.a72e00304dc2f832d71c.jpg",
+    "static/media/blog2.jpg": "/static/media/blog2.2bd44b932bf78fb1310e.jpg",
+    "static/media/blog22.jpg": "/static/media/blog22.be0cfbf32245ef28d9de.jpg",
+    "static/media/blog4.jpg": "/static/media/blog4.be0cfbf32245ef28d9de.jpg",
+    "static/media/blog12.jpg": "/static/media/blog12.dd5be1cb0be277eda32a.jpg",
+    "static/media/blog21.jpg": "/static/media/blog21.ff12e40c3c87839d7c6b.jpg",
+    "static/media/blog10.jpg": "/static/media/blog10.d5f5934c363e9cc5e6f0.jpg",
+    "static/media/daria-pimkina-tYaccl19A3Q-unsplash.jpg": "/static/media/daria-pimkina-tYaccl19A3Q-unsplash.6a0734ba0d2e03d91b7b.jpg",
+    "static/media/blog15.jpg": "/static/media/blog15.40992a1a3c85e819966f.jpg",
+    "static/media/blog3.jpg": "/static/media/blog3.3711fdc7093d26e5a5e3.jpg",
+    "static/media/austin-chan-ukzHlkoz1IE-unsplash.jpg": "/static/media/austin-chan-ukzHlkoz1IE-unsplash.f80e6b6cdba863ca8d02.jpg",
+    "static/media/blog1.jpg": "/static/media/blog1.2b17042b03fe4ed39281.jpg",
+    "static/media/blog19.jpg": "/static/media/blog19.07b4b024ca1f999317ba.jpg",
+    "static/media/shridhar-gupta-dZxQn4VEv2M-unsplash.jpg": "/static/media/shridhar-gupta-dZxQn4VEv2M-unsplash.eb124c7bfeb94df84fc5.jpg",
+    "static/media/blog20.jpg": "/static/media/blog20.53daf65e0b12e847f705.jpg",
+    "static/media/blog6.jpg": "/static/media/blog6.8a200e81fe9c1d0c6b69.jpg",
+    "static/media/blog16.jpg": "/static/media/blog16.6c4c11a3aa9610880a8c.jpg",
+    "static/media/blog18.jpg": "/static/media/blog18.f599f7d34584bb530e40.jpg",
     "index.html": "/index.html",
-    "main.1161029f.css.map": "/static/css/main.1161029f.css.map",
-    "main.ae8cf324.js.map": "/static/js/main.ae8cf324.js.map"
+    "main.9f97257b.css.map": "/static/css/main.9f97257b.css.map",
+    "main.dfcfc9a8.js.map": "/static/js/main.dfcfc9a8.js.map"
   },
   "entrypoints": [
-    "static/css/main.1161029f.css",
-    "static/js/main.ae8cf324.js"
+    "static/css/main.9f97257b.css",
+    "static/js/main.dfcfc9a8.js"
   ]
 }

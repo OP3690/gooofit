@@ -1,22 +1,305 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6M2CW6E7B3"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-6M2CW6E7B3');
+    </script>
+    
+    <!-- Google tag (gtag.js) - Google Ads -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-996988244"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'AW-996988244');
+    </script>
+    
+    <!-- Event snippet for Page view conversion page -->
+    <script>
+    function gtag_report_conversion(url) {
+      var callback = function () {
+        if (typeof(url) != 'undefined') {
+          window.location = url;
+        }
+      };
+      gtag('event', 'conversion', {
+          'send_to': 'AW-996988244/vW6RCPDU6fYaENSqs9sD',
+          'value': 1.0,
+          'currency': 'INR',
+          'event_callback': callback
+      });
+      return false;
+    }
+    </script>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/png" href="%PUBLIC_URL%/3589195.png" />
+    
+    <!-- Critical CSS for above-the-fold rendering -->
+    <style>
+      /* Critical CSS for GoooFit - Above the fold styles */
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; line-height: 1.6; color: #333; background-color: #ffffff; }
+      #root { min-height: 100vh; display: flex; flex-direction: column; }
+      .nav-container { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0, 0, 0, 0.1); }
+      .hero-section { padding: 120px 20px 80px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; min-height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+      .hero-title { font-size: clamp(2rem, 5vw, 4rem); font-weight: 700; margin-bottom: 1rem; line-height: 1.2; }
+      .hero-subtitle { font-size: clamp(1.1rem, 2.5vw, 1.5rem); margin-bottom: 2rem; opacity: 0.9; max-width: 600px; }
+      .btn-primary { background: #0ea5e9; color: white; padding: 12px 24px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block; }
+      .btn-primary:hover { background: #0284c7; transform: translateY(-2px); box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3); }
+      .loading { display: flex; justify-content: center; align-items: center; min-height: 200px; }
+      .loading::after { content: ''; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #0ea5e9; border-radius: 50%; animation: spin 1s linear infinite; }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      @media (max-width: 768px) { .hero-section { padding: 100px 16px 60px; } .hero-title { font-size: 2.5rem; } .hero-subtitle { font-size: 1.2rem; } }
+    </style>
+    
+    <!-- Comprehensive Favicon Setup -->
+    <link rel="icon" type="image/svg+xml" href="%PUBLIC_URL%/favicon.svg?v=3" />
+    <link rel="icon" type="image/x-icon" href="%PUBLIC_URL%/favicon.ico?v=3" />
+    <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png?v=3" />
+    <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png?v=3" />
+    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png?v=3" />
+    <link rel="icon" type="image/png" sizes="192x192" href="%PUBLIC_URL%/android-chrome-192x192.png?v=3" />
+    <link rel="icon" type="image/png" sizes="512x512" href="%PUBLIC_URL%/android-chrome-512x512.png?v=3" />
+    
+    <!-- Additional favicon formats for better browser support -->
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico?v=3" />
+    <link rel="mask-icon" href="%PUBLIC_URL%/favicon.svg?v=3" color="#0ea5e9" />
+    
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0ea5e9" />
-    <meta
-      name="description"
-      content="Weight Management Dashboard - Track your weight, calculate BMI, and achieve your health goals"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="icon" href="/favicon.ico">
-    <link rel="manifest" href="/site.webmanifest">
-    <title>Weight Management Dashboard</title>
+    <!-- Enhanced SEO Meta Tags -->
+    <meta name="description" content="Transform your weight loss journey with GoooFit's AI-powered platform. Access intermittent fasting plans, high protein diets, personalized weight loss programs, and track body composition for sustainable results." />
+    <meta name="keywords" content="weight loss, lose weight fast, intermittent fasting weight loss, high protein diet weight loss, personalized weight loss plan, body composition tracking, AI weight loss coach, sustainable weight loss habits, medical weight loss programs, metabolic flexibility training, calorie calculator weight loss, mindful eating weight loss, rapid weight loss diet plan, holistic weight management, BMI calculator, protein calculator, BMR calculator, body fat calculator" />
+    <meta name="author" content="GoooFit" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    
+    <!-- Enhanced SEO Meta Tags -->
+    <meta name="language" content="English" />
+    <meta name="revisit-after" content="7 days" />
+    <meta name="distribution" content="global" />
+    <meta name="rating" content="general" />
+    <meta name="coverage" content="Worldwide" />
+    <meta name="target" content="all" />
+    <meta name="HandheldFriendly" content="true" />
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://gooofit.com/" />
+    
+    <!-- Enhanced Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://gooofit.com/" />
+    <meta property="og:title" content="GoooFit - #1 Weight Loss Platform | Lose Weight Fast with AI Coach" />
+    <meta property="og:description" content="Transform your weight loss journey with GoooFit's AI-powered platform. Access intermittent fasting plans, high protein diets, and personalized weight loss programs. Track body composition and achieve sustainable results." />
+    <meta property="og:image" content="https://gooofit.com/og-image.svg" />
+    
+    <!-- Logo-specific meta tags for Google Knowledge Graph -->
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="GoooFit - Weight Loss Platform Logo" />
+    <meta property="og:site_name" content="GoooFit" />
+    <meta property="og:locale" content="en_US" />
+    
+    <!-- Google-specific logo meta tags -->
+    <meta name="google-site-verification" content="your-verification-code" />
+    <meta name="msapplication-TileImage" content="https://gooofit.com/android-chrome-512x512.png" />
+    <meta name="msapplication-TileColor" content="#0ea5e9" />
+    <meta name="msapplication-config" content="https://gooofit.com/browserconfig.xml" />
+    
+    <!-- Additional logo hints for search engines -->
+    <link rel="preload" href="https://gooofit.com/android-chrome-512x512.png" as="image" />
+    <link rel="dns-prefetch" href="https://gooofit.com" />
+    
+    <!-- Logo Schema for Google -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ImageObject",
+      "name": "GoooFit Logo",
+      "description": "Official GoooFit logo and brand identity",
+      "url": "https://www.gooofit.com/android-chrome-512x512.png",
+      "width": 512,
+      "height": 512,
+      "thumbnailUrl": "https://gooofit.com/favicon-32x32.png",
+      "representativeOfPage": true,
+      "license": "https://gooofit.com/terms",
+      "creator": {
+        "@type": "Organization",
+        "name": "GoooFit"
+      },
+      "contentUrl": "https://gooofit.com/android-chrome-512x512.png",
+      "encodingFormat": "image/png",
+      "uploadDate": "2025-01-15",
+      "dateModified": "2025-01-15"
+    }
+    </script>
+    
+    <!-- Additional Logo Schema for Google Knowledge Graph -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Brand",
+      "name": "GoooFit",
+      "url": "https://www.gooofit.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.gooofit.com/android-chrome-512x512.png",
+        "width": 512,
+        "height": 512,
+        "caption": "GoooFit Logo"
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://www.gooofit.com/android-chrome-512x512.png",
+        "width": 512,
+        "height": 512,
+        "caption": "GoooFit Logo"
+      },
+      "description": "GoooFit is a leading weight management and health tracking platform",
+      "slogan": "Transform your weight loss journey with AI-powered coaching"
+    }
+    </script>
+
+    
+    <!-- Enhanced Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://gooofit.com/" />
+    <meta property="twitter:title" content="GoooFit - #1 Weight Loss Platform | Lose Weight Fast with AI Coach" />
+    <meta property="twitter:description" content="Transform your weight loss journey with GoooFit's AI-powered platform. Access intermittent fasting plans, high protein diets, and personalized weight loss programs." />
+    <meta property="twitter:image" content="https://gooofit.com/og-image.svg" />
+    <meta property="twitter:site" content="@gooofit" />
+    <meta property="twitter:creator" content="@gooofit" />
+    <meta property="twitter:label1" content="Est. reading time" />
+    <meta property="twitter:data1" content="5 minutes" />
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0ea5e9" />
+    <meta name="msapplication-TileColor" content="#0ea5e9" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="GoooFit" />
+    
+    <!-- Manifest Files -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json?v=3" />
+    <link rel="manifest" href="%PUBLIC_URL%/site.webmanifest?v=3" />
+    
+    <!-- Updated Title Tag -->
+    <title>GoooFit - #1 Weight Loss Platform | Lose Weight Fast with AI Coach</title>
+    
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "GoooFit",
+      "url": "https://gooofit.com",
+      "description": "Smart Weight Loss & Management Dashboard for Your Health Goals",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://gooofit.com/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      },
+      "inLanguage": "en-US",
+      "publisher": {
+        "@type": "Organization",
+        "name": "GoooFit",
+        "url": "https://gooofit.com"
+      }
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "GoooFit",
+      "url": "https://www.gooofit.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.gooofit.com/android-chrome-512x512.png",
+        "width": 512,
+        "height": 512,
+        "caption": "GoooFit Logo"
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://www.gooofit.com/android-chrome-512x512.png",
+        "width": 512,
+        "height": 512,
+        "caption": "GoooFit Logo"
+      },
+      "description": "Leading weight management and health tracking platform",
+      "sameAs": [
+        "https://facebook.com/gooofit",
+        "https://twitter.com/gooofit",
+        "https://instagram.com/gooofit",
+        "https://linkedin.com/company/gooofit"
+      ]
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "GoooFit Weight Management Dashboard",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Web Browser",
+      "description": "Comprehensive weight management and health tracking dashboard",
+      "url": "https://gooofit.com",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+    
+    <!-- Breadcrumb Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://gooofit.com"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Dashboard",
+          "item": "https://gooofit.com/dashboard"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Calculators",
+          "item": "https://gooofit.com/calculators"
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "name": "Blog",
+          "item": "https://gooofit.com/blog"
+        }
+      ]
+    }
+    </script>
+    
+    <!-- Cache-busting meta tags -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

@@ -11,6 +11,38 @@
   ],
   "routes": [
     {
+      "src": "/BlogImg/(.*)",
+      "dest": "/BlogImg/$1"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/favicon.ico"
+    },
+    {
+      "src": "/favicon.svg",
+      "dest": "/favicon.svg"
+    },
+    {
+      "src": "/favicon-(.*).png",
+      "dest": "/favicon-$1.png"
+    },
+    {
+      "src": "/android-chrome-(.*).png",
+      "dest": "/android-chrome-$1.png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "dest": "/apple-touch-icon.png"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/manifest.json"
+    },
+    {
+      "src": "/site.webmanifest",
+      "dest": "/site.webmanifest"
+    },
+    {
       "src": "/static/(.*)",
       "dest": "/static/$1"
     },
@@ -24,6 +56,6 @@
     }
   ],
   "env": {
-    "REACT_APP_API_URL": "https://weight-management-backend.onrender.com/api"
+    "REACT_APP_API_URL": "https://weight-loss-final.onrender.com/api"
   }
 } 
