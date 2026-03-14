@@ -1,5 +1,15 @@
 {
   "version": 2,
+  "headers": [
+    {
+      "source": "/sitemap.xml",
+      "headers": [{ "key": "Content-Type", "value": "application/xml" }]
+    },
+    {
+      "source": "/(.*)\\.xml",
+      "headers": [{ "key": "Content-Type", "value": "application/xml" }]
+    }
+  ],
   "builds": [
     {
       "src": "package.json",
@@ -49,6 +59,22 @@
     {
       "src": "/googleed73e626632e7451.html",
       "dest": "/googleed73e626632e7451.html"
+    },
+    {
+      "src": "/sitemap.xml",
+      "dest": "/sitemap.xml"
+    },
+    {
+      "src": "/calculators-sitemap.xml",
+      "dest": "/calculators-sitemap.xml"
+    },
+    {
+      "src": "/blog-sitemap.xml",
+      "dest": "/blog-sitemap.xml"
+    },
+    {
+      "src": "/logo-sitemap.xml",
+      "dest": "/logo-sitemap.xml"
     },
     {
       "src": "/(.*)",
