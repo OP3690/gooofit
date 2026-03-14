@@ -15,6 +15,10 @@
       "dest": "/static/$1"
     },
     {
+      "src": "/googleed73e626632e7451.html",
+      "dest": "/googleed73e626632e7451.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
