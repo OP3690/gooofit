@@ -180,13 +180,19 @@ function App() {
         </Routes>
         </Suspense>
 
-        {/* Onboarding Modal */}
+        {/* Onboarding Modal (lazy-loaded; needs Suspense so modal opens while chunk loads) */}
         {showOnboarding && (
-          <Onboarding
-            onSuccess={handleUserLogin}
-            onClose={() => setShowOnboarding(false)}
-            initialMode={onboardingMode}
-          />
+          <Suspense fallback={
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]" aria-label="Loading">
+              <div className="loading" style={{ minHeight: 200 }} />
+            </div>
+          }>
+            <Onboarding
+              onSuccess={handleUserLogin}
+              onClose={() => setShowOnboarding(false)}
+              initialMode={onboardingMode}
+            />
+          </Suspense>
         )}
       </div>
     </UserProvider>
