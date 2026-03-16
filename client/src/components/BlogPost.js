@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from './SEO';
+import { blogListingPosts } from './Blog';
 
 // Blog data with SEO-optimized content using local BlogImg images
 const blogPosts = [
@@ -2821,7 +2822,17 @@ const BlogPost = () => {
   const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
-    const foundPost = blogPosts.find(p => p.slug === blogSlug);
+    let foundPost = blogPosts.find(p => p.slug === blogSlug);
+    if (!foundPost) {
+      const listingPost = blogListingPosts.find(p => p.slug === blogSlug);
+      if (listingPost) {
+        foundPost = {
+          ...listingPost,
+          content: `<div class="article-content"><p>${listingPost.excerpt}</p><p class="text-gray-500 italic mt-4">Full article content coming soon. Check back later!</p></div>`,
+          seoDescription: listingPost.seoDescription || listingPost.excerpt
+        };
+      }
+    }
     setPost(foundPost);
   }, [blogSlug]);
 

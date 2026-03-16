@@ -476,6 +476,8 @@ const blogPosts = [
   }
 ];
 
+export { blogPosts as blogListingPosts };
+
 const Blog = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 6; // Show 6 posts per page
