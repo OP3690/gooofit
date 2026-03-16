@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { FULL_CONTENT_SLUGS } from '../data/blogFullContentSlugs';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -482,11 +483,24 @@ const Blog = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 6; // Show 6 posts per page
 
+  // Show fully written articles first, then "coming soon" posts
+  const sortedPosts = useMemo(
+    () =>
+      [...blogPosts].sort((a, b) => {
+        const aFull = FULL_CONTENT_SLUGS.has(a.slug);
+        const bFull = FULL_CONTENT_SLUGS.has(b.slug);
+        if (aFull && !bFull) return -1;
+        if (!aFull && bFull) return 1;
+        return 0;
+      }),
+    []
+  );
+
   // Calculate pagination
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = blogPosts.slice(indexOfFirstPost, indexOfLastPost);
-  const totalPages = Math.ceil(blogPosts.length / postsPerPage);
+  const currentPosts = sortedPosts.slice(indexOfFirstPost, indexOfLastPost);
+  const totalPages = Math.ceil(sortedPosts.length / postsPerPage);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);

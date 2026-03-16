@@ -2833,6 +2833,20 @@ const BlogPost = () => {
         };
       }
     }
+    if (!foundPost && /^\d+$/.test(blogSlug)) {
+      const id = parseInt(blogSlug, 10);
+      foundPost = blogPosts.find(p => p.id === id);
+      if (!foundPost) {
+        const listingPost = blogListingPosts.find(p => p.id === id);
+        if (listingPost) {
+          foundPost = {
+            ...listingPost,
+            content: `<div class="article-content"><p>${listingPost.excerpt}</p><p class="text-gray-500 italic mt-4">Full article content coming soon. Check back later!</p></div>`,
+            seoDescription: listingPost.seoDescription || listingPost.excerpt
+          };
+        }
+      }
+    }
     setPost(foundPost);
   }, [blogSlug]);
 
@@ -3095,7 +3109,7 @@ const BlogPost = () => {
                     .map((relatedPost) => (
                       <Link 
                         key={relatedPost.id}
-                        to={`/blog/${relatedPost.id}`}
+                        to={`/blog/${relatedPost.slug}`}
                         className="block group"
                       >
                         <h4 className="font-medium text-gray-900 group-hover:text-orange-600 transition-colors mb-2">
