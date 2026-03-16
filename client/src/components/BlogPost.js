@@ -12,9 +12,10 @@ import {
 import { Link } from 'react-router-dom';
 import SEO from './SEO';
 import { blogListingPosts } from './Blog';
+import { comingSoonBlogPosts } from '../data/comingSoonBlogPosts';
 
 // Blog data with SEO-optimized content using local BlogImg images
-const blogPosts = [
+const _existingBlogPosts = [
   {
     id: 1,
     slug: "science-weight-loss-metabolism",
@@ -2814,6 +2815,8 @@ const blogPosts = [
     seoDescription: "Learn to achieve harmony between active body and restful mind for optimal health and well-being."
   }
 ];
+
+const blogPosts = [..._existingBlogPosts, ...comingSoonBlogPosts];
 
 const BlogPost = () => {
   const { blogSlug } = useParams();

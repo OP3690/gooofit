@@ -1,5 +1,16 @@
 // Slugs that have full article content in BlogPost.js (so listing can show them first)
 export const FULL_CONTENT_SLUGS = new Set([
+  "weight-loss-injections-2025-complete-guide",
+  "intermittent-fasting-weight-loss-2025",
+  "high-protein-diet-weight-loss-2025",
+  "ai-weight-loss-coach-2025",
+  "body-composition-tracking-weight-loss-2025",
+  "metabolic-flexibility-training-weight-loss-2025",
+  "personalized-weight-loss-plan-2025",
+  "mindful-eating-weight-loss-2025",
+  "rapid-weight-loss-diet-plan-2025",
+  "holistic-weight-management-2025",
+  "5-essential-metrics-successful-weight-loss",
   "science-weight-loss-metabolism",
   "nutrition-fundamentals-sustainable-weight-loss",
   "exercise-strategies-maximum-fat-burning",
